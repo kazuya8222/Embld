@@ -1,0 +1,42 @@
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
+import { cookies } from 'next/headers'
+import { NextRequest, NextResponse } from 'next/server'
+import { Database } from '@/lib/supabase/database.types'
+
+export async function GET(request: NextRequest) {
+  const requestUrl = new URL(request.url)
+  const code = requestUrl.searchParams.get('code')
+
+  if (code) {
+    const cookieStore = cookies()
+    const supabase = createRouteHandlerClient<Database>({ cookies: () => cookieStore })
+    
+    const { data: authData, error: authError } = await supabase.auth.exchangeCodeForSession(code)
+    
+    if (!authError && authData.user) {
+      const { data: existingUser } = await supabase
+        .from('users')
+        .select('id')
+        .eq('id', authData.user.id)
+        .single()
+
+      if (!existingUser) {
+        const { error: insertError } = await supabase
+          .from('users')
+          .insert({
+            id: authData.user.id,
+            email: authData.user.email!,
+            username: authData.user.user_metadata?.name || authData.user.email!.split('@')[0],
+            google_avatar_url: authData.user.user_metadata?.avatar_url,
+            auth_provider: 'google',
+          })
+        
+        if (insertError) {
+          console.error('Error creating user profile:', insertError)
+        }
+      }
+    }
+  }
+
+  return NextResponse.redirect(requestUrl.origin)
+}

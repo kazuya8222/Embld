@@ -1,0 +1,102 @@
+export interface User {
+  id: string
+  email: string
+  username: string
+  avatar_url?: string
+  google_avatar_url?: string
+  auth_provider: string
+  is_developer: boolean
+  is_premium: boolean
+  created_at: string
+}
+
+export interface Idea {
+  id: string
+  user_id: string
+  title: string
+  problem: string
+  solution: string
+  target_users?: string
+  category: string
+  tags: string[]
+  sketch_urls: string[]
+  status: 'open' | 'in_development' | 'completed'
+  created_at: string
+  updated_at: string
+  user?: User
+  wants_count?: number
+  comments_count?: number
+  user_has_wanted?: boolean
+}
+
+export interface Want {
+  id: string
+  idea_id: string
+  user_id: string
+  created_at: string
+  user?: User
+}
+
+export interface Comment {
+  id: string
+  idea_id: string
+  user_id: string
+  content: string
+  created_at: string
+  user?: User
+}
+
+export interface CompletedApp {
+  id: string
+  idea_id: string
+  developer_id: string
+  app_name: string
+  description?: string
+  app_url?: string
+  store_urls?: {
+    ios?: string
+    android?: string
+  }
+  screenshots: string[]
+  created_at: string
+  idea?: Idea
+  developer?: User
+  reviews_count?: number
+  average_rating?: number
+}
+
+export interface Review {
+  id: string
+  app_id: string
+  user_id: string
+  rating: number
+  content?: string
+  created_at: string
+  user?: User
+}
+
+export interface Subscription {
+  id: string
+  user_id: string
+  stripe_customer_id?: string
+  stripe_subscription_id?: string
+  status: string
+  current_period_start?: string
+  current_period_end?: string
+  created_at: string
+  updated_at: string
+}
+
+export const CATEGORIES = [
+  '仕事効率化',
+  'エンタメ',
+  '健康・フィットネス',
+  '教育',
+  'ライフスタイル',
+  'ゲーム',
+  'SNS・コミュニケーション',
+  'ツール',
+  'その他'
+] as const
+
+export type Category = typeof CATEGORIES[number]
