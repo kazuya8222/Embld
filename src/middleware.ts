@@ -40,9 +40,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/auth/login', request.url))
   }
 
-  if (!session && request.nextUrl.pathname.startsWith('/ideas/new')) {
-    return NextResponse.redirect(new URL('/auth/login', request.url))
-  }
+  // アイデア投稿ページは誰でもアクセス可能にして、投稿時にログインを要求する
 
   if (!session && request.nextUrl.pathname.startsWith('/premium')) {
     return NextResponse.redirect(new URL('/auth/login', request.url))
@@ -52,5 +50,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/profile/:path*', '/ideas/new', '/premium/:path*']
+  matcher: ['/profile/:path*', '/premium/:path*']
 }

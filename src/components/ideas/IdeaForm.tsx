@@ -51,7 +51,13 @@ export function IdeaForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!user) return
+    
+    // ログインしていない場合はログインページに誘導
+    if (!user) {
+      const currentData = encodeURIComponent(JSON.stringify(formData))
+      router.push(`/auth/login?redirect=/ideas/new&data=${currentData}`)
+      return
+    }
 
     setLoading(true)
     setError('')
@@ -83,24 +89,17 @@ export function IdeaForm() {
     setLoading(false)
   }
 
-  if (!user) {
-    return (
-      <div className="text-center py-8">
-        <p className="text-gray-600 mb-4">アイデアを投稿するにはログインが必要です</p>
-        <a
-          href="/auth/login"
-          className="bg-primary-600 text-white px-6 py-2 rounded-md hover:bg-primary-700 transition-colors"
-        >
-          ログイン
-        </a>
-      </div>
-    )
-  }
-
   return (
     <div className="max-w-2xl mx-auto">
       <div className="bg-white rounded-lg shadow-sm p-6">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">新しいアイデアを投稿</h1>
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">新しいアイデアを投稿</h1>
+          {!user && (
+            <p className="text-sm text-gray-600">
+              💡 フォームに入力後、投稿ボタンを押すとログイン画面に移動します（入力内容は保持されます）
+            </p>
+          )}
+        </div>
         
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
@@ -277,7 +276,7 @@ export function IdeaForm() {
                 loading && "opacity-50 cursor-not-allowed"
               )}
             >
-              {loading ? '投稿中...' : 'アイデアを投稿'}
+              {loading ? '投稿中...' : user ? 'アイデアを投稿' : 'ログインして投稿'}
             </button>
           </div>
         </form>
