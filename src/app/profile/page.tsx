@@ -1,4 +1,4 @@
-import { createServerClient } from '@/lib/supabase/server'
+import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { 
@@ -13,7 +13,7 @@ import {
 } from 'lucide-react'
 
 export default async function ProfilePage() {
-  const supabase = createServerClient()
+  const supabase = await createClient()
   const { data: { session } } = await supabase.auth.getSession()
 
   if (!session) {

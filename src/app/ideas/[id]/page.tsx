@@ -1,4 +1,4 @@
-import { createServerClient } from '@/lib/supabase/server'
+import { createClient } from '@/utils/supabase/server'
 import { notFound } from 'next/navigation'
 import { WantButton } from '@/components/common/WantButton'
 import { CommentSection } from '@/components/common/CommentSection'
@@ -20,7 +20,7 @@ export default async function IdeaDetailPage({
 }: {
   params: { id: string }
 }) {
-  const supabase = createServerClient()
+  const supabase = await createClient()
   const { data: { session } } = await supabase.auth.getSession()
 
   const { data: idea, error } = await supabase

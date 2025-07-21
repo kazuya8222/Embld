@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { headers } from 'next/headers'
 import { stripe } from '@/lib/stripe/server'
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
-import { cookies } from 'next/headers'
+import { createClient } from '@/utils/supabase/server'
 import { Database } from '@/lib/supabase/database.types'
 import Stripe from 'stripe'
 
@@ -23,8 +22,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
   }
 
-  const cookieStore = cookies()
-  const supabase = createRouteHandlerClient<Database>({ cookies: () => cookieStore })
+  const supabase = await createClient()
 
   try {
     switch (event.type) {

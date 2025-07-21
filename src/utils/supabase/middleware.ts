@@ -4,7 +4,8 @@ import { type NextRequest, NextResponse } from "next/server";
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-export async function middleware(request: NextRequest) {
+export const createClient = (request: NextRequest) => {
+  // Create an unmodified response
   let supabaseResponse = NextResponse.next({
     request: {
       headers: request.headers,
@@ -32,25 +33,5 @@ export async function middleware(request: NextRequest) {
     },
   );
 
-  const {
-    data: { session },
-  } = await supabase.auth.getSession()
-
-  if (!session && request.nextUrl.pathname.startsWith('/profile')) {
-    return NextResponse.redirect(new URL('/auth/login', request.url))
-  }
-
-  if (!session && request.nextUrl.pathname.startsWith('/ideas/new')) {
-    return NextResponse.redirect(new URL('/auth/login', request.url))
-  }
-
-  if (!session && request.nextUrl.pathname.startsWith('/premium')) {
-    return NextResponse.redirect(new URL('/auth/login', request.url))
-  }
-
   return supabaseResponse
-}
-
-export const config = {
-  matcher: ['/profile/:path*', '/ideas/new', '/premium/:path*']
-}
+};

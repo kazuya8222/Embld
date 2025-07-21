@@ -1,4 +1,4 @@
-import { createServerClient } from '@/lib/supabase/server'
+import { createClient } from '@/utils/supabase/server'
 import { IdeaCard } from '@/components/ideas/IdeaCard'
 import { CATEGORIES } from '@/types'
 import Link from 'next/link'
@@ -16,7 +16,7 @@ export default async function IdeasPage({
 }: {
   searchParams: SearchParams
 }) {
-  const supabase = createServerClient()
+  const supabase = await createClient()
   
   const { data: { session } } = await supabase.auth.getSession()
   

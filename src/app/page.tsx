@@ -1,9 +1,9 @@
 import Link from 'next/link'
-import { createServerClient } from '@/lib/supabase/server'
+import { createClient } from '@/utils/supabase/server'
 import { Lightbulb, Users, Rocket, Star, ArrowRight } from 'lucide-react'
 
 export default async function HomePage() {
-  const supabase = createServerClient()
+  const supabase = await createClient()
   
   const { data: ideas, count: ideasCount } = await supabase
     .from('ideas')
