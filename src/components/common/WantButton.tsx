@@ -72,7 +72,7 @@ export function WantButton({ ideaId, initialWanted, initialCount, className }: W
       )}
     >
       <Heart className={`w-5 h-5 ${isWanted ? 'fill-current' : ''}`} />
-      <span>{isWanted ? 'いいね済み' : 'いいね！'}</span>
+      <span>{isWanted ? 'ほしい済み' : 'ほしい！'}</span>
       <span className="ml-1 font-bold">{wantsCount}</span>
     </button>
   )

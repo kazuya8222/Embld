@@ -2,6 +2,7 @@ import { createClient } from '@/utils/supabase/server'
 import { notFound } from 'next/navigation'
 import { WantButton } from '@/components/common/WantButton'
 import { CommentSection } from '@/components/common/CommentSection'
+import { SubmitAppButton } from '@/components/apps/SubmitAppButton'
 import Link from 'next/link'
 import { 
   Calendar, 
@@ -67,7 +68,7 @@ export default async function IdeaDetailPage({
     <div className="max-w-4xl mx-auto space-y-8">
       <div className="flex items-center gap-4">
         <Link
-          href="/ideas"
+          href="/"
           className="flex items-center gap-2 text-gray-600 hover:text-primary-600 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
@@ -119,12 +120,20 @@ export default async function IdeaDetailPage({
               </div>
             </div>
 
-            <WantButton
-              ideaId={idea.id}
-              initialWanted={userHasWanted}
-              initialCount={wantsCount}
-              className="text-base px-6 py-3"
-            />
+            <div className="flex items-center gap-3">
+              <WantButton
+                ideaId={idea.id}
+                initialWanted={userHasWanted}
+                initialCount={wantsCount}
+                className="text-base px-6 py-3"
+              />
+              <SubmitAppButton
+                ideaId={idea.id}
+                ideaTitle={idea.title}
+                isAuthenticated={!!session}
+                variant="secondary"
+              />
+            </div>
           </div>
         </div>
 
@@ -187,7 +196,7 @@ export default async function IdeaDetailPage({
               <h3 className="font-semibold text-gray-900">このアイデアの統計</h3>
               <div className="space-y-3">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">「欲しい！」の数</span>
+                  <span className="text-gray-600">「ほしい！」の数</span>
                   <span className="font-medium">{wantsCount}</span>
                 </div>
                 <div className="flex justify-between">
@@ -263,10 +272,55 @@ export default async function IdeaDetailPage({
                     </div>
                   )
                 })}
+                
+                {/* Additional App Submission for existing apps */}
+                <div className="mt-4 p-4 bg-white rounded-lg border-2 border-dashed border-primary-200">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-medium text-gray-900 mb-1">
+                        別の実装も投稿できます
+                      </h4>
+                      <p className="text-sm text-gray-600">
+                        同じアイデアでも異なるアプローチの実装があれば、ぜひ投稿してください
+                      </p>
+                    </div>
+                    <SubmitAppButton
+                      ideaId={idea.id}
+                      ideaTitle={idea.title}
+                      isAuthenticated={!!session}
+                      variant="secondary"
+                    />
+                  </div>
+                </div>
               </div>
             )}
           </div>
         </div>
+
+        {/* App Submission Call-to-Action */}
+        {(!idea.completed_apps || idea.completed_apps.length === 0) && (
+          <div className="mt-8 bg-gradient-to-br from-primary-50 to-blue-50 rounded-lg p-8 border-2 border-dashed border-primary-200">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Rocket className="w-8 h-8 text-primary-600" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                このアイデアを実装してみませんか？
+              </h3>
+              <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
+                素晴らしいアイデアです！開発者の皆さん、ぜひこのアイデアを形にして、多くの人に価値を提供してください。
+                完成したアプリは下のボタンから投稿できます。
+              </p>
+              <SubmitAppButton
+                ideaId={idea.id}
+                ideaTitle={idea.title}
+                isAuthenticated={!!session}
+                variant="primary"
+                className="text-lg px-8 py-4"
+              />
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="bg-white rounded-lg shadow-sm p-8">

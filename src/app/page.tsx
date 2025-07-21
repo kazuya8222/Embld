@@ -143,7 +143,7 @@ export default async function HomePage({
               className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500"
             >
               <option value="created_at">新着順</option>
-              <option value="wants">いいね順</option>
+              <option value="wants">ほしい順</option>
               <option value="comments">コメント順</option>
             </select>
             
