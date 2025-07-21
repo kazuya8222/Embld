@@ -32,13 +32,13 @@ export function Navigation() {
   }
 
   return (
-    <nav className="bg-white shadow-sm border-b">
+    <nav className="bg-gray-900 shadow-lg border-b border-gray-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
             <Link href="/" className="flex items-center space-x-2">
               <Lightbulb className="h-8 w-8 text-primary-600" />
-              <span className="text-xl font-bold text-gray-900">IdeaSpark</span>
+              <span className="text-xl font-bold text-white">IdeaSpark</span>
             </Link>
           </div>
 
@@ -46,7 +46,7 @@ export function Navigation() {
             {/* アイデア投稿ボタンを最も目立つ場所に */}
             <Link
               href="/ideas/new"
-              className="bg-primary-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-primary-700 transition-colors flex items-center gap-2"
+              className="bg-teal-500 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-teal-400 transition-colors flex items-center gap-2"
             >
               <Plus className="h-4 w-4" />
               アイデア投稿
@@ -54,13 +54,13 @@ export function Navigation() {
             
             <Link
               href="/ideas"
-              className="text-gray-700 hover:text-primary-600 px-3 py-2 text-sm font-medium transition-colors"
+              className="text-gray-300 hover:text-white px-3 py-2 text-sm font-medium transition-colors"
             >
               アイデア一覧
             </Link>
             <Link
               href="/apps"
-              className="text-gray-700 hover:text-primary-600 px-3 py-2 text-sm font-medium transition-colors flex items-center gap-1"
+              className="text-gray-300 hover:text-white px-3 py-2 text-sm font-medium transition-colors flex items-center gap-1"
             >
               <Smartphone className="h-4 w-4" />
               完成アプリ
@@ -71,7 +71,7 @@ export function Navigation() {
                 {!userProfile?.is_premium && (
                   <Link
                     href="/premium"
-                    className="text-yellow-600 hover:text-yellow-700 px-3 py-2 text-sm font-medium transition-colors flex items-center gap-1"
+                    className="text-yellow-400 hover:text-yellow-300 px-3 py-2 text-sm font-medium transition-colors flex items-center gap-1"
                   >
                     <Star className="h-4 w-4" />
                     プレミアム
@@ -79,7 +79,7 @@ export function Navigation() {
                 )}
                 
                 <div className="relative group">
-                  <button className="flex items-center space-x-2 text-gray-700 hover:text-primary-600 transition-colors">
+                  <button className="flex items-center space-x-2 text-gray-300 hover:text-white transition-colors">
                     <User className="h-5 w-5" />
                     <span className="text-sm font-medium">{userProfile?.username || 'ユーザー'}</span>
                   </button>
@@ -110,7 +110,7 @@ export function Navigation() {
               <div className="flex items-center space-x-3">
                 <Link
                   href="/auth/login"
-                  className="text-gray-700 hover:text-primary-600 px-3 py-2 text-sm font-medium transition-colors"
+                  className="text-gray-300 hover:text-white px-3 py-2 text-sm font-medium transition-colors"
                 >
                   ログイン
                 </Link>
@@ -121,7 +121,7 @@ export function Navigation() {
           <div className="md:hidden flex items-center">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="text-gray-700 hover:text-primary-600"
+              className="text-gray-300 hover:text-white"
             >
               {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
@@ -131,11 +131,11 @@ export function Navigation() {
 
       {isMenuOpen && (
         <div className="md:hidden">
-          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 border-t">
+          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 border-t border-gray-800 bg-gray-900">
             {/* モバイルでもアイデア投稿を最優先 */}
             <Link
               href="/ideas/new"
-              className="block px-3 py-2 bg-primary-600 text-white font-medium rounded-md transition-colors"
+              className="block px-3 py-2 bg-teal-500 text-white font-medium rounded-md transition-colors"
               onClick={() => setIsMenuOpen(false)}
             >
               💡 アイデア投稿
@@ -143,14 +143,14 @@ export function Navigation() {
             
             <Link
               href="/ideas"
-              className="block px-3 py-2 text-gray-700 hover:text-primary-600 transition-colors"
+              className="block px-3 py-2 text-gray-300 hover:text-white transition-colors"
               onClick={() => setIsMenuOpen(false)}
             >
               アイデア一覧
             </Link>
             <Link
               href="/apps"
-              className="block px-3 py-2 text-gray-700 hover:text-primary-600 transition-colors"
+              className="block px-3 py-2 text-gray-300 hover:text-white transition-colors"
               onClick={() => setIsMenuOpen(false)}
             >
               🚀 完成アプリ
@@ -169,7 +169,7 @@ export function Navigation() {
                 )}
                 <Link
                   href="/profile"
-                  className="block px-3 py-2 text-gray-700 hover:text-primary-600 transition-colors"
+                  className="block px-3 py-2 text-gray-300 hover:text-white transition-colors"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   マイページ
@@ -177,7 +177,7 @@ export function Navigation() {
                 <button
                   type="button"
                   onClick={handleSignOut}
-                  className="block w-full text-left px-3 py-2 text-gray-700 hover:text-primary-600 transition-colors cursor-pointer"
+                  className="block w-full text-left px-3 py-2 text-gray-300 hover:text-white transition-colors cursor-pointer"
                 >
                   ログアウト
                 </button>
@@ -185,7 +185,7 @@ export function Navigation() {
             ) : (
               <Link
                 href="/auth/login"
-                className="block px-3 py-2 text-gray-700 hover:text-primary-600 transition-colors"
+                className="block px-3 py-2 text-gray-300 hover:text-white transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
                 ログイン

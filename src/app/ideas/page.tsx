@@ -67,111 +67,77 @@ export default async function IdeasPage({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">アイデア一覧</h1>
-          <p className="text-gray-600 mt-1">みんなの「こんなアプリが欲しい」を探してみよう</p>
-        </div>
+        <h1 className="text-xl font-bold text-gray-900">みんなのアイデア</h1>
         <Link
           href="/ideas/new"
-          className="bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 transition-colors flex items-center gap-2"
+          className="bg-teal-500 text-white px-4 py-2 rounded-lg hover:bg-teal-400 transition-colors flex items-center gap-2 text-sm"
         >
           <Plus className="w-4 h-4" />
-          新しいアイデア
+          投稿
         </Link>
       </div>
 
-      <div className="bg-white rounded-lg p-6 shadow-sm">
-        <div className="flex items-center gap-4 mb-4">
-          <Filter className="w-5 h-5 text-gray-600" />
-          <span className="font-medium text-gray-900">フィルター・検索</span>
-        </div>
-        
-        <form method="GET" className="space-y-4">
-          <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-1">
-                キーワード検索
-              </label>
-              <input
-                type="text"
-                id="search"
-                name="search"
-                defaultValue={searchParams.search}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
-                placeholder="タイトルや問題から検索"
-              />
-            </div>
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+        <form method="GET" className="p-4">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+            <input
+              type="text"
+              name="search"
+              defaultValue={searchParams.search}
+              className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500"
+              placeholder="キーワード検索"
+            />
             
-            <div>
-              <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
-                カテゴリ
-              </label>
-              <select
-                id="category"
-                name="category"
-                defaultValue={searchParams.category || ''}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
-              >
-                <option value="">すべてのカテゴリ</option>
-                {CATEGORIES.map((category) => (
-                  <option key={category} value={category}>
-                    {category}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-          
-          <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
-                ステータス
-              </label>
-              <select
-                id="status"
-                name="status"
-                defaultValue={searchParams.status || ''}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
-              >
-                <option value="">すべてのステータス</option>
-                <option value="open">募集中</option>
-                <option value="in_development">開発中</option>
-                <option value="completed">完成</option>
-              </select>
-            </div>
+            <select
+              name="category"
+              defaultValue={searchParams.category || ''}
+              className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500"
+            >
+              <option value="">全カテゴリ</option>
+              {CATEGORIES.map((category) => (
+                <option key={category} value={category}>
+                  {category}
+                </option>
+              ))}
+            </select>
             
-            <div>
-              <label htmlFor="sort" className="block text-sm font-medium text-gray-700 mb-1">
-                並び順
-              </label>
-              <select
-                id="sort"
-                name="sort"
-                defaultValue={searchParams.sort || 'created_at'}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+            <select
+              name="status"
+              defaultValue={searchParams.status || ''}
+              className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500"
+            >
+              <option value="">全ステータス</option>
+              <option value="open">募集中</option>
+              <option value="in_development">開発中</option>
+              <option value="completed">完成</option>
+            </select>
+            
+            <select
+              name="sort"
+              defaultValue={searchParams.sort || 'created_at'}
+              className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500"
+            >
+              <option value="created_at">新着順</option>
+              <option value="wants">いいね順</option>
+              <option value="comments">コメント順</option>
+            </select>
+            
+            <div className="flex gap-2">
+              <button
+                type="submit"
+                className="bg-teal-500 text-white px-4 py-2 rounded-md hover:bg-teal-400 transition-colors text-sm"
               >
-                <option value="created_at">新着順</option>
-                <option value="wants">「欲しい！」の多い順</option>
-                <option value="comments">コメントの多い順</option>
-              </select>
+                検索
+              </button>
+              <Link
+                href="/ideas"
+                className="bg-gray-100 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-200 transition-colors text-sm"
+              >
+                リセット
+              </Link>
             </div>
-          </div>
-          
-          <div className="flex gap-2">
-            <button
-              type="submit"
-              className="bg-primary-600 text-white px-6 py-2 rounded-md hover:bg-primary-700 transition-colors"
-            >
-              検索・フィルター
-            </button>
-            <Link
-              href="/ideas"
-              className="bg-gray-100 text-gray-700 px-6 py-2 rounded-md hover:bg-gray-200 transition-colors"
-            >
-              リセット
-            </Link>
           </div>
         </form>
       </div>

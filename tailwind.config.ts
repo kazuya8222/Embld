@@ -22,6 +22,17 @@ const config: Config = {
           900: '#1e3a8a',
         },
       },
+      fontFamily: {
+        'sans': [
+          'Inter',
+          'Roboto',
+          'Helvetica Neue',
+          'Arial',
+          'Noto Sans JP',
+          'system-ui',
+          'sans-serif'
+        ],
+      },
     },
   },
   plugins: [],
