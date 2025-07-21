@@ -12,7 +12,10 @@ import {
   ExternalLink,
   Target,
   AlertCircle,
-  Lightbulb
+  Lightbulb,
+  Rocket,
+  Star,
+  Code
 } from 'lucide-react'
 
 export default async function IdeaDetailPage({
@@ -32,6 +35,11 @@ export default async function IdeaDetailPage({
       comments(
         *,
         user:users(username, avatar_url, google_avatar_url)
+      ),
+      completed_apps(
+        *,
+        developer:users(username, avatar_url, google_avatar_url),
+        reviews(rating)
       )
     `)
     .eq('id', params.id)
@@ -199,19 +207,62 @@ export default async function IdeaDetailPage({
               </div>
             </div>
 
-            {idea.status === 'completed' && (
-              <div className="bg-blue-50 rounded-lg p-6 space-y-3">
-                <h3 className="font-semibold text-blue-900">このアイデアは完成しました！</h3>
-                <p className="text-blue-800 text-sm">
-                  開発者によってアプリが実装されています。完成アプリを確認してみてください。
-                </p>
-                <Link
-                  href="/apps"
-                  className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
-                >
-                  <ExternalLink className="w-4 h-4" />
-                  完成アプリを見る
-                </Link>
+            {idea.completed_apps && idea.completed_apps.length > 0 && (
+              <div className="bg-gradient-to-br from-green-50 to-blue-50 rounded-lg p-6 space-y-4 border-2 border-green-200">
+                <div className="flex items-center gap-2 mb-2">
+                  <Rocket className="w-5 h-5 text-green-600" />
+                  <h3 className="font-semibold text-green-900">このアイデアから生まれたアプリ</h3>
+                </div>
+                {idea.completed_apps.map((app: any) => {
+                  const avgRating = app.reviews?.length > 0
+                    ? app.reviews.reduce((sum: number, review: any) => sum + review.rating, 0) / app.reviews.length
+                    : 0
+                  
+                  return (
+                    <div key={app.id} className="bg-white rounded-lg p-4 space-y-3 border border-green-100">
+                      <div className="flex items-start justify-between">
+                        <h4 className="font-medium text-gray-900">{app.app_name}</h4>
+                        {avgRating > 0 && (
+                          <div className="flex items-center gap-1 text-yellow-600">
+                            <Star className="w-4 h-4 fill-current" />
+                            <span className="text-sm font-medium">{avgRating.toFixed(1)}</span>
+                          </div>
+                        )}
+                      </div>
+                      
+                      {app.description && (
+                        <p className="text-sm text-gray-600 line-clamp-2">{app.description}</p>
+                      )}
+                      
+                      <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+                        <div className="flex items-center gap-2 text-sm text-gray-500">
+                          <Code className="w-4 h-4" />
+                          <span>開発者: {app.developer?.username || '不明'}</span>
+                        </div>
+                        
+                        <Link
+                          href={`/apps/${app.id}`}
+                          className="inline-flex items-center gap-1 text-sm text-green-600 hover:text-green-700 font-medium"
+                        >
+                          詳細を見る
+                          <ExternalLink className="w-3 h-3" />
+                        </Link>
+                      </div>
+                      
+                      {app.app_url && (
+                        <a
+                          href={app.app_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 w-full justify-center bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors text-sm"
+                        >
+                          <ExternalLink className="w-4 h-4" />
+                          アプリを使ってみる
+                        </a>
+                      )}
+                    </div>
+                  )
+                })}
               </div>
             )}
           </div>

@@ -10,7 +10,10 @@ import {
   Globe,
   Smartphone,
   Star,
-  Lightbulb
+  Lightbulb,
+  Trophy,
+  Code2,
+  Sparkles
 } from 'lucide-react'
 
 export default async function AppDetailPage({
@@ -33,7 +36,7 @@ export default async function AppDetailPage({
         tags,
         user:users(username)
       ),
-      developer:users(username, avatar_url, google_avatar_url),
+      developer:users(username, avatar_url, google_avatar_url, is_developer),
       reviews(
         *,
         user:users(username, avatar_url, google_avatar_url)
@@ -41,6 +44,18 @@ export default async function AppDetailPage({
     `)
     .eq('id', params.id)
     .single()
+  
+  // 開発者の他のアプリを取得
+  const { data: developerApps } = await supabase
+    .from('completed_apps')
+    .select(`
+      id,
+      app_name,
+      reviews(rating)
+    `)
+    .eq('developer_id', app?.developer_id)
+    .neq('id', params.id)
+    .limit(3)
 
   if (error || !app) {
     notFound()
@@ -261,6 +276,71 @@ export default async function AppDetailPage({
                   </div>
                 )}
               </div>
+            </div>
+            
+            {/* 開発者プロフィール */}
+            <div className="bg-gradient-to-br from-purple-50 to-blue-50 rounded-lg p-6 space-y-4 border border-purple-100">
+              <div className="flex items-center gap-2 mb-2">
+                <Code2 className="w-5 h-5 text-purple-600" />
+                <h3 className="font-semibold text-purple-900">開発者プロフィール</h3>
+              </div>
+              
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 bg-purple-200 rounded-full flex items-center justify-center">
+                  <User className="w-6 h-6 text-purple-700" />
+                </div>
+                <div>
+                  <div className="font-medium text-gray-900">{app.developer.username}</div>
+                  {app.developer.is_developer && (
+                    <div className="flex items-center gap-1 text-xs text-purple-600">
+                      <Trophy className="w-3 h-3" />
+                      <span>認定開発者</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              {developerApps && developerApps.length > 0 && (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-1 text-sm text-gray-700 font-medium">
+                    <Sparkles className="w-4 h-4 text-yellow-500" />
+                    <span>他の開発アプリ</span>
+                  </div>
+                  <div className="space-y-2">
+                    {developerApps.map((devApp: any) => {
+                      const avgRating = devApp.reviews?.length > 0
+                        ? devApp.reviews.reduce((sum: number, review: any) => sum + review.rating, 0) / devApp.reviews.length
+                        : 0
+                      
+                      return (
+                        <Link
+                          key={devApp.id}
+                          href={`/apps/${devApp.id}`}
+                          className="block p-2 bg-white bg-opacity-60 rounded border border-purple-100 hover:border-purple-200 transition-colors"
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm text-gray-700">{devApp.app_name}</span>
+                            {avgRating > 0 && (
+                              <div className="flex items-center gap-1">
+                                <Star className="w-3 h-3 text-yellow-500 fill-current" />
+                                <span className="text-xs text-gray-600">{avgRating.toFixed(1)}</span>
+                              </div>
+                            )}
+                          </div>
+                        </Link>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
+              
+              <Link
+                href={`/developers/${app.developer_id}`}
+                className="inline-flex items-center gap-1 text-sm text-purple-600 hover:text-purple-700 font-medium mt-2"
+              >
+                開発者ページへ
+                <ExternalLink className="w-3 h-3" />
+              </Link>
             </div>
           </div>
         </div>
