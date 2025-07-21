@@ -67,16 +67,22 @@ export default async function HomePage({
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-gray-900">みんなのアイデア</h1>
-        <Link
-          href="/ideas/new"
-          className="bg-teal-500 text-white px-4 py-2 rounded-lg hover:bg-teal-400 transition-colors flex items-center gap-2 text-sm"
-        >
-          <Plus className="w-4 h-4" />
-          投稿
-        </Link>
+    <div className="space-y-6">
+      {/* ヒーローセクション - 広告風コンセプト */}
+      <div className="bg-gradient-to-r from-teal-600 to-cyan-600 rounded-xl p-8 text-center text-white shadow-lg">
+        <h1 className="text-3xl font-bold mb-3">「こんなアプリ欲しい！」を発見しよう</h1>
+        <p className="text-lg text-teal-100 mb-6">実際に開発されるアイデアを今すぐチェック。次のヒットアプリはここから生まれる。</p>
+        <div className="flex justify-center items-center gap-4 text-sm">
+          <div className="flex items-center gap-1">
+            <span className="bg-white bg-opacity-20 px-3 py-1 rounded-full">💡 {ideasWithCounts.length}個のアイデア</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <span className="bg-white bg-opacity-20 px-3 py-1 rounded-full">⚡ 毎日新着</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <span className="bg-white bg-opacity-20 px-3 py-1 rounded-full">🚀 実現可能性あり</span>
+          </div>
+        </div>
       </div>
 
       {/* カテゴリ一覧 */}

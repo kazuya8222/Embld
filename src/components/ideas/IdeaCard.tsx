@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { Idea } from '@/types'
-import { Heart, MessageCircle, User, Calendar } from 'lucide-react'
+import { MessageCircle, User, Calendar } from 'lucide-react'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { createClient } from '@/lib/supabase/client'
 
@@ -137,14 +137,14 @@ export function IdeaCard({ idea }: IdeaCardProps) {
             <button
               onClick={handleWantToggle}
               disabled={loading}
-              className={`flex items-center gap-1 px-3 py-1 rounded-full text-sm transition-colors ${
+              className={`flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium transition-colors ${
                 isWanted
-                  ? 'bg-red-100 text-red-700 hover:bg-red-200'
+                  ? 'bg-teal-100 text-teal-700 hover:bg-teal-200'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
-              <Heart className={`w-4 h-4 ${isWanted ? 'fill-current' : ''}`} />
-              <span>{wantsCount}</span>
+              <span>ほしい！</span>
+              <span className="bg-white bg-opacity-70 px-1.5 py-0.5 rounded-full text-xs">{wantsCount}</span>
             </button>
             
             <div className="flex items-center gap-1 text-sm text-gray-600">

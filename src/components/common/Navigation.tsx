@@ -42,21 +42,20 @@ export function Navigation() {
             </Link>
           </div>
 
-          <div className="hidden md:flex items-center space-x-6">
-            {/* アイデア投稿ボタンを最も目立つ場所に */}
+          <div className="hidden md:flex items-center space-x-4">
+            {/* 特典メッセージ */}
+            <div className="text-right">
+              <p className="text-xs text-gray-300">アイデアが実現すれば</p>
+              <p className="text-sm font-semibold text-yellow-400">🎁 実現したアプリの利用が永久無料</p>
+            </div>
+            
+            {/* アイデア投稿ボタン */}
             <Link
               href="/ideas/new"
-              className="bg-teal-500 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-teal-400 transition-colors flex items-center gap-2"
+              className="bg-teal-500 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-teal-400 transition-colors flex items-center gap-2 shadow-lg"
             >
               <Plus className="h-4 w-4" />
               アイデア投稿
-            </Link>
-            
-            <Link
-              href="/ideas"
-              className="text-gray-300 hover:text-white px-3 py-2 text-sm font-medium transition-colors"
-            >
-              アイデア一覧
             </Link>
             <Link
               href="/apps"
@@ -139,14 +138,6 @@ export function Navigation() {
               onClick={() => setIsMenuOpen(false)}
             >
               💡 アイデア投稿
-            </Link>
-            
-            <Link
-              href="/ideas"
-              className="block px-3 py-2 text-gray-300 hover:text-white transition-colors"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              アイデア一覧
             </Link>
             <Link
               href="/apps"
