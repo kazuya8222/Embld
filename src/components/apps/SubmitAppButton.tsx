@@ -22,6 +22,9 @@ export function SubmitAppButton({
 }: SubmitAppButtonProps) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   
+  // baseButtonClassを最初に定義
+  const baseButtonClass = "inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2"
+  
   const handleSubmit = async (formData: FormData) => {
     if (!isAuthenticated) {
       throw new Error('ログインが必要です')
@@ -52,8 +55,6 @@ export function SubmitAppButton({
       </button>
     )
   }
-
-  const baseButtonClass = "inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2"
   
   const buttonClass = variant === 'primary' 
     ? `${baseButtonClass} bg-gradient-to-r from-primary-600 to-primary-700 text-white hover:from-primary-700 hover:to-primary-800 focus:ring-primary-500 shadow-lg` 
