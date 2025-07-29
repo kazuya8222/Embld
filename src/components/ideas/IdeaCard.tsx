@@ -73,11 +73,11 @@ export function IdeaCard({ idea }: IdeaCardProps) {
   }
 
   return (
-    <div className="bg-white rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow">
+    <div className="bg-white rounded-lg p-6 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 group">
       <div className="space-y-4">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-2">
-            <span className="inline-block px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full">
+            <span className="inline-block px-3 py-1 bg-gradient-to-r from-teal-50 to-cyan-50 text-teal-700 text-sm rounded-full font-medium">
               {idea.category}
             </span>
             <span className={`inline-block px-2 py-1 text-xs rounded-full ${
@@ -92,7 +92,7 @@ export function IdeaCard({ idea }: IdeaCardProps) {
         </div>
 
         <div className="space-y-2">
-          <h3 className="font-semibold text-lg text-gray-900 line-clamp-2">
+          <h3 className="font-semibold text-lg text-gray-900 line-clamp-2 group-hover:text-teal-600 transition-colors">
             {idea.title}
           </h3>
           
@@ -137,14 +137,14 @@ export function IdeaCard({ idea }: IdeaCardProps) {
             <button
               onClick={handleWantToggle}
               disabled={loading}
-              className={`flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+              className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-300 transform hover:scale-105 ${
                 isWanted
-                  ? 'bg-teal-100 text-teal-700 hover:bg-teal-200'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  ? 'bg-gradient-to-r from-teal-500 to-cyan-500 text-white shadow-md hover:shadow-lg'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gradient-to-r hover:from-teal-100 hover:to-cyan-100 hover:text-teal-700'
               } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
-              <span>ほしい！</span>
-              <span className="bg-white bg-opacity-70 px-1.5 py-0.5 rounded-full text-xs">{wantsCount}</span>
+              <span>{isWanted ? '❤️ ほしい！' : '🤍 ほしい！'}</span>
+              <span className="bg-white bg-opacity-30 px-1.5 py-0.5 rounded-full text-xs font-bold">{wantsCount}</span>
             </button>
             
             <div className="flex items-center gap-1 text-sm text-gray-600">
@@ -155,7 +155,7 @@ export function IdeaCard({ idea }: IdeaCardProps) {
 
           <Link
             href={`/ideas/${idea.id}`}
-            className="bg-primary-600 text-white px-4 py-2 rounded-md text-sm hover:bg-primary-700 transition-colors"
+            className="bg-gradient-to-r from-teal-600 to-cyan-600 text-white px-4 py-2 rounded-md text-sm hover:from-teal-700 hover:to-cyan-700 transition-all duration-300 shadow-sm hover:shadow-md"
           >
             詳細を見る
           </Link>
