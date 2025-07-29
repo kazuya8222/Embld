@@ -72,7 +72,7 @@ export default async function HomePage({
       <div className="bg-gradient-to-r from-teal-600 to-cyan-600 rounded-xl p-8 text-center text-white shadow-lg relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-20 animate-shimmer"></div>
         <h1 className="text-3xl font-bold mb-3 relative z-10">「こんなアプリ欲しい！」を実現します</h1>
-        <p className="text-lg text-teal-100 mb-6 relative z-10">あなたのアイデアをEnbltチームが開発。収益の20%をアイデア投稿者に還元！</p>
+        <p className="text-lg text-teal-100 mb-6 relative z-10">あなたのアイデアをEmbldチームが開発。収益の20%をアイデア投稿者に還元！</p>
         <div className="flex justify-center items-center gap-4 text-sm relative z-10">
           <div className="flex items-center gap-1">
             <span className="bg-white bg-opacity-20 px-3 py-1 rounded-full backdrop-blur-sm">💡 {ideasWithCounts.length}個のアイデア</span>
@@ -81,7 +81,7 @@ export default async function HomePage({
             <span className="bg-white bg-opacity-20 px-3 py-1 rounded-full backdrop-blur-sm">💰 収益の20%還元</span>
           </div>
           <div className="flex items-center gap-1">
-            <span className="bg-white bg-opacity-20 px-3 py-1 rounded-full backdrop-blur-sm">🚀 Enbltが開発</span>
+            <span className="bg-white bg-opacity-20 px-3 py-1 rounded-full backdrop-blur-sm">🚀 Embldが開発</span>
           </div>
         </div>
       </div>

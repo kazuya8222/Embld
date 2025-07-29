@@ -8,7 +8,7 @@ import { WelcomeModal } from '@/components/common/WelcomeModal'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Enblt - アイデア→アプリ マッチングプラットフォーム',
+  title: 'Embld - アイデア→アプリ マッチングプラットフォーム',
   description: '「こんなアプリ欲しい」と「何か作りたい」をつなぐシンプルな掲示板',
 }
 

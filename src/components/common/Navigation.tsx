@@ -38,7 +38,7 @@ export function Navigation() {
           <div className="flex items-center">
             <Link href="/" className="flex items-center space-x-2">
               <Lightbulb className="h-8 w-8 text-primary-600" />
-              <span className="text-xl font-bold text-white">Enblt</span>
+              <span className="text-xl font-bold text-white">Embld</span>
             </Link>
           </div>
 

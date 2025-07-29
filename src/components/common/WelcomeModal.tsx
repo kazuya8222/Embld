@@ -8,10 +8,10 @@ export function WelcomeModal() {
 
   useEffect(() => {
     // 初回訪問チェック
-    const hasVisited = localStorage.getItem('enblt-visited')
+    const hasVisited = localStorage.getItem('embld-visited')
     if (!hasVisited) {
       setIsOpen(true)
-      localStorage.setItem('enblt-visited', 'true')
+      localStorage.setItem('embld-visited', 'true')
     }
   }, [])
 
@@ -35,7 +35,7 @@ export function WelcomeModal() {
           
           <div className="flex items-center gap-3 mb-4">
             <Lightbulb className="w-10 h-10" />
-            <h1 className="text-2xl font-bold">Enbltへようこそ！</h1>
+            <h1 className="text-2xl font-bold">Embldへようこそ！</h1>
           </div>
           
           <p className="text-lg text-teal-100">
@@ -58,7 +58,7 @@ export function WelcomeModal() {
               <div className="text-center p-4 bg-gray-50 rounded-lg">
                 <Code className="w-8 h-8 text-green-600 mx-auto mb-2" />
                 <h3 className="font-semibold text-gray-900 mb-1">2. 我々が開発</h3>
-                <p className="text-sm text-gray-600">Enbltチームがアイデアを実現</p>
+                <p className="text-sm text-gray-600">Embldチームがアイデアを実現</p>
               </div>
               
               <div className="text-center p-4 bg-gray-50 rounded-lg">
