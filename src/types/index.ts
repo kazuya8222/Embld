@@ -10,6 +10,11 @@ export interface User {
   created_at: string
 }
 
+export interface CoreFeature {
+  title: string
+  description: string
+}
+
 export interface Idea {
   id: string
   user_id: string
@@ -23,6 +28,33 @@ export interface Idea {
   status: 'open' | 'in_development' | 'completed'
   created_at: string
   updated_at: string
+  // 企画書フィールド
+  service_name?: string
+  catch_copy?: string
+  service_description?: string
+  background_problem?: string
+  current_solution_problems?: string
+  main_target?: string
+  usage_scene?: string
+  value_proposition?: string
+  differentiators?: string
+  core_features?: CoreFeature[]
+  nice_to_have_features?: string
+  initial_flow?: string
+  important_operations?: string
+  monetization_method?: string
+  price_range?: string
+  free_paid_boundary?: string
+  similar_services?: string
+  design_atmosphere?: string
+  reference_urls?: string
+  expected_release?: string
+  priority_points?: string
+  device_type?: string
+  external_services?: string
+  one_month_goal?: string
+  success_metrics?: string
+  // リレーション
   user?: User
   wants_count?: number
   comments_count?: number
