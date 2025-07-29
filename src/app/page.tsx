@@ -3,10 +3,6 @@ import { IdeaCard } from '@/components/ideas/IdeaCard'
 import { CATEGORIES } from '@/types'
 import Link from 'next/link'
 import { Plus, Filter } from 'lucide-react'
-import { TrendingMetrics } from '@/components/home/TrendingMetrics'
-import { HotIdeas } from '@/components/home/HotIdeas'
-import { CommunityHighlight } from '@/components/home/CommunityHighlight'
-import { ContributorSpotlight } from '@/components/home/ContributorSpotlight'
 
 interface SearchParams {
   category?: string
@@ -55,38 +51,6 @@ export default async function HomePage({
     return <div>アイデアの取得に失敗しました</div>
   }
 
-  // 統計データを取得
-  const { data: stats } = await supabase
-    .from('ideas')
-    .select('id, wants(id), comments(id)')
-  
-  const { count: totalUsers } = await supabase
-    .from('users')
-    .select('*', { count: 'exact', head: true })
-  
-  const totalWants = stats?.reduce((acc, idea) => acc + (idea.wants?.length || 0), 0) || 0
-  const totalComments = stats?.reduce((acc, idea) => acc + (idea.comments?.length || 0), 0) || 0
-  const estimatedRevenue = totalWants * 50000 // 1ほしい = 5万円の市場価値と仮定
-  
-  // トップコントリビューターを取得
-  const { data: topContributors } = await supabase
-    .from('users')
-    .select(`
-      id,
-      username,
-      avatar_url,
-      ideas(id, wants(id))
-    `)
-    .limit(5)
-    
-  const contributorsWithStats = topContributors?.map(user => ({
-    id: user.id,
-    username: user.username,
-    avatar_url: user.avatar_url,
-    ideas_count: user.ideas?.length || 0,
-    total_wants: user.ideas?.reduce((acc: number, idea: any) => acc + (idea.wants?.length || 0), 0) || 0
-  })).sort((a, b) => b.total_wants - a.total_wants) || []
-
   const ideasWithCounts = ideas?.map(idea => ({
     ...idea,
     wants_count: idea.wants?.length || 0,
@@ -104,48 +68,23 @@ export default async function HomePage({
 
   return (
     <div className="space-y-6">
-      {/* ヒーローセクション - 広告風コンセプト */}
+      {/* ヒーローセクション */}
       <div className="bg-gradient-to-r from-teal-600 to-cyan-600 rounded-xl p-8 text-center text-white shadow-lg relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-20 animate-shimmer"></div>
-        <h1 className="text-3xl font-bold mb-3 relative z-10">「こんなアプリ欲しい！」を発見しよう</h1>
-        <p className="text-lg text-teal-100 mb-6 relative z-10">実際に開発されるアイデアを今すぐチェック。次のヒットアプリはここから生まれる。</p>
+        <h1 className="text-3xl font-bold mb-3 relative z-10">「こんなアプリ欲しい！」を実現します</h1>
+        <p className="text-lg text-teal-100 mb-6 relative z-10">あなたのアイデアをEnbltチームが開発。収益の20%をアイデア投稿者に還元！</p>
         <div className="flex justify-center items-center gap-4 text-sm relative z-10">
           <div className="flex items-center gap-1">
             <span className="bg-white bg-opacity-20 px-3 py-1 rounded-full backdrop-blur-sm">💡 {ideasWithCounts.length}個のアイデア</span>
           </div>
           <div className="flex items-center gap-1">
-            <span className="bg-white bg-opacity-20 px-3 py-1 rounded-full backdrop-blur-sm">⚡ 毎日新着</span>
+            <span className="bg-white bg-opacity-20 px-3 py-1 rounded-full backdrop-blur-sm">💰 収益の20%還元</span>
           </div>
           <div className="flex items-center gap-1">
-            <span className="bg-white bg-opacity-20 px-3 py-1 rounded-full backdrop-blur-sm">🚀 実現可能性あり</span>
+            <span className="bg-white bg-opacity-20 px-3 py-1 rounded-full backdrop-blur-sm">🚀 Enbltが開発</span>
           </div>
         </div>
       </div>
-
-      {/* トレンディング指標 */}
-      <TrendingMetrics
-        totalIdeas={ideasWithCounts.length}
-        totalWants={totalWants}
-        activeUsers={totalUsers || 0}
-        estimatedRevenue={estimatedRevenue}
-      />
-
-      {/* コミュニティハイライト */}
-      <CommunityHighlight
-        totalUsers={totalUsers || 0}
-        totalComments={totalComments}
-        totalWants={totalWants}
-      />
-
-      {/* ホットなアイデア */}
-      {ideasWithCounts.length > 0 && (
-        <HotIdeas ideas={ideasWithCounts.sort((a, b) => b.wants_count - a.wants_count)} />
-      )}
-      
-      {/* コントリビュータースポットライト */}
-      {contributorsWithStats.length > 0 && (
-        <ContributorSpotlight contributors={contributorsWithStats} />
-      )}
 
       {/* カテゴリ一覧 */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
