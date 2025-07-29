@@ -11,7 +11,7 @@ export default async function AppsPage() {
     .select(`
       *,
       idea:ideas(title, category),
-      developer:users(username, avatar_url),
+
       reviews(rating)
     `)
     .order('created_at', { ascending: false })
@@ -54,7 +54,7 @@ export default async function AppsPage() {
             まだ完成アプリがありません
           </h2>
           <p className="text-gray-600 mb-6 max-w-md mx-auto">
-            アイデアを投稿して、開発者と一緒に素晴らしいアプリを作り上げましょう！
+            アイデアを投稿して、Enbltチームが開発します。収益の20%がアイデア投稿者に還元されます！
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
@@ -85,7 +85,7 @@ export default async function AppsPage() {
             あなたのアイデアもアプリになるかも？
           </h2>
           <p className="text-gray-600 mb-4">
-            新しいアイデアを投稿して、開発者コミュニティと一緒に実現させましょう
+            新しいアイデアを投稿して、Enbltチームが開発します。収益の20%があなたに！
           </p>
           <Link
             href="/ideas/new"

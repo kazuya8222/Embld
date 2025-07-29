@@ -17,7 +17,7 @@ export interface Database {
           avatar_url: string | null
           google_avatar_url: string | null
           auth_provider: string
-          is_developer: boolean
+          is_admin: boolean
           is_premium: boolean
           created_at: string
         }
@@ -28,7 +28,7 @@ export interface Database {
           avatar_url?: string | null
           google_avatar_url?: string | null
           auth_provider?: string
-          is_developer?: boolean
+          is_admin?: boolean
           is_premium?: boolean
           created_at?: string
         }
@@ -39,7 +39,7 @@ export interface Database {
           avatar_url?: string | null
           google_avatar_url?: string | null
           auth_provider?: string
-          is_developer?: boolean
+          is_admin?: boolean
           is_premium?: boolean
           created_at?: string
         }
@@ -135,34 +135,40 @@ export interface Database {
         Row: {
           id: string
           idea_id: string
-          developer_id: string
+          admin_id: string | null
           app_name: string
           description: string | null
           app_url: string | null
           store_urls: Json | null
           screenshots: string[]
+          released_at: string
+          is_published: boolean
           created_at: string
         }
         Insert: {
           id?: string
           idea_id: string
-          developer_id: string
+          admin_id?: string | null
           app_name: string
           description?: string | null
           app_url?: string | null
           store_urls?: Json | null
           screenshots?: string[]
+          released_at?: string
+          is_published?: boolean
           created_at?: string
         }
         Update: {
           id?: string
           idea_id?: string
-          developer_id?: string
+          admin_id?: string | null
           app_name?: string
           description?: string | null
           app_url?: string | null
           store_urls?: Json | null
           screenshots?: string[]
+          released_at?: string
+          is_published?: boolean
           created_at?: string
         }
       }
@@ -253,6 +259,93 @@ export interface Database {
           amount?: number
           currency?: string
           status?: string
+          created_at?: string
+        }
+      }
+      revenue_shares: {
+        Row: {
+          id: string
+          app_id: string
+          user_id: string
+          share_type: 'idea_creator' | 'want' | 'comment'
+          share_percentage: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          app_id: string
+          user_id: string
+          share_type: 'idea_creator' | 'want' | 'comment'
+          share_percentage: number
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          app_id?: string
+          user_id?: string
+          share_type?: 'idea_creator' | 'want' | 'comment'
+          share_percentage?: number
+          created_at?: string
+        }
+      }
+      app_revenues: {
+        Row: {
+          id: string
+          app_id: string
+          month: string
+          revenue: number
+          currency: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          app_id: string
+          month: string
+          revenue: number
+          currency?: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          app_id?: string
+          month?: string
+          revenue?: number
+          currency?: string
+          created_at?: string
+        }
+      }
+      revenue_distributions: {
+        Row: {
+          id: string
+          app_id: string
+          user_id: string
+          revenue_id: string
+          amount: number
+          share_type: string
+          status: 'pending' | 'paid' | 'failed'
+          paid_at: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          app_id: string
+          user_id: string
+          revenue_id: string
+          amount: number
+          share_type: string
+          status?: 'pending' | 'paid' | 'failed'
+          paid_at?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          app_id?: string
+          user_id?: string
+          revenue_id?: string
+          amount?: number
+          share_type?: string
+          status?: 'pending' | 'paid' | 'failed'
+          paid_at?: string | null
           created_at?: string
         }
       }

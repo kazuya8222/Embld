@@ -118,7 +118,7 @@ export default async function AppDetailPage({
             <div className="flex items-center gap-6 text-sm text-gray-600">
               <div className="flex items-center gap-2">
                 <User className="w-4 h-4" />
-                <span>開発者: {app.developer.username}</span>
+                <span>開発: Enbltチーム</span>
               </div>
               <div className="flex items-center gap-2">
                 <Calendar className="w-4 h-4" />
@@ -258,8 +258,8 @@ export default async function AppDetailPage({
               <h3 className="font-semibold text-gray-900">アプリ情報</h3>
               <div className="space-y-3">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">開発者</span>
-                  <span className="font-medium">{app.developer.username}</span>
+                  <span className="text-gray-600">開発</span>
+                  <span className="font-medium">Enbltチーム</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">リリース日</span>
@@ -278,69 +278,42 @@ export default async function AppDetailPage({
               </div>
             </div>
             
-            {/* 開発者プロフィール */}
-            <div className="bg-gradient-to-br from-purple-50 to-blue-50 rounded-lg p-6 space-y-4 border border-purple-100">
+            {/* 収益分配情報 */}
+            <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-lg p-6 space-y-4 border border-yellow-200">
               <div className="flex items-center gap-2 mb-2">
-                <Code2 className="w-5 h-5 text-purple-600" />
-                <h3 className="font-semibold text-purple-900">開発者プロフィール</h3>
+                <Trophy className="w-5 h-5 text-yellow-600" />
+                <h3 className="font-semibold text-yellow-900">収益分配</h3>
               </div>
               
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 bg-purple-200 rounded-full flex items-center justify-center">
-                  <User className="w-6 h-6 text-purple-700" />
+              <div className="space-y-3">
+                <div className="bg-white bg-opacity-60 rounded-lg p-3">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-sm font-medium text-gray-700">アイデア投稿者</span>
+                    <span className="text-sm font-bold text-yellow-700">20%</span>
+                  </div>
+                  <p className="text-xs text-gray-600">このアプリの収益の20%がアイデア投稿者に還元されます</p>
                 </div>
-                <div>
-                  <div className="font-medium text-gray-900">{app.developer.username}</div>
-                  {app.developer.is_developer && (
-                    <div className="flex items-center gap-1 text-xs text-purple-600">
-                      <Trophy className="w-3 h-3" />
-                      <span>認定開発者</span>
-                    </div>
-                  )}
+                
+                <div className="bg-white bg-opacity-60 rounded-lg p-3">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-sm font-medium text-gray-700">「ほしい！」ユーザー</span>
+                    <span className="text-sm font-bold text-teal-700">収益の一部</span>
+                  </div>
+                  <p className="text-xs text-gray-600">アイデアを支持したユーザーにも収益が分配されます</p>
+                </div>
+                
+                <div className="bg-white bg-opacity-60 rounded-lg p-3">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-sm font-medium text-gray-700">コメント貢献者</span>
+                    <span className="text-sm font-bold text-blue-700">貢献に応じて</span>
+                  </div>
+                  <p className="text-xs text-gray-600">有益なコメントをしたユーザーにも収益が分配されます</p>
                 </div>
               </div>
               
-              {developerApps && developerApps.length > 0 && (
-                <div className="space-y-2">
-                  <div className="flex items-center gap-1 text-sm text-gray-700 font-medium">
-                    <Sparkles className="w-4 h-4 text-yellow-500" />
-                    <span>他の開発アプリ</span>
-                  </div>
-                  <div className="space-y-2">
-                    {developerApps.map((devApp: any) => {
-                      const avgRating = devApp.reviews?.length > 0
-                        ? devApp.reviews.reduce((sum: number, review: any) => sum + review.rating, 0) / devApp.reviews.length
-                        : 0
-                      
-                      return (
-                        <Link
-                          key={devApp.id}
-                          href={`/apps/${devApp.id}`}
-                          className="block p-2 bg-white bg-opacity-60 rounded border border-purple-100 hover:border-purple-200 transition-colors"
-                        >
-                          <div className="flex items-center justify-between">
-                            <span className="text-sm text-gray-700">{devApp.app_name}</span>
-                            {avgRating > 0 && (
-                              <div className="flex items-center gap-1">
-                                <Star className="w-3 h-3 text-yellow-500 fill-current" />
-                                <span className="text-xs text-gray-600">{avgRating.toFixed(1)}</span>
-                              </div>
-                            )}
-                          </div>
-                        </Link>
-                      )
-                    })}
-                  </div>
-                </div>
-              )}
-              
-              <Link
-                href={`/developers/${app.developer_id}`}
-                className="inline-flex items-center gap-1 text-sm text-purple-600 hover:text-purple-700 font-medium mt-2"
-              >
-                開発者ページへ
-                <ExternalLink className="w-3 h-3" />
-              </Link>
+              <p className="text-xs text-gray-500 italic">
+                ※ 収益分配はアプリの月次収益に基づいて計算されます
+              </p>
             </div>
           </div>
         </div>

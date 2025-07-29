@@ -5,7 +5,7 @@ export interface User {
   avatar_url?: string
   google_avatar_url?: string
   auth_provider: string
-  is_developer: boolean
+  is_admin: boolean
   is_premium: boolean
   created_at: string
 }
@@ -49,7 +49,7 @@ export interface Comment {
 export interface CompletedApp {
   id: string
   idea_id: string
-  developer_id: string
+  admin_id?: string
   app_name: string
   description?: string
   app_url?: string
@@ -58,11 +58,42 @@ export interface CompletedApp {
     android?: string
   }
   screenshots: string[]
+  released_at: string
+  is_published: boolean
   created_at: string
   idea?: Idea
-  developer?: User
   reviews_count?: number
   average_rating?: number
+}
+
+export interface RevenueShare {
+  id: string
+  app_id: string
+  user_id: string
+  share_type: 'idea_creator' | 'want' | 'comment'
+  share_percentage: number
+  created_at: string
+}
+
+export interface AppRevenue {
+  id: string
+  app_id: string
+  month: string
+  revenue: number
+  currency: string
+  created_at: string
+}
+
+export interface RevenueDistribution {
+  id: string
+  app_id: string
+  user_id: string
+  revenue_id: string
+  amount: number
+  share_type: string
+  status: 'pending' | 'paid' | 'failed'
+  paid_at?: string
+  created_at: string
 }
 
 export interface Review {

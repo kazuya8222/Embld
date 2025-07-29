@@ -17,10 +17,6 @@ interface AppCardProps {
       title: string
       category: string
     }
-    developer: {
-      username: string
-      avatar_url?: string
-    }
     reviews_count: number
     average_rating: number
   }
@@ -78,8 +74,7 @@ export function AppCard({ app }: AppCardProps) {
 
         <div className="flex items-center justify-between text-sm text-gray-600">
           <div className="flex items-center gap-1">
-            <User className="w-4 h-4" />
-            <span>{app.developer.username}</span>
+            <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full">Enblt開発</span>
           </div>
           <div className="flex items-center gap-1">
             <Calendar className="w-4 h-4" />

@@ -57,8 +57,8 @@ export function WelcomeModal() {
               
               <div className="text-center p-4 bg-gray-50 rounded-lg">
                 <Code className="w-8 h-8 text-green-600 mx-auto mb-2" />
-                <h3 className="font-semibold text-gray-900 mb-1">2. 開発者が実現</h3>
-                <p className="text-sm text-gray-600">開発者がアイデアを選んで開発</p>
+                <h3 className="font-semibold text-gray-900 mb-1">2. 我々が開発</h3>
+                <p className="text-sm text-gray-600">Enbltチームがアイデアを実現</p>
               </div>
               
               <div className="text-center p-4 bg-gray-50 rounded-lg">
@@ -75,17 +75,17 @@ export function WelcomeModal() {
             <div className="space-y-3">
               <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
                 <h3 className="font-semibold text-yellow-800 mb-1">💡 アイデア投稿者</h3>
-                <p className="text-sm text-yellow-700">あなたのアイデアが実現すれば<strong>永久無料</strong>で利用可能！</p>
+                <p className="text-sm text-yellow-700">あなたのアイデアが実現すれば<strong>収益の20%</strong>を獲得！</p>
               </div>
               
               <div className="p-4 bg-teal-50 border border-teal-200 rounded-lg">
                 <h3 className="font-semibold text-teal-800 mb-1">❤️ 「ほしい！」した人</h3>
-                <p className="text-sm text-teal-700">支持したアイデアが実現すれば<strong>割引対象</strong>に！</p>
+                <p className="text-sm text-teal-700">支持したアイデアが実現すれば<strong>収益の一部を還元</strong>！</p>
               </div>
               
-              <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                <h3 className="font-semibold text-green-800 mb-1">💻 開発者</h3>
-                <p className="text-sm text-green-700"><strong>アイデア & マーケティング効果</strong>を同時に獲得！</p>
+              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <h3 className="font-semibold text-blue-800 mb-1">📝 コメントした人</h3>
+                <p className="text-sm text-blue-700">貢献に応じて<strong>収益をシェア</strong>！</p>
               </div>
             </div>
           </div>

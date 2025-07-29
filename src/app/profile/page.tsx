@@ -6,10 +6,12 @@ import {
   Lightbulb, 
   Heart, 
   MessageCircle, 
-  Smartphone,
+  DollarSign,
   Settings,
   Crown,
-  Calendar
+  Calendar,
+  TrendingUp,
+  Shield
 } from 'lucide-react'
 
 export default async function ProfilePage() {
@@ -51,15 +53,28 @@ export default async function ProfilePage() {
     .eq('user_id', session.user.id)
     .order('created_at', { ascending: false })
 
-  const { data: myApps } = await supabase
-    .from('completed_apps')
+  // 収益情報を取得
+  const { data: revenueShares } = await supabase
+    .from('revenue_shares')
     .select(`
       *,
-      idea:ideas(title, category),
-      reviews(rating)
+      app:completed_apps(
+        id,
+        app_name,
+        idea:ideas(title)
+      )
     `)
-    .eq('developer_id', session.user.id)
+    .eq('user_id', session.user.id)
+
+  const { data: distributions } = await supabase
+    .from('revenue_distributions')
+    .select(`
+      *,
+      app:completed_apps(app_name)
+    `)
+    .eq('user_id', session.user.id)
     .order('created_at', { ascending: false })
+    .limit(5)
 
   const { data: myComments } = await supabase
     .from('comments')
@@ -89,13 +104,8 @@ export default async function ProfilePage() {
     comments_count: idea.comments?.length || 0,
   })) || []
 
-  const myAppsWithStats = myApps?.map(app => ({
-    ...app,
-    reviews_count: app.reviews?.length || 0,
-    average_rating: app.reviews && app.reviews.length > 0 
-      ? app.reviews.reduce((sum: number, review: any) => sum + review.rating, 0) / app.reviews.length
-      : 0,
-  })) || []
+  const totalRevenue = distributions?.reduce((sum, dist) => sum + (dist.amount || 0), 0) || 0
+  const pendingRevenue = distributions?.filter(d => d.status === 'pending').reduce((sum, dist) => sum + (dist.amount || 0), 0) || 0
 
   return (
     <div className="max-w-6xl mx-auto space-y-8">
@@ -125,10 +135,10 @@ export default async function ProfilePage() {
                     <span>プレミアム</span>
                   </div>
                 )}
-                {userProfile?.is_developer && (
-                  <div className="flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">
-                    <Smartphone className="w-4 h-4" />
-                    <span>開発者</span>
+                {userProfile?.is_admin && (
+                  <div className="flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-sm">
+                    <Settings className="w-4 h-4" />
+                    <span>管理者</span>
                   </div>
                 )}
               </div>
@@ -142,13 +152,25 @@ export default async function ProfilePage() {
             </div>
           </div>
 
-          <Link
-            href="/profile/settings"
-            className="flex items-center gap-2 text-gray-600 hover:text-primary-600 transition-colors"
-          >
-            <Settings className="w-4 h-4" />
-            設定
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/profile/settings"
+              className="flex items-center gap-2 text-gray-600 hover:text-primary-600 transition-colors"
+            >
+              <Settings className="w-4 h-4" />
+              設定
+            </Link>
+            
+            {userProfile?.is_admin && (
+              <Link
+                href="/admin/apps"
+                className="flex items-center gap-2 text-purple-600 hover:text-purple-700 transition-colors"
+              >
+                <Shield className="w-4 h-4" />
+                管理画面
+              </Link>
+            )}
+          </div>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-8 pt-8 border-t">
@@ -161,8 +183,8 @@ export default async function ProfilePage() {
             <div className="text-gray-600 text-sm">「欲しい！」したアイデア</div>
           </div>
           <div className="text-center">
-            <div className="text-2xl font-bold text-green-600">{myAppsWithStats.length}</div>
-            <div className="text-gray-600 text-sm">開発したアプリ</div>
+            <div className="text-2xl font-bold text-green-600">¥{totalRevenue.toLocaleString()}</div>
+            <div className="text-gray-600 text-sm">累計収益</div>
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-blue-600">{myComments?.length || 0}</div>
@@ -284,39 +306,47 @@ export default async function ProfilePage() {
         <div className="space-y-6">
           <div className="bg-white rounded-lg shadow-sm p-6">
             <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2 mb-4">
-              <Smartphone className="w-5 h-5 text-green-600" />
-              開発したアプリ
+              <DollarSign className="w-5 h-5 text-green-600" />
+              収益情報
             </h2>
 
-            {myAppsWithStats.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                <Smartphone className="w-8 h-8 mx-auto mb-2 text-gray-300" />
-                <p>まだアプリを開発していません</p>
+            <div className="space-y-4">
+              <div className="bg-gradient-to-r from-green-50 to-teal-50 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm text-gray-600">累計収益</span>
+                  <TrendingUp className="w-4 h-4 text-green-600" />
+                </div>
+                <div className="text-2xl font-bold text-green-700">¥{totalRevenue.toLocaleString()}</div>
+                <div className="text-sm text-gray-500 mt-1">
+                  うち未払い: ¥{pendingRevenue.toLocaleString()}
+                </div>
               </div>
-            ) : (
-              <div className="space-y-3">
-                {myAppsWithStats.map((app) => (
-                  <div key={app.id} className="border border-gray-200 rounded-lg p-3">
-                    <h3 className="font-medium text-gray-900 line-clamp-1">
-                      {app.app_name}
-                    </h3>
-                    <div className="flex items-center justify-between mt-1">
-                      <div className="text-sm text-gray-600">
-                        元アイデア: {app.idea.title}
+
+              {distributions && distributions.length > 0 ? (
+                <div className="space-y-2">
+                  <h3 className="text-sm font-medium text-gray-700">最近の収益</h3>
+                  {distributions.slice(0, 3).map((dist) => (
+                    <div key={dist.id} className="flex items-center justify-between py-2 border-b border-gray-100">
+                      <div>
+                        <div className="text-sm font-medium text-gray-900">{dist.app?.app_name}</div>
+                        <div className="text-xs text-gray-500">{dist.share_type === 'idea_creator' ? 'アイデア投稿' : dist.share_type === 'want' ? '「ほしい！」' : 'コメント'}</div>
                       </div>
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        {app.reviews_count > 0 && (
-                          <>
-                            <span>★ {app.average_rating.toFixed(1)}</span>
-                            <span>({app.reviews_count})</span>
-                          </>
-                        )}
+                      <div className="text-right">
+                        <div className="text-sm font-medium text-gray-900">¥{dist.amount.toLocaleString()}</div>
+                        <div className="text-xs text-gray-500">
+                          {dist.status === 'paid' ? '支払い済み' : '未払い'}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            )}
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-4 text-gray-500">
+                  <p className="text-sm">まだ収益がありません</p>
+                  <p className="text-xs mt-1">アイデアを投稿したり、「ほしい！」やコメントで貢献しましょう</p>
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="bg-white rounded-lg shadow-sm p-6">

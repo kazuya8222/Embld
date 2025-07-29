@@ -46,7 +46,7 @@ export function Navigation() {
             {/* 特典メッセージ */}
             <div className="text-right">
               <p className="text-xs text-gray-300">アイデアが実現すれば</p>
-              <p className="text-sm font-semibold text-yellow-400">🎁 実現したアプリの利用が永久無料</p>
+              <p className="text-sm font-semibold text-yellow-400">💰 収益の20%を還元</p>
             </div>
             
             {/* アイデア投稿ボタン */}

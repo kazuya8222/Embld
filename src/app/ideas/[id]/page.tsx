@@ -2,7 +2,6 @@ import { createClient } from '@/utils/supabase/server'
 import { notFound } from 'next/navigation'
 import { WantButton } from '@/components/common/WantButton'
 import { CommentSection } from '@/components/common/CommentSection'
-import { SubmitAppButton } from '@/components/apps/SubmitAppButton'
 import Link from 'next/link'
 import { 
   Calendar, 
@@ -127,12 +126,7 @@ export default async function IdeaDetailPage({
                 initialCount={wantsCount}
                 className="text-base px-6 py-3"
               />
-              <SubmitAppButton
-                ideaId={idea.id}
-                ideaTitle={idea.title}
-                isAuthenticated={!!session}
-                variant="secondary"
-              />
+
             </div>
           </div>
         </div>
@@ -246,7 +240,7 @@ export default async function IdeaDetailPage({
                       <div className="flex items-center justify-between pt-2 border-t border-gray-100">
                         <div className="flex items-center gap-2 text-sm text-gray-500">
                           <Code className="w-4 h-4" />
-                          <span>開発者: {app.developer?.username || '不明'}</span>
+                          <span>開発: Enbltチーム</span>
                         </div>
                         
                         <Link
@@ -273,31 +267,13 @@ export default async function IdeaDetailPage({
                   )
                 })}
                 
-                {/* Additional App Submission for existing apps */}
-                <div className="mt-4 p-4 bg-white rounded-lg border-2 border-dashed border-primary-200">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="font-medium text-gray-900 mb-1">
-                        別の実装も投稿できます
-                      </h4>
-                      <p className="text-sm text-gray-600">
-                        同じアイデアでも異なるアプローチの実装があれば、ぜひ投稿してください
-                      </p>
-                    </div>
-                    <SubmitAppButton
-                      ideaId={idea.id}
-                      ideaTitle={idea.title}
-                      isAuthenticated={!!session}
-                      variant="secondary"
-                    />
-                  </div>
-                </div>
+
               </div>
             )}
           </div>
         </div>
 
-        {/* App Submission Call-to-Action */}
+        {/* App Status */}
         {(!idea.completed_apps || idea.completed_apps.length === 0) && (
           <div className="mt-8 bg-gradient-to-br from-primary-50 to-blue-50 rounded-lg p-8 border-2 border-dashed border-primary-200">
             <div className="text-center">
@@ -305,19 +281,12 @@ export default async function IdeaDetailPage({
                 <Rocket className="w-8 h-8 text-primary-600" />
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                このアイデアを実装してみませんか？
+                開発準備中
               </h3>
               <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
-                素晴らしいアイデアです！開発者の皆さん、ぜひこのアイデアを形にして、多くの人に価値を提供してください。
-                完成したアプリは下のボタンから投稿できます。
+                このアイデアは現在Enbltチームが開発を検討しています。
+                「ほしい！」やコメントで応援していただくと、開発優先度が上がります。
               </p>
-              <SubmitAppButton
-                ideaId={idea.id}
-                ideaTitle={idea.title}
-                isAuthenticated={!!session}
-                variant="primary"
-                className="text-lg px-8 py-4"
-              />
             </div>
           </div>
         )}

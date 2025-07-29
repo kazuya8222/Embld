@@ -14,6 +14,17 @@ export async function submitApp(formData: FormData) {
     throw new Error('認証が必要です')
   }
 
+  // Check if user is admin
+  const { data: userProfile } = await supabase
+    .from('users')
+    .select('is_admin')
+    .eq('id', session.user.id)
+    .single()
+
+  if (!userProfile?.is_admin) {
+    throw new Error('管理者権限が必要です')
+  }
+
   // Extract form data
   const ideaId = formData.get('ideaId') as string
   const appName = formData.get('appName') as string
@@ -96,7 +107,7 @@ export async function submitApp(formData: FormData) {
     .from('completed_apps')
     .insert({
       idea_id: ideaId,
-      developer_id: session.user.id,
+      admin_id: session.user.id,
       app_name: appName,
       description: description || null,
       app_url: appUrl || null,
