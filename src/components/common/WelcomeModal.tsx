@@ -8,10 +8,10 @@ export function WelcomeModal() {
 
   useEffect(() => {
     // 初回訪問チェック
-    const hasVisited = localStorage.getItem('ideaSpark-visited')
+    const hasVisited = localStorage.getItem('enblt-visited')
     if (!hasVisited) {
       setIsOpen(true)
-      localStorage.setItem('ideaSpark-visited', 'true')
+      localStorage.setItem('enblt-visited', 'true')
     }
   }, [])
 
@@ -35,7 +35,7 @@ export function WelcomeModal() {
           
           <div className="flex items-center gap-3 mb-4">
             <Lightbulb className="w-10 h-10" />
-            <h1 className="text-2xl font-bold">IdeaSparkへようこそ！</h1>
+            <h1 className="text-2xl font-bold">Enbltへようこそ！</h1>
           </div>
           
           <p className="text-lg text-teal-100">
