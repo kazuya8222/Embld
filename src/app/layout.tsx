@@ -8,8 +8,8 @@ import { WelcomeModal } from '@/components/common/WelcomeModal'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Embld - アイデア→アプリ マッチングプラットフォーム',
-  description: '「こんなアプリ欲しい」と「何か作りたい」をつなぐシンプルな掲示板',
+  title: 'EmBld - アイデアを実現する開発パートナー',
+  description: 'あなたのアプリアイデアをEmBldチームが開発。収益の20%をアイデア投稿者に還元するプラットフォーム',
 }
 
 export default function RootLayout({
