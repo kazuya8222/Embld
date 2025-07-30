@@ -124,7 +124,7 @@ export function IdeaForm({ initialData, ideaId }: IdeaFormProps) {
   const handleRemoveTag = (index: number) => {
     setFormData(prev => ({
       ...prev,
-      tags: prev.tags.filter((_, i) => i !== index)
+      tags: prev.tags.filter((_tag: string, i: number) => i !== index)
     }))
   }
 
@@ -138,7 +138,7 @@ export function IdeaForm({ initialData, ideaId }: IdeaFormProps) {
   const handleUpdateFeature = (index: number, field: 'title' | 'description', value: string) => {
     setFormData(prev => ({
       ...prev,
-      core_features: prev.core_features.map((feature, i) => 
+      core_features: prev.core_features.map((feature: CoreFeature, i: number) => 
         i === index ? { ...feature, [field]: value } : feature
       )
     }))
@@ -147,7 +147,7 @@ export function IdeaForm({ initialData, ideaId }: IdeaFormProps) {
   const handleRemoveFeature = (index: number) => {
     setFormData(prev => ({
       ...prev,
-      core_features: prev.core_features.filter((_, i) => i !== index)
+      core_features: prev.core_features.filter((_feature: CoreFeature, i: number) => i !== index)
     }))
   }
 
@@ -195,7 +195,7 @@ export function IdeaForm({ initialData, ideaId }: IdeaFormProps) {
             usage_scene: formData.usage_scene,
             value_proposition: formData.value_proposition,
             differentiators: formData.differentiators,
-            core_features: formData.core_features.filter(f => f.title && f.description),
+            core_features: formData.core_features.filter((f: CoreFeature) => f.title && f.description),
             nice_to_have_features: formData.nice_to_have_features,
             initial_flow: formData.initial_flow,
             important_operations: formData.important_operations,
@@ -469,7 +469,7 @@ export function IdeaForm({ initialData, ideaId }: IdeaFormProps) {
                 
                 {formData.tags.length > 0 && (
                   <div className="flex flex-wrap gap-2">
-                    {formData.tags.map((tag, index) => (
+                    {formData.tags.map((tag: string, index: number) => (
                       <span
                         key={index}
                         className="inline-flex items-center gap-1 px-3 py-1 bg-primary-50 text-primary-700 text-sm rounded-full"
@@ -714,7 +714,7 @@ export function IdeaForm({ initialData, ideaId }: IdeaFormProps) {
                 核となる機能（3〜5個程度）
               </label>
               <div className="space-y-4">
-                {formData.core_features.map((feature, index) => (
+                {formData.core_features.map((feature: CoreFeature, index: number) => (
                   <div key={index} className="bg-gray-50 rounded-lg p-4 space-y-3">
                     <div className="flex items-start justify-between">
                       <span className="text-sm font-medium text-gray-700">機能 {index + 1}</span>
@@ -1042,7 +1042,7 @@ export function IdeaForm({ initialData, ideaId }: IdeaFormProps) {
                 
                 {formData.tags.length > 0 && (
                   <div className="flex flex-wrap gap-2">
-                    {formData.tags.map((tag, index) => (
+                    {formData.tags.map((tag: string, index: number) => (
                       <span
                         key={index}
                         className="inline-flex items-center gap-1 px-3 py-1 bg-primary-50 text-primary-700 text-sm rounded-full"

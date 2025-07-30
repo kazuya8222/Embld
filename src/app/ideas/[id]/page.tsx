@@ -127,7 +127,7 @@ export default async function IdeaDetailPage({
 
           {idea.catch_copy && (
             <p className="text-xl text-gray-600 italic">
-              "{idea.catch_copy}"
+              &ldquo;{idea.catch_copy}&rdquo;
             </p>
           )}
 
