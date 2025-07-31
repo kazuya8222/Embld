@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import type { User } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/client'
+import { directSupabase } from '@/lib/supabase/direct-client'
 
 interface AuthContextType {
   user: User | null
@@ -36,16 +37,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const getInitialSession = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession()
-        setUser(session?.user ?? null)
+        console.log('Checking initial session...')
         
-        if (session?.user) {
-          const { data: profile } = await supabase
-            .from('users')
-            .select('*')
-            .eq('id', session.user.id)
-            .single()
-          setUserProfile(profile)
+        // まず直接クライアントで確認
+        const { data: { session: directSession } } = await directSupabase.getSession()
+        
+        if (directSession?.user) {
+          console.log('Direct session found:', directSession.user.email)
+          setUser(directSession.user)
+          
+          // プロフィール取得も直接クライアントで試行
+          const { data: profile, error: profileError } = await directSupabase.select('users', '*', { id: directSession.user.id })
+          
+          if (!profileError && profile && profile.length > 0) {
+            setUserProfile(profile[0])
+          } else {
+            console.log('Falling back to standard client for profile...')
+            const { data: fallbackProfile } = await supabase
+              .from('users')
+              .select('*')
+              .eq('id', directSession.user.id)
+              .single()
+            setUserProfile(fallbackProfile)
+          }
+        } else {
+          // フォールバック: 標準クライアント
+          console.log('No direct session, checking standard client...')
+          const { data: { session } } = await supabase.auth.getSession()
+          setUser(session?.user ?? null)
+          
+          if (session?.user) {
+            const { data: profile } = await supabase
+              .from('users')
+              .select('*')
+              .eq('id', session.user.id)
+              .single()
+            setUserProfile(profile)
+          }
         }
       } catch (error) {
         console.error('Error getting initial session:', error)
@@ -56,45 +84,81 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     getInitialSession()
 
+    // セッション変更の監視（ローカルストレージの変更を監視）
+    const handleStorageChange = async () => {
+      const { data: { session: directSession } } = await directSupabase.getSession()
+      
+      if (directSession?.user) {
+        setUser(directSession.user)
+        const { data: profile } = await directSupabase.select('users', '*', { id: directSession.user.id })
+        if (profile && profile.length > 0) {
+          setUserProfile(profile[0])
+        }
+      } else {
+        setUser(null)
+        setUserProfile(null)
+      }
+    }
+
+    // ローカルストレージの変更を監視
+    window.addEventListener('storage', handleStorageChange)
+    
+    // 標準クライアントの状態変更も監視（フォールバック用）
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        setUser(session?.user ?? null)
+        // 直接クライアントのセッションがない場合のみ処理
+        const { data: { session: directSession } } = await directSupabase.getSession()
         
-        if (session?.user) {
-          const { data: profile } = await supabase
-            .from('users')
-            .select('*')
-            .eq('id', session.user.id)
-            .single()
-          setUserProfile(profile)
-        } else {
-          setUserProfile(null)
+        if (!directSession) {
+          setUser(session?.user ?? null)
+          
+          if (session?.user) {
+            const { data: profile } = await supabase
+              .from('users')
+              .select('*')
+              .eq('id', session.user.id)
+              .single()
+            setUserProfile(profile)
+          } else {
+            setUserProfile(null)
+          }
         }
         
         setLoading(false)
       }
     )
 
-    return () => subscription.unsubscribe()
+    return () => {
+      window.removeEventListener('storage', handleStorageChange)
+      subscription.unsubscribe()
+    }
   }, [supabase, mounted])
 
   const signOut = async () => {
     try {
-      // タイムアウト付きでSignOutを実行
-      const signOutPromise = supabase.auth.signOut({ scope: 'local' })
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('ログアウトがタイムアウトしました')), 5000)
-      )
+      // 直接クライアントでログアウト
+      await directSupabase.signOut()
       
-      const { error } = await Promise.race([signOutPromise, timeoutPromise]) as any
-      
-      if (error) {
-        throw error
+      // 標準クライアントでもログアウト（フォールバック）
+      try {
+        const signOutPromise = supabase.auth.signOut({ scope: 'local' })
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('標準ログアウトタイムアウト')), 3000)
+        )
+        
+        await Promise.race([signOutPromise, timeoutPromise])
+      } catch (standardError) {
+        console.log('Standard signout failed, but direct signout succeeded')
       }
       
-      // ログアウト成功後にログインページにリダイレクト
+      // 状態をクリア
+      setUser(null)
+      setUserProfile(null)
+      
+      // ログインページにリダイレクト
       router.push('/auth/login')
     } catch (error) {
+      console.error('Signout error:', error)
       // エラーが発生した場合でも、クライアント側でセッションをクリアしてリダイレクト
       setUser(null)
       setUserProfile(null)

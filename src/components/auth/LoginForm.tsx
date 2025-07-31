@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { directSupabase } from '@/lib/supabase/direct-client'
 import { cn } from '@/lib/utils/cn'
 
 export function LoginForm() {
@@ -16,30 +17,81 @@ export function LoginForm() {
     setLoading(true)
     setMessage('')
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
+    console.log('Starting email login...')
+    console.log('Email:', email)
 
-    if (error) {
-      setMessage(error.message)
-    } else {
-      window.location.href = '/'
+    try {
+      // 代替クライアントでログイン試行
+      console.log('Trying direct Supabase login...')
+      const { data, error } = await directSupabase.signInWithPassword({
+        email,
+        password,
+      })
+
+      if (error) {
+        console.error('Direct login error:', error)
+        setMessage(`ログインエラー: ${error.message}`)
+      } else {
+        console.log('Direct login successful:', data.user?.email)
+        setMessage('ログイン成功！リダイレクトします...')
+        
+        // セッション状態の更新を手動でトリガー
+        window.dispatchEvent(new Event('storage'))
+        
+        setTimeout(() => {
+          window.location.href = '/'
+        }, 1000)
+      }
+    } catch (directError: any) {
+      console.error('Direct login failed, trying standard client...', directError)
+      
+      // フォールバック: 標準クライアント
+      try {
+        const loginPromise = supabase.auth.signInWithPassword({
+          email,
+          password,
+        })
+        
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('標準ログインがタイムアウトしました')), 5000)
+        )
+        
+        const { error } = await Promise.race([loginPromise, timeoutPromise]) as any
+
+        if (error) {
+          setMessage(`標準ログインエラー: ${error.message}`)
+        } else {
+          console.log('Standard login successful')
+          window.location.href = '/'
+        }
+      } catch (fallbackError: any) {
+        setMessage('ログインに失敗しました。時間をおいて再試行してください。')
+      }
     }
+    
     setLoading(false)
   }
 
   const handleGoogleLogin = async () => {
     setLoading(true)
+    setMessage('')
+    
+    console.log('Starting Google login...')
+    console.log('Redirect URL:', `${window.location.origin}/auth/callback`)
+    
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
         redirectTo: `${window.location.origin}/auth/callback`,
       },
     })
+    
     if (error) {
-      setMessage(error.message)
+      console.error('Google login error:', error)
+      setMessage(`Googleログインエラー: ${error.message}`)
       setLoading(false)
+    } else {
+      console.log('Google login initiated successfully')
     }
   }
 

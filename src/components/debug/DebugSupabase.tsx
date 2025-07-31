@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { directSupabase } from '@/lib/supabase/direct-client'
 
 export function DebugSupabase() {
   const [results, setResults] = useState<any>({})
@@ -13,48 +14,177 @@ export function DebugSupabase() {
     const testResults: any = {}
 
     try {
-      // 1. Supabase接続テスト
-      testResults.connection = { status: 'Testing...' }
-      const { data: healthCheck, error: healthError } = await supabase
+      // 1. 基本的な接続テスト (fetch使用)
+      testResults.basicConnection = { status: 'Testing basic HTTP connection...' }
+      setResults({...testResults})
+      
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/`, {
+          method: 'GET',
+          headers: {
+            'apikey': process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
+            'Authorization': `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
+          },
+          signal: AbortSignal.timeout(5000)
+        })
+        
+        testResults.basicConnection = {
+          status: response.ok ? '✅ HTTP Success' : '❌ HTTP Failed',
+          statusCode: response.status,
+          statusText: response.statusText
+        }
+      } catch (fetchError: any) {
+        testResults.basicConnection = { 
+          status: '❌ HTTP Error', 
+          error: fetchError.name === 'TimeoutError' ? 'HTTP Timeout (5秒)' : fetchError.message 
+        }
+      }
+      setResults({...testResults})
+
+      // 2. 新しいSupabaseクライアント作成テスト
+      testResults.clientCreation = { status: 'Creating fresh Supabase client...' }
+      setResults({...testResults})
+      
+      try {
+        // 新しいクライアントインスタンスを作成
+        const freshClient = createClient()
+        testResults.clientCreation = { status: '✅ Fresh Client Created', info: 'New client instance ready' }
+      } catch (clientError: any) {
+        testResults.clientCreation = { status: '❌ Client Creation Failed', error: clientError.message }
+      }
+      setResults({...testResults})
+
+      // 3. 直接クライアント接続テスト
+      testResults.directConnection = { status: 'Testing direct client...' }
+      setResults({...testResults})
+      
+      try {
+        const { data: directData, error: directError } = await directSupabase.select('users', 'id', {})
+        
+        testResults.directConnection = directError 
+          ? { status: '❌ Direct Failed', error: directError.message }
+          : { status: '✅ Direct Success', data: 'Direct client working', recordCount: directData?.length || 0 }
+      } catch (directConnError: any) {
+        testResults.directConnection = { status: '❌ Direct Error', error: directConnError.message }
+      }
+      setResults({...testResults})
+
+      // 4. Supabaseクライアント接続テスト
+      testResults.supabaseConnection = { status: 'Testing Supabase client...' }
+      setResults({...testResults})
+      
+      const connectionPromise = supabase
         .from('users')
-        .select('count')
+        .select('id')
         .limit(1)
       
-      testResults.connection = healthError 
-        ? { status: '❌ Failed', error: healthError.message }
-        : { status: '✅ Success', data: 'Connected to Supabase' }
-
-      // 2. Auth設定テスト
-      testResults.auth = { status: 'Testing...' }
-      const { data: { session } } = await supabase.auth.getSession()
-      testResults.auth = { 
-        status: '✅ Checked', 
-        session: session ? 'Active session found' : 'No active session' 
-      }
-
-      // 3. RLSポリシーテスト
-      testResults.rls = { status: 'Testing...' }
-      const { error: insertError } = await supabase
-        .from('users')
-        .insert({
-          id: 'test-id-that-should-fail',
-          email: 'test@test.com',
-          username: 'test'
-        })
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Supabaseクライアントタイムアウト (10秒)')), 10000)
+      )
       
-      testResults.rls = insertError
-        ? { status: '✅ RLS is active', error: insertError.message }
-        : { status: '⚠️ Warning', message: 'RLS might not be properly configured' }
-
-      // 4. 環境変数チェック
-      testResults.env = {
-        status: '✅ Checked',
-        NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL ? '✅ Set' : '❌ Not set',
-        NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? '✅ Set' : '❌ Not set',
+      try {
+        const { data: healthCheck, error: healthError } = await Promise.race([
+          connectionPromise,
+          timeoutPromise
+        ]) as any
+        
+        testResults.supabaseConnection = healthError 
+          ? { status: '❌ Client Failed', error: healthError.message, details: healthError }
+          : { status: '✅ Client Success', data: 'Supabase client working', recordCount: healthCheck?.length || 0 }
+      } catch (timeoutError: any) {
+        testResults.supabaseConnection = { status: '❌ Client Timeout', error: timeoutError.message }
       }
+
+      // 5. Auth設定テスト
+      testResults.auth = { status: 'Testing...' }
+      setResults({...testResults})
+      
+      try {
+        const authPromise = supabase.auth.getSession()
+        const authTimeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('認証チェックタイムアウト')), 3000)
+        )
+        
+        const { data: { session } } = await Promise.race([
+          authPromise,
+          authTimeoutPromise
+        ]) as any
+        
+        testResults.auth = { 
+          status: '✅ Checked', 
+          session: session ? `Active: ${session.user?.email}` : 'No active session' 
+        }
+      } catch (authError: any) {
+        testResults.auth = { status: '❌ Auth Error', error: authError.message }
+      }
+
+      // 6. テーブル構造確認
+      testResults.tables = { status: 'Testing...' }
+      setResults({...testResults})
+      
+      try {
+        // ideasテーブルの存在確認
+        const { data: ideasTest, error: ideasError } = await supabase
+          .from('ideas')
+          .select('id')
+          .limit(1)
+        
+        // usersテーブルの存在確認  
+        const { data: usersTest, error: usersError } = await supabase
+          .from('users')
+          .select('id')
+          .limit(1)
+          
+        testResults.tables = {
+          status: '✅ Checked',
+          ideas: ideasError ? `❌ ${ideasError.message}` : '✅ Accessible',
+          users: usersError ? `❌ ${usersError.message}` : '✅ Accessible'
+        }
+      } catch (tableError: any) {
+        testResults.tables = { status: '❌ Error', error: tableError.message }
+      }
+
+      // 7. 環境変数の詳細チェック
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+      const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+      
+      testResults.env = {
+        status: '✅ Environment Check',
+        NEXT_PUBLIC_SUPABASE_URL: supabaseUrl ? '✅ Set' : '❌ Not set',
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: supabaseKey ? '✅ Set' : '❌ Not set',
+        URL_Preview: supabaseUrl?.substring(0, 50) + '...' || 'Not set',
+        Key_Preview: supabaseKey ? supabaseKey.substring(0, 30) + '...' : 'Not set',
+        URL_Valid: supabaseUrl?.includes('supabase.co') ? '✅ Valid' : '❌ Invalid format',
+        Key_Valid: supabaseKey?.startsWith('eyJ') ? '✅ Valid JWT' : '❌ Invalid format'
+      }
+      
+      setResults({...testResults})
 
     } catch (error: any) {
-      testResults.error = { status: '❌ Error', message: error.message }
+      testResults.error = { status: '❌ Critical Error', message: error.message }
+    }
+
+    // 診断結果とアドバイス
+    const hasTimeouts = Object.values(testResults).some((result: any) => 
+      result.error?.includes('タイムアウト') || result.error?.includes('Timeout')
+    )
+    
+    testResults.diagnosis = {
+      status: '🔍 診断結果',
+      issue: hasTimeouts ? '接続タイムアウトが発生しています' : '接続は正常です',
+      recommendations: hasTimeouts ? [
+        '1. 開発サーバーを再起動してください: npm run dev',
+        '2. ブラウザのキャッシュをクリアしてください',
+        '3. ネットワーク接続を確認してください',
+        '4. .env.localファイルの設定を再確認してください'
+      ] : ['接続は正常に動作しています']
+    }
+
+    // 最終結果
+    testResults.summary = {
+      status: '🎯 Test Completed',
+      timestamp: new Date().toLocaleTimeString(),
+      totalTests: Object.keys(testResults).length - 2 // diagnosis と summary を除く
     }
 
     setResults(testResults)

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { directSupabase } from '@/lib/supabase/direct-client'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { CATEGORIES, CoreFeature } from '@/types'
 import { cn } from '@/lib/utils/cn'
@@ -161,10 +162,27 @@ export function IdeaForm({ initialData, ideaId }: IdeaFormProps) {
       return
     }
 
+    // バリデーションチェック
+    if (formType === 'simple') {
+      const missingFields = []
+      if (!formData.title?.trim()) missingFields.push('title')
+      if (!formData.problem?.trim()) missingFields.push('problem')
+      if (!formData.solution?.trim()) missingFields.push('solution')
+      if (!formData.category?.trim()) missingFields.push('category')
+      
+      if (missingFields.length > 0) {
+        console.error('Missing required fields:', missingFields)
+        setError(`必須項目が入力されていません: ${missingFields.join(', ')}`)
+        return
+      }
+    }
+
     setLoading(true)
     setError('')
 
     try {
+      console.log('Form submission started', { formType, user: user?.id })
+      
       const dataToSubmit = formType === 'simple' 
         ? {
             user_id: user.id,
@@ -213,32 +231,89 @@ export function IdeaForm({ initialData, ideaId }: IdeaFormProps) {
             success_metrics: formData.success_metrics,
           }
 
-      if (ideaId) {
-        const { error: updateError } = await supabase
-          .from('ideas')
-          .update(dataToSubmit)
-          .eq('id', ideaId)
+      console.log('Data to submit:', dataToSubmit)
 
-        if (updateError) {
-          setError(updateError.message)
-        } else {
-          router.push(`/ideas/${ideaId}`)
-        }
-      } else {
-        const { data, error: insertError } = await supabase
-          .from('ideas')
-          .insert(dataToSubmit)
-          .select()
-          .single()
+      // 環境とSupabase設定の確認
+      console.log('=== Debug Info ===')
+      console.log('User ID:', user.id)
+      console.log('Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL?.substring(0, 30) + '...')
+      console.log('Supabase Key exists:', !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+      console.log('Form Type:', formType)
+      console.log('==================')
 
-        if (insertError) {
-          setError(insertError.message)
-        } else {
-          router.push(`/ideas/${data.id}`)
-        }
+      // 最小限のデータでテスト
+      const minimalData = {
+        user_id: user.id,
+        title: formData.title,
+        problem: formData.problem,
+        solution: formData.solution,
+        category: formData.category,
+        tags: formData.tags || [],
+        sketch_urls: []
       }
-    } catch (err) {
-      setError('投稿に失敗しました。もう一度お試しください。')
+      
+      console.log('Using direct Supabase client for database operation...')
+      console.log('Data to insert:', minimalData)
+      
+      const startTime = Date.now()
+      
+      try {
+        let result
+        if (ideaId) {
+          // 更新処理
+          console.log('Updating existing idea with direct client...')
+          result = await directSupabase.update('ideas', minimalData, { id: ideaId })
+        } else {
+          // 新規作成処理
+          console.log('Inserting new idea with direct client...')
+          result = await directSupabase.insert('ideas', minimalData)
+        }
+
+        const endTime = Date.now()
+        console.log(`Direct operation completed in ${endTime - startTime}ms`)
+
+        if (result.error) {
+          console.error('Direct operation error:', result.error)
+          setError(`直接操作エラー: ${result.error.message}`)
+          
+          // フォールバック: 標準クライアント
+          console.log('Falling back to standard Supabase client...')
+          const fallbackPromise = ideaId 
+            ? supabase.from('ideas').update(minimalData).eq('id', ideaId)
+            : supabase.from('ideas').insert(minimalData).select().single()
+          
+          const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('フォールバック操作タイムアウト')), 5000)
+          )
+          
+          const fallbackResult = await Promise.race([fallbackPromise, timeoutPromise]) as any
+          
+          if (fallbackResult.error) {
+            setError(`フォールバックエラー: ${fallbackResult.error.message}`)
+          } else {
+            console.log('Fallback successful')
+            const targetId = ideaId || fallbackResult.data?.id
+            router.push(`/ideas/${targetId}`)
+          }
+        } else {
+          console.log('Direct operation successful:', result.data)
+          const targetId = ideaId || result.data?.id
+          if (targetId) {
+            router.push(`/ideas/${targetId}`)
+          } else {
+            setError('投稿は成功しましたが、IDが取得できませんでした。')
+          }
+        }
+        
+      } catch (directError: any) {
+        const endTime = Date.now()
+        console.error(`Direct operation failed after ${endTime - startTime}ms:`, directError)
+        setError(`直接操作失敗: ${directError.message}`)
+      }
+    } catch (err: any) {
+      console.error('Submission error:', err)
+      const errorMessage = err?.message || '投稿に失敗しました。ネットワーク接続を確認してください。'
+      setError(errorMessage)
     }
     setLoading(false)
   }
