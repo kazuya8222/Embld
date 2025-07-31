@@ -4,7 +4,6 @@ import './globals.css'
 import { AuthProvider } from '@/components/auth/AuthProvider'
 import { Navigation } from '@/components/common/Navigation'
 import { Footer } from '@/components/common/Footer'
-import { WelcomeModal } from '@/components/common/WelcomeModal'
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -35,7 +34,6 @@ export default function RootLayout({
       <body className="font-sans bg-white">
         <AuthProvider>
           {children}
-          <WelcomeModal />
         </AuthProvider>
       </body>
     </html>
