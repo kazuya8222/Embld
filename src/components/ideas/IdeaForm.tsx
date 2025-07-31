@@ -282,8 +282,8 @@ export function IdeaForm({ initialData, ideaId }: IdeaFormProps) {
           console.error('Operation error:', result.error)
           setError(`エラー: ${result.error.message}`)
         } else {
-          console.log('Direct operation successful:', result.data)
-          const targetId = ideaId || result.data?.id
+          console.log('Operation successful:', result.data)
+          const targetId = ideaId || result.data?.[0]?.id
           if (targetId) {
             router.push(`/ideas/${targetId}`)
           } else {
