@@ -54,9 +54,6 @@ export async function middleware(request: NextRequest) {
     },
   );
 
-  // セッションを更新（重要：これによりクッキーが更新される）
-  const { data: { user } } = await supabase.auth.getUser()
-
   const {
     data: { session },
   } = await supabase.auth.getSession()
@@ -68,10 +65,17 @@ export async function middleware(request: NextRequest) {
   if (!session && isProtectedPath) {
     return NextResponse.redirect(new URL('/auth/login', request.url))
   }
-  
+
   // ログイン済みのユーザーがログインページにアクセスした場合
   if (session && request.nextUrl.pathname.startsWith('/auth/login')) {
     return NextResponse.redirect(new URL('/home', request.url))
+  }
+
+  // ルートページへのアクセス時の処理
+  if (request.nextUrl.pathname === '/') {
+    if (session) {
+      return NextResponse.redirect(new URL('/home', request.url))
+    }
   }
 
   return response

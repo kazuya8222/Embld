@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils/cn'
 
@@ -10,17 +11,15 @@ export function LoginForm() {
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
   const supabase = createClient()
+  const router = useRouter()
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setMessage('')
 
-    console.log('Starting email login...')
-    console.log('Email:', email)
-
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
@@ -28,38 +27,29 @@ export function LoginForm() {
       if (error) {
         console.error('Login error:', error)
         setMessage(`ログインエラー: ${error.message}`)
-      } else {
+        setLoading(false)
+      } else if (data.session) {
         console.log('Login successful')
         setMessage('ログイン成功！リダイレクトします...')
         
-        setTimeout(() => {
-          window.location.href = '/home'
-        }, 1000)
+        // ページ全体をリロードして認証状態を確実に反映
+        window.location.href = '/home'
       }
     } catch (loginError: any) {
       console.error('Login failed:', loginError)
       setMessage('ログインに失敗しました。時間をおいて再試行してください。')
+      setLoading(false)
     }
-    
-    setLoading(false)
   }
 
   const handleGoogleLogin = async () => {
     setLoading(true)
     setMessage('')
     
-    console.log('Starting Google login...')
-    const redirectUrl = `${window.location.origin}/auth/callback`
-    console.log('Redirect URL:', redirectUrl)
-    
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: redirectUrl,
-        queryParams: {
-          access_type: 'offline',
-          prompt: 'consent',
-        },
+        redirectTo: `${window.location.origin}/auth/callback`,
       },
     })
     
@@ -67,9 +57,6 @@ export function LoginForm() {
       console.error('Google login error:', error)
       setMessage(`Googleログインエラー: ${error.message}`)
       setLoading(false)
-    } else {
-      console.log('Google login initiated successfully')
-      // OAuthプロバイダーにリダイレクトされる
     }
   }
 
@@ -162,7 +149,12 @@ export function LoginForm() {
       </form>
 
       {message && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded-md text-red-600 text-sm">
+        <div className={cn(
+          "p-3 rounded-md text-sm",
+          message.includes('成功') 
+            ? "bg-green-50 border border-green-200 text-green-600"
+            : "bg-red-50 border border-red-200 text-red-600"
+        )}>
           {message}
         </div>
       )}

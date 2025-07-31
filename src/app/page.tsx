@@ -1,3 +1,5 @@
+import { createClient } from '@/utils/supabase/server'
+import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { 
   ArrowRight, 
@@ -14,7 +16,16 @@ import {
   Award
 } from 'lucide-react'
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  // サーバーサイドで認証状態をチェック
+  const supabase = await createClient()
+  const { data: { session } } = await supabase.auth.getSession()
+  
+  // ログイン済みの場合はホームへリダイレクト
+  if (session) {
+    redirect('/home')
+  }
+
   return (
     <div className="min-h-screen bg-white">
       {/* ヘッダー */}
