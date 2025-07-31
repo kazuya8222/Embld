@@ -60,5 +60,5 @@ export async function GET(request: NextRequest) {
   }
 
   console.log('Redirecting to home page')
-  return NextResponse.redirect(requestUrl.origin)
+  return NextResponse.redirect(`${requestUrl.origin}/home`)
 }

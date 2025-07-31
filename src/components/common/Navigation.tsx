@@ -5,121 +5,156 @@ import Link from 'next/link'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { cn } from '@/lib/utils/cn'
 import { 
-  Lightbulb, 
   User, 
   LogIn, 
   LogOut, 
   Menu, 
   X, 
-  Star,
   Plus,
-  Smartphone
+  Grid3X3,
+  Crown,
+  ChevronDown,
+  Bell,
+  MessageSquare
 } from 'lucide-react'
 
 export function Navigation() {
   const { user, userProfile, signOut } = useAuth()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
 
   const handleSignOut = async () => {
     try {
       await signOut()
       setIsMenuOpen(false)
     } catch (error) {
-      // エラーが発生してもメニューを閉じる
       setIsMenuOpen(false)
     }
   }
 
   return (
-    <nav className="bg-gray-900 shadow-lg border-b border-gray-800">
+    <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
+        <div className="flex justify-between items-center h-16">
+          {/* ロゴ */}
           <div className="flex items-center">
-            <Link href="/" className="flex items-center space-x-2">
-              <Lightbulb className="h-8 w-8 text-primary-600" />
-              <span className="text-xl font-bold text-white">Embld</span>
+            <Link href="/home" className="flex items-center space-x-3">
+              <div className="bg-primary-600 text-white p-2 rounded-lg">
+                <Grid3X3 className="h-6 w-6" />
+              </div>
+              <span className="text-xl font-bold text-gray-900">Embld</span>
             </Link>
           </div>
 
-          <div className="hidden md:flex items-center space-x-4">
-            {/* 特典メッセージ */}
-            <div className="text-right">
-              <p className="text-xs text-gray-300">アイデアが実現すれば</p>
-              <p className="text-sm font-semibold text-yellow-400">収益の20%を還元</p>
-            </div>
-            
-            {/* アイデア投稿ボタン */}
+          {/* デスクトップナビゲーション */}
+          <nav className="hidden md:flex items-center space-x-1">
             <Link
-              href="/ideas/new"
-              className="bg-teal-500 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-teal-400 transition-colors flex items-center gap-2 shadow-lg"
+              href="/home"
+              className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md transition-colors"
             >
-              <Plus className="h-4 w-4" />
-              アイデア投稿
+              案件を探す
             </Link>
             <Link
               href="/apps"
-              className="text-gray-300 hover:text-white px-3 py-2 text-sm font-medium transition-colors flex items-center gap-1"
+              className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md transition-colors"
             >
-              <Smartphone className="h-4 w-4" />
               完成アプリ
             </Link>
-            
+            <Link
+              href="/premium"
+              className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md transition-colors flex items-center gap-1"
+            >
+              <Crown className="h-4 w-4 text-yellow-500" />
+              プレミアム
+            </Link>
+          </nav>
+
+          {/* 右側のアクション */}
+          <div className="hidden md:flex items-center space-x-3">
             {user ? (
               <>
-                {!userProfile?.is_premium && (
-                  <Link
-                    href="/premium"
-                    className="text-yellow-400 hover:text-yellow-300 px-3 py-2 text-sm font-medium transition-colors flex items-center gap-1"
-                  >
-                    <Star className="h-4 w-4" />
-                    プレミアム
-                  </Link>
-                )}
+                {/* 通知アイコン */}
+                <button className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors">
+                  <Bell className="h-5 w-5" />
+                </button>
                 
-                <div className="relative group">
-                  <button className="flex items-center space-x-2 text-gray-300 hover:text-white transition-colors">
-                    <User className="h-5 w-5" />
+                {/* メッセージアイコン */}
+                <button className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors">
+                  <MessageSquare className="h-5 w-5" />
+                </button>
+
+                {/* アイデア投稿ボタン */}
+                <Link
+                  href="/ideas/new"
+                  className="btn btn-primary flex items-center gap-2"
+                >
+                  <Plus className="h-4 w-4" />
+                  アイデア投稿
+                </Link>
+
+                {/* ユーザーメニュー */}
+                <div className="relative">
+                  <button
+                    onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                    onBlur={() => setTimeout(() => setIsUserMenuOpen(false), 200)}
+                    className="flex items-center space-x-2 p-2 text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors"
+                  >
+                    <div className="h-8 w-8 bg-gray-300 rounded-full flex items-center justify-center">
+                      <User className="h-5 w-5 text-gray-600" />
+                    </div>
                     <span className="text-sm font-medium">{userProfile?.username || 'ユーザー'}</span>
+                    <ChevronDown className="h-4 w-4" />
                   </button>
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-                    <Link
-                      href="/profile"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    >
-                      マイページ
-                    </Link>
-                    <Link
-                      href="/profile/settings"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    >
-                      設定
-                    </Link>
-                    <button
-                      type="button"
-                      onClick={handleSignOut}
-                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
-                    >
-                      ログアウト
-                    </button>
-                  </div>
+                  
+                  {isUserMenuOpen && (
+                    <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2">
+                      <Link
+                        href="/profile"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                      >
+                        マイページ
+                      </Link>
+                      <Link
+                        href="/profile/settings"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                      >
+                        設定
+                      </Link>
+                      <hr className="my-2 border-gray-200" />
+                      <button
+                        type="button"
+                        onClick={handleSignOut}
+                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                      >
+                        ログアウト
+                      </button>
+                    </div>
+                  )}
                 </div>
               </>
             ) : (
-              <div className="flex items-center space-x-3">
+              <>
                 <Link
                   href="/auth/login"
-                  className="text-gray-300 hover:text-white px-3 py-2 text-sm font-medium transition-colors"
+                  className="btn btn-secondary"
                 >
                   ログイン
                 </Link>
-              </div>
+                <Link
+                  href="/auth/register"
+                  className="btn btn-primary"
+                >
+                  新規登録
+                </Link>
+              </>
             )}
           </div>
 
-          <div className="md:hidden flex items-center">
+          {/* モバイルメニューボタン */}
+          <div className="md:hidden">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="text-gray-300 hover:text-white"
+              className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
             >
               {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
@@ -127,39 +162,47 @@ export function Navigation() {
         </div>
       </div>
 
+      {/* モバイルメニュー */}
       {isMenuOpen && (
-        <div className="md:hidden">
-          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 border-t border-gray-800 bg-gray-900">
-            {/* モバイルでもアイデア投稿を最優先 */}
+        <div className="md:hidden bg-white border-t border-gray-200">
+          <div className="px-4 py-3 space-y-1">
             <Link
-              href="/ideas/new"
-              className="block px-3 py-2 bg-teal-500 text-white font-medium rounded-md transition-colors"
-              onClick={() => setIsMenuOpen(false)}
+            href="/home"
+            className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md transition-colors"
+            onClick={() => setIsMenuOpen(false)}
             >
-              アイデア投稿
+            案件を探す
             </Link>
             <Link
               href="/apps"
-              className="block px-3 py-2 text-gray-300 hover:text-white transition-colors"
+              className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md transition-colors"
               onClick={() => setIsMenuOpen(false)}
             >
               完成アプリ
             </Link>
+            <Link
+              href="/premium"
+              className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md transition-colors flex items-center gap-2"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              <Crown className="h-4 w-4 text-yellow-500" />
+              プレミアム
+            </Link>
             
             {user ? (
               <>
-                {!userProfile?.is_premium && (
-                  <Link
-                    href="/premium"
-                    className="block px-3 py-2 text-yellow-600 transition-colors"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    プレミアム
-                  </Link>
-                )}
+                <hr className="my-2 border-gray-200" />
+                <Link
+                  href="/ideas/new"
+                  className="block w-full btn btn-primary text-center"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <Plus className="h-4 w-4 inline mr-2" />
+                  アイデア投稿
+                </Link>
                 <Link
                   href="/profile"
-                  className="block px-3 py-2 text-gray-300 hover:text-white transition-colors"
+                  className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md transition-colors"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   マイページ
@@ -167,23 +210,33 @@ export function Navigation() {
                 <button
                   type="button"
                   onClick={handleSignOut}
-                  className="block w-full text-left px-3 py-2 text-gray-300 hover:text-white transition-colors cursor-pointer"
+                  className="block w-full text-left px-3 py-2 text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md transition-colors"
                 >
                   ログアウト
                 </button>
               </>
             ) : (
-              <Link
-                href="/auth/login"
-                className="block px-3 py-2 text-gray-300 hover:text-white transition-colors"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                ログイン
-              </Link>
+              <>
+                <hr className="my-2 border-gray-200" />
+                <Link
+                  href="/auth/login"
+                  className="block w-full btn btn-secondary text-center mb-2"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  ログイン
+                </Link>
+                <Link
+                  href="/auth/register"
+                  className="block w-full btn btn-primary text-center"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  新規登録
+                </Link>
+              </>
             )}
           </div>
         </div>
       )}
-    </nav>
+    </header>
   )
 }

@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { Idea } from '@/types'
-import { MessageCircle, User, Calendar } from 'lucide-react'
+import { MessageCircle, User, Calendar, Heart, Tag } from 'lucide-react'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { createClient } from '@/lib/supabase/client'
 
@@ -72,90 +72,113 @@ export function IdeaCard({ idea }: IdeaCardProps) {
     })
   }
 
+  const getCategoryStyle = (category: string) => {
+    const styles: { [key: string]: string } = {
+      'リモート案件': 'bg-blue-50 text-blue-700 border-blue-200',
+      '経験少なめOK案件': 'bg-green-50 text-green-700 border-green-200',
+      '急募案件': 'bg-red-50 text-red-700 border-red-200',
+      '高単価案件': 'bg-yellow-50 text-yellow-700 border-yellow-200',
+    }
+    return styles[category] || 'bg-gray-50 text-gray-700 border-gray-200'
+  }
+
+  const getStatusStyle = (status: string) => {
+    const styles: { [key: string]: string } = {
+      'open': 'bg-green-100 text-green-700',
+      'in_development': 'bg-yellow-100 text-yellow-700',
+      'completed': 'bg-blue-100 text-blue-700'
+    }
+    return styles[status] || 'bg-gray-100 text-gray-700'
+  }
+
   return (
-    <div className="bg-white rounded-lg p-6 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 group">
-      <div className="space-y-4">
+    <div className="card hover:shadow-lg transition-all duration-200">
+      <div className="p-6 space-y-4">
+        {/* ヘッダー部分 */}
         <div className="flex items-start justify-between">
-          <div className="flex items-center gap-2">
-            <span className="inline-block px-3 py-1 bg-gradient-to-r from-teal-50 to-cyan-50 text-teal-700 text-sm rounded-full font-medium">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className={`inline-flex px-3 py-1 text-xs font-medium rounded-full border ${getCategoryStyle(idea.category)}`}>
               {idea.category}
             </span>
-            <span className={`inline-block px-2 py-1 text-xs rounded-full ${
-              idea.status === 'open' ? 'bg-green-100 text-green-700' :
-              idea.status === 'in_development' ? 'bg-yellow-100 text-yellow-700' :
-              'bg-blue-100 text-blue-700'
-            }`}>
+            <span className={`inline-flex px-2 py-1 text-xs font-medium rounded ${getStatusStyle(idea.status)}`}>
               {idea.status === 'open' ? '募集中' :
                idea.status === 'in_development' ? '開発中' : '完成'}
             </span>
           </div>
+          <div className="flex items-center gap-2 text-sm text-gray-500">
+            <Calendar className="w-4 h-4" />
+            <span>{formatDate(idea.created_at)}</span>
+          </div>
         </div>
 
-        <div className="space-y-2">
-          <h3 className="font-semibold text-lg text-gray-900 line-clamp-2 group-hover:text-teal-600 transition-colors">
-            {idea.title}
+        {/* タイトルと説明 */}
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2 hover:text-primary-600 transition-colors">
+            <Link href={`/ideas/${idea.id}`}>
+              {idea.title}
+            </Link>
           </h3>
-          
-          <p className="text-gray-600 text-sm line-clamp-3">
+          <p className="text-sm text-gray-600 line-clamp-3 leading-relaxed">
             {idea.problem}
           </p>
         </div>
 
+        {/* タグ */}
         {idea.tags && idea.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <Tag className="w-4 h-4 text-gray-400" />
             {idea.tags.slice(0, 3).map((tag, index) => (
               <span
                 key={index}
-                className="inline-block px-2 py-1 bg-primary-50 text-primary-700 text-xs rounded"
+                className="inline-flex px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded hover:bg-gray-200 transition-colors"
               >
                 {tag}
               </span>
             ))}
             {idea.tags.length > 3 && (
-              <span className="text-xs text-gray-500 px-2 py-1">
-                +{idea.tags.length - 3}
+              <span className="text-xs text-gray-500">
+                他{idea.tags.length - 3}件
               </span>
             )}
           </div>
         )}
 
-        <div className="flex items-center justify-between pt-2 border-t">
-          <div className="flex items-center gap-4 text-sm text-gray-600">
-            <div className="flex items-center gap-1">
-              <User className="w-4 h-4" />
-              <span>{idea.user.username}</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <Calendar className="w-4 h-4" />
-              <span>{formatDate(idea.created_at)}</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex items-center justify-between gap-4">
+        {/* フッター */}
+        <div className="flex items-center justify-between pt-4 border-t border-gray-100">
           <div className="flex items-center gap-4">
-            <button
-              onClick={handleWantToggle}
-              disabled={loading}
-              className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-300 transform hover:scale-105 ${
-                isWanted
-                  ? 'bg-gradient-to-r from-teal-500 to-cyan-500 text-white shadow-md hover:shadow-lg'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gradient-to-r hover:from-teal-100 hover:to-cyan-100 hover:text-teal-700'
-              } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
-            >
-              <span>{isWanted ? 'ほしい！' : 'ほしい！'}</span>
-              <span className="bg-white bg-opacity-30 px-1.5 py-0.5 rounded-full text-xs font-bold">{wantsCount}</span>
-            </button>
-            
-            <div className="flex items-center gap-1 text-sm text-gray-600">
-              <MessageCircle className="w-4 h-4" />
-              <span>{idea.comments_count}</span>
+            {/* 投稿者情報 */}
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                <User className="w-4 h-4 text-gray-500" />
+              </div>
+              <span className="text-sm text-gray-600">{idea.user.username}</span>
+            </div>
+
+            {/* 統計情報 */}
+            <div className="flex items-center gap-3 text-sm text-gray-500">
+              <button
+                onClick={handleWantToggle}
+                disabled={loading}
+                className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+                  isWanted
+                    ? 'bg-primary-100 text-primary-700 hover:bg-primary-200'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                <Heart className={`w-4 h-4 ${isWanted ? 'fill-current' : ''}`} />
+                <span>{wantsCount}</span>
+              </button>
+              
+              <div className="flex items-center gap-1">
+                <MessageCircle className="w-4 h-4" />
+                <span>{idea.comments_count}</span>
+              </div>
             </div>
           </div>
 
           <Link
             href={`/ideas/${idea.id}`}
-            className="bg-gradient-to-r from-teal-600 to-cyan-600 text-white px-4 py-2 rounded-md text-sm hover:from-teal-700 hover:to-cyan-700 transition-all duration-300 shadow-sm hover:shadow-md"
+            className="btn btn-primary text-sm"
           >
             詳細を見る
           </Link>

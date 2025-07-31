@@ -33,7 +33,7 @@ export function LoginForm() {
         setMessage('ログイン成功！リダイレクトします...')
         
         setTimeout(() => {
-          window.location.href = '/'
+          window.location.href = '/home'
         }, 1000)
       }
     } catch (loginError: any) {
