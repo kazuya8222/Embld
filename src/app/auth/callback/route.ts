@@ -59,6 +59,6 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  console.log('Redirecting to home page')
-  return NextResponse.redirect(requestUrl.origin)
+  console.log('Redirecting to home page with auth sync trigger')
+  return NextResponse.redirect(`${requestUrl.origin}/?auth=success`)
 }

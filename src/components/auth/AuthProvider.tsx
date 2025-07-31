@@ -97,15 +97,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // セッション変更の監視（ローカルストレージの変更を監視）
     const handleStorageChange = async () => {
+      console.log('Storage change detected, checking direct session...')
       const { data: { session: directSession } } = await directSupabase.getSession()
       
       if (directSession?.user) {
+        console.log('Direct session found after storage change:', directSession.user.email)
         setUser(directSession.user)
         const { data: profile } = await directSupabase.select('users', '*', { id: directSession.user.id })
         if (profile && profile.length > 0) {
           setUserProfile(profile[0])
+          console.log('Profile updated from direct client:', profile[0].email)
         }
       } else {
+        console.log('No direct session after storage change')
         setUser(null)
         setUserProfile(null)
       }
@@ -116,34 +120,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     
     // 標準クライアントの状態変更も監視（フォールバック用）
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        // 直接クライアントのセッションがない場合のみ処理
-        const { data: { session: directSession } } = await directSupabase.getSession()
+      async (_event, session) => {
+        console.log('Auth state change detected:', { event: _event, hasSession: !!session, email: session?.user?.email })
         
-        if (!directSession) {
-          setUser(session?.user ?? null)
+        // 常にセッション同期を試行（直接クライアントがない場合も含む）
+        if (session?.user) {
+          console.log('Syncing Google login session to direct client...')
+          setUser(session.user)
           
-          if (session?.user) {
-            console.log('Auth state change: syncing standard session to direct client...')
-            
-            // 標準クライアントのセッションを直接クライアントに同期
-            const sessionData = {
-              access_token: session.access_token,
-              refresh_token: session.refresh_token,
-              expires_at: Math.floor(Date.now() / 1000) + session.expires_in,
-              user: session.user
-            }
-            localStorage.setItem('supabase.auth.token', JSON.stringify(sessionData))
-            
-            const { data: profile } = await supabase
-              .from('users')
-              .select('*')
-              .eq('id', session.user.id)
-              .single()
-            setUserProfile(profile)
-          } else {
-            setUserProfile(null)
+          // 標準クライアントのセッションを直接クライアントに同期
+          const sessionData = {
+            access_token: session.access_token,
+            refresh_token: session.refresh_token,
+            expires_at: Math.floor(Date.now() / 1000) + session.expires_in,
+            user: session.user
           }
+          localStorage.setItem('supabase.auth.token', JSON.stringify(sessionData))
+          console.log('Session synced to localStorage')
+          
+          // ストレージイベントを手動でトリガー
+          window.dispatchEvent(new Event('storage'))
+          
+          const { data: profile } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', session.user.id)
+            .single()
+          setUserProfile(profile)
+          console.log('User profile loaded:', profile?.email)
+        } else {
+          console.log('No session, clearing user state')
+          setUser(null)
+          setUserProfile(null)
         }
         
         setLoading(false)
