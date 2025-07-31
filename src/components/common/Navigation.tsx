@@ -21,8 +21,11 @@ export function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   const handleSignOut = async () => {
+    console.log('ログアウトボタンがクリックされました')
     try {
+      console.log('signOut 関数を呼び出し中...')
       await signOut()
+      console.log('signOut 完了')
       setIsMenuOpen(false)
     } catch (error) {
       console.error('ログアウトに失敗しました:', error)
@@ -97,7 +100,11 @@ export function Navigation() {
                     </Link>
                     <button
                       type="button"
-                      onClick={handleSignOut}
+                      onClick={(e) => {
+                        console.log('デスクトップ版ログアウトボタンクリック')
+                        e.preventDefault()
+                        handleSignOut()
+                      }}
                       className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
                     >
                       ログアウト
@@ -167,7 +174,11 @@ export function Navigation() {
                 </Link>
                 <button
                   type="button"
-                  onClick={handleSignOut}
+                  onClick={(e) => {
+                    console.log('モバイル版ログアウトボタンクリック')
+                    e.preventDefault()
+                    handleSignOut()
+                  }}
                   className="block w-full text-left px-3 py-2 text-gray-300 hover:text-white transition-colors cursor-pointer"
                 >
                   ログアウト

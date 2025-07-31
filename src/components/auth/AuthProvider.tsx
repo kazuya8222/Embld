@@ -94,13 +94,47 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [supabase, mounted])
 
   const signOut = async () => {
+    console.log('AuthProvider: signOut 関数が呼ばれました')
     try {
-      await supabase.auth.signOut()
+      console.log('AuthProvider: supabase.auth.signOut() を実行中...')
+      
+      // タイムアウト付きでログアウト処理
+      const signOutPromise = supabase.auth.signOut()
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('ログアウト処理がタイムアウトしました')), 5000)
+      )
+      
+      try {
+        await Promise.race([signOutPromise, timeoutPromise])
+        console.log('AuthProvider: supabase signOut 成功')
+      } catch (signOutError) {
+        console.log('AuthProvider: supabase signOut タイムアウト/エラー、ローカル処理で継続')
+      }
+      
+      // ローカルストレージのクリア
+      try {
+        localStorage.clear()
+        console.log('AuthProvider: ローカルストレージをクリアしました')
+      } catch (storageError) {
+        console.log('AuthProvider: ローカルストレージクリアに失敗')
+      }
+      
       setUser(null)
       setUserProfile(null)
+      console.log('AuthProvider: 状態をクリアしました')
+      
+      console.log('AuthProvider: ログインページにリダイレクト中...')
       router.push('/auth/login')
     } catch (error) {
-      console.error('Signout error:', error)
+      console.error('AuthProvider: Signout error:', error)
+      
+      // エラーが発生しても強制的にローカル状態をクリア
+      try {
+        localStorage.clear()
+      } catch (storageError) {
+        console.log('強制ローカルストレージクリアに失敗')
+      }
+      
       setUser(null)
       setUserProfile(null)
       router.push('/auth/login')

@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { directSupabase } from '@/lib/supabase/direct-client'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { CATEGORIES, CoreFeature } from '@/types'
 import { cn } from '@/lib/utils/cn'
@@ -90,6 +91,19 @@ export function IdeaForm({ initialData, ideaId }: IdeaFormProps) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
+  // コンポーネントの初期化とクリーンアップ
+  useEffect(() => {
+    // 状態を初期化
+    setLoading(false)
+    setError('')
+    
+    // クリーンアップ関数
+    return () => {
+      setLoading(false)
+      setError('')
+    }
+  }, [initialData, ideaId])
+
   const steps = [
     { id: 'overview', title: 'サービス概要', icon: FileText },
     { id: 'background', title: '背景・課題', icon: AlertCircle },
@@ -162,18 +176,27 @@ export function IdeaForm({ initialData, ideaId }: IdeaFormProps) {
     }
 
     // バリデーションチェック
+    const missingFields = []
+    
     if (formType === 'simple') {
-      const missingFields = []
-      if (!formData.title?.trim()) missingFields.push('title')
-      if (!formData.problem?.trim()) missingFields.push('problem')
-      if (!formData.solution?.trim()) missingFields.push('solution')
-      if (!formData.category?.trim()) missingFields.push('category')
-      
-      if (missingFields.length > 0) {
-        console.error('Missing required fields:', missingFields)
-        setError(`必須項目が入力されていません: ${missingFields.join(', ')}`)
-        return
-      }
+      if (!formData.title?.trim()) missingFields.push('タイトル')
+      if (!formData.problem?.trim()) missingFields.push('解決したい課題')
+      if (!formData.solution?.trim()) missingFields.push('解決方法')
+      if (!formData.category?.trim()) missingFields.push('カテゴリ')
+    } else {
+      // 企画書フォームのバリデーション
+      if (!formData.service_name?.trim()) missingFields.push('サービス名')
+      if (!formData.catch_copy?.trim()) missingFields.push('キャッチコピー')
+      if (!formData.background_problem?.trim()) missingFields.push('背景・課題')
+      if (!formData.main_target?.trim()) missingFields.push('メインターゲット')
+      if (!formData.value_proposition?.trim()) missingFields.push('提供価値')
+      if (!formData.category?.trim()) missingFields.push('カテゴリ')
+    }
+    
+    if (missingFields.length > 0) {
+      console.error('Missing required fields:', missingFields)
+      setError(`必須項目が入力されていません: ${missingFields.join(', ')}`)
+      return
     }
 
     setLoading(true)
@@ -240,50 +263,30 @@ export function IdeaForm({ initialData, ideaId }: IdeaFormProps) {
       console.log('Form Type:', formType)
       console.log('==================')
 
-      // 最小限のデータでテスト
-      const minimalData = {
-        user_id: user.id,
-        title: formData.title,
-        problem: formData.problem,
-        solution: formData.solution,
-        category: formData.category,
-        tags: formData.tags || [],
-        sketch_urls: []
-      }
-      
-      console.log('Using direct Supabase client for database operation...')
-      console.log('Data to insert:', minimalData)
+      console.log('Using direct client for database operation...')
+      console.log('Data to insert:', dataToSubmit)
       
       const startTime = Date.now()
       
       try {
         let result
         if (ideaId) {
-          // 更新処理
-          console.log('Updating existing idea...')
-          result = await supabase
-            .from('ideas')
-            .update(minimalData)
-            .eq('id', ideaId)
-            .select()
+          console.log('Updating existing idea with direct client...')
+          result = await directSupabase.update('ideas', dataToSubmit, { id: ideaId })
         } else {
-          // 新規作成処理
-          console.log('Inserting new idea...')
-          result = await supabase
-            .from('ideas')
-            .insert(minimalData)
-            .select()
+          console.log('Inserting new idea with direct client...')
+          result = await directSupabase.insert('ideas', dataToSubmit)
         }
 
         const endTime = Date.now()
-        console.log(`Operation completed in ${endTime - startTime}ms`)
+        console.log(`Direct operation completed in ${endTime - startTime}ms`)
 
         if (result.error) {
-          console.error('Operation error:', result.error)
+          console.error('Direct operation error:', result.error)
           setError(`エラー: ${result.error.message}`)
         } else {
-          console.log('Operation successful:', result.data)
-          const targetId = ideaId || result.data?.[0]?.id
+          console.log('Direct operation successful:', result.data)
+          const targetId = ideaId || result.data?.id
           if (targetId) {
             router.push(`/ideas/${targetId}`)
           } else {
@@ -294,14 +297,15 @@ export function IdeaForm({ initialData, ideaId }: IdeaFormProps) {
       } catch (directError: any) {
         const endTime = Date.now()
         console.error(`Direct operation failed after ${endTime - startTime}ms:`, directError)
-        setError(`直接操作失敗: ${directError.message}`)
+        setError(`投稿失敗: ${directError.message}`)
       }
     } catch (err: any) {
       console.error('Submission error:', err)
       const errorMessage = err?.message || '投稿に失敗しました。ネットワーク接続を確認してください。'
       setError(errorMessage)
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
   }
 
   if (showTypeSelection && !initialData) {
