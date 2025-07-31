@@ -67,6 +67,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUser(session?.user ?? null)
           
           if (session?.user) {
+            console.log('Standard session found, syncing to direct client...')
+            
+            // 標準クライアントのセッションを直接クライアントに同期
+            const sessionData = {
+              access_token: session.access_token,
+              refresh_token: session.refresh_token,
+              expires_at: Math.floor(Date.now() / 1000) + session.expires_in,
+              user: session.user
+            }
+            localStorage.setItem('supabase.auth.token', JSON.stringify(sessionData))
+            
             const { data: profile } = await supabase
               .from('users')
               .select('*')
@@ -113,6 +124,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUser(session?.user ?? null)
           
           if (session?.user) {
+            console.log('Auth state change: syncing standard session to direct client...')
+            
+            // 標準クライアントのセッションを直接クライアントに同期
+            const sessionData = {
+              access_token: session.access_token,
+              refresh_token: session.refresh_token,
+              expires_at: Math.floor(Date.now() / 1000) + session.expires_in,
+              user: session.user
+            }
+            localStorage.setItem('supabase.auth.token', JSON.stringify(sessionData))
+            
             const { data: profile } = await supabase
               .from('users')
               .select('*')
