@@ -143,7 +143,7 @@ export function IdeaCard({ idea }: IdeaCardProps) {
                   : 'bg-gray-100 text-gray-700 hover:bg-gradient-to-r hover:from-teal-100 hover:to-cyan-100 hover:text-teal-700'
               } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
-              <span>{isWanted ? '❤️ ほしい！' : '🤍 ほしい！'}</span>
+              <span>{isWanted ? 'ほしい！' : 'ほしい！'}</span>
               <span className="bg-white bg-opacity-30 px-1.5 py-0.5 rounded-full text-xs font-bold">{wantsCount}</span>
             </button>
             

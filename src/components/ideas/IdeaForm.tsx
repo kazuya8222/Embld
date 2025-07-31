@@ -396,7 +396,7 @@ export function IdeaForm({ initialData, ideaId }: IdeaFormProps) {
             </h1>
             {!user && (
               <p className="text-sm text-gray-600">
-                💡 フォームに入力後、投稿ボタンを押すとログイン画面に移動します（入力内容は保持されます）
+                フォームに入力後、投稿ボタンを押すとログイン画面に移動します（入力内容は保持されます）
               </p>
             )}
           </div>

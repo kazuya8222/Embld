@@ -75,13 +75,13 @@ export default async function HomePage({
         <p className="text-lg text-teal-100 mb-6 relative z-10">あなたのアイデアをEmbldチームが開発。収益の20%をアイデア投稿者に還元！</p>
         <div className="flex justify-center items-center gap-4 text-sm relative z-10">
           <div className="flex items-center gap-1">
-            <span className="bg-white bg-opacity-20 px-3 py-1 rounded-full backdrop-blur-sm">💡 {ideasWithCounts.length}個のアイデア</span>
+            <span className="bg-white bg-opacity-20 px-3 py-1 rounded-full backdrop-blur-sm">{ideasWithCounts.length}個のアイデア</span>
           </div>
           <div className="flex items-center gap-1">
-            <span className="bg-white bg-opacity-20 px-3 py-1 rounded-full backdrop-blur-sm">💰 収益の20%還元</span>
+            <span className="bg-white bg-opacity-20 px-3 py-1 rounded-full backdrop-blur-sm">収益の20%還元</span>
           </div>
           <div className="flex items-center gap-1">
-            <span className="bg-white bg-opacity-20 px-3 py-1 rounded-full backdrop-blur-sm">🚀 Embldが開発</span>
+            <span className="bg-white bg-opacity-20 px-3 py-1 rounded-full backdrop-blur-sm">Embldが開発</span>
           </div>
         </div>
       </div>

@@ -47,7 +47,7 @@ export function WelcomeModal() {
         <div className="p-6 space-y-6">
           {/* サービスの流れ */}
           <div>
-            <h2 className="text-xl font-bold text-gray-900 mb-4">🚀 サービスの流れ</h2>
+            <h2 className="text-xl font-bold text-gray-900 mb-4">サービスの流れ</h2>
             <div className="grid md:grid-cols-3 gap-4">
               <div className="text-center p-4 bg-gray-50 rounded-lg">
                 <Users className="w-8 h-8 text-teal-600 mx-auto mb-2" />
@@ -71,15 +71,15 @@ export function WelcomeModal() {
 
           {/* 特典システム */}
           <div>
-            <h2 className="text-xl font-bold text-gray-900 mb-4">🎁 お得な特典システム</h2>
+            <h2 className="text-xl font-bold text-gray-900 mb-4">お得な特典システム</h2>
             <div className="space-y-3">
               <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                <h3 className="font-semibold text-yellow-800 mb-1">💡 アイデア投稿者</h3>
+                <h3 className="font-semibold text-yellow-800 mb-1">アイデア投稿者</h3>
                 <p className="text-sm text-yellow-700">あなたのアイデアが実現すれば<strong>収益の20%</strong>を獲得！</p>
               </div>
               
               <div className="p-4 bg-teal-50 border border-teal-200 rounded-lg">
-                <h3 className="font-semibold text-teal-800 mb-1">❤️ 「ほしい！」した人</h3>
+                <h3 className="font-semibold text-teal-800 mb-1">「ほしい！」した人</h3>
                 <p className="text-sm text-teal-700">支持したアイデアが実現すれば<strong>収益の一部を還元</strong>！</p>
               </div>
               

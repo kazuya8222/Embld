@@ -170,7 +170,7 @@ export function DebugSupabase() {
     )
     
     testResults.diagnosis = {
-      status: '🔍 診断結果',
+      status: '診断結果',
       issue: hasTimeouts ? '接続タイムアウトが発生しています' : '接続は正常です',
       recommendations: hasTimeouts ? [
         '1. 開発サーバーを再起動してください: npm run dev',
@@ -182,7 +182,7 @@ export function DebugSupabase() {
 
     // 最終結果
     testResults.summary = {
-      status: '🎯 Test Completed',
+      status: 'Test Completed',
       timestamp: new Date().toLocaleTimeString(),
       totalTests: Object.keys(testResults).length - 2 // diagnosis と summary を除く
     }

@@ -45,7 +45,7 @@ export function Navigation() {
             {/* 特典メッセージ */}
             <div className="text-right">
               <p className="text-xs text-gray-300">アイデアが実現すれば</p>
-              <p className="text-sm font-semibold text-yellow-400">💰 収益の20%を還元</p>
+              <p className="text-sm font-semibold text-yellow-400">収益の20%を還元</p>
             </div>
             
             {/* アイデア投稿ボタン */}
@@ -136,14 +136,14 @@ export function Navigation() {
               className="block px-3 py-2 bg-teal-500 text-white font-medium rounded-md transition-colors"
               onClick={() => setIsMenuOpen(false)}
             >
-              💡 アイデア投稿
+              アイデア投稿
             </Link>
             <Link
               href="/apps"
               className="block px-3 py-2 text-gray-300 hover:text-white transition-colors"
               onClick={() => setIsMenuOpen(false)}
             >
-              🚀 完成アプリ
+              完成アプリ
             </Link>
             
             {user ? (
@@ -154,7 +154,7 @@ export function Navigation() {
                     className="block px-3 py-2 text-yellow-600 transition-colors"
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    ⭐ プレミアム
+                    プレミアム
                   </Link>
                 )}
                 <Link
