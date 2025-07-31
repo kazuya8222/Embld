@@ -47,7 +47,7 @@ export function Navigation() {
               <div className="bg-primary-600 text-white p-2 rounded-lg">
                 <Grid3X3 className="h-6 w-6" />
               </div>
-              <span className="text-xl font-bold text-gray-900">Embld</span>
+              <span className="text-xl font-bold text-gray-900">EmBld</span>
             </Link>
           </div>
 

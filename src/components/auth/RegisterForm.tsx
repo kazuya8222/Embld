@@ -193,7 +193,7 @@ export function RegisterForm() {
           Googleで登録
         </button>
         <p className="text-xs text-gray-500 text-center">
-          ※ Google認証画面では認証サービス名が表示されますが、Embldへの登録です
+          ※ Google認証画面では認証サービス名が表示されますが、EmBldへの登録です
         </p>
       </div>
 

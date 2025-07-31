@@ -1,8 +1,8 @@
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: '利用規約 - Embld',
-  description: 'Embldの利用規約'
+  title: '利用規約 - EmBld',
+  description: 'EmBldの利用規約'
 }
 
 export default function TermsPage() {
@@ -14,7 +14,7 @@ export default function TermsPage() {
 
       <div className="prose prose-gray max-w-none">
         <h2 className="text-2xl font-bold mt-8 mb-4">1. 利用規約の適用</h2>
-        <p>本利用規約は、Embldの利用に関する条件を定めるものです。</p>
+        <p>本利用規約は、EmBldの利用に関する条件を定めるものです。</p>
 
         <h2 className="text-2xl font-bold mt-8 mb-4">2. 利用登録</h2>
         <ul className="list-disc pl-6 space-y-2">

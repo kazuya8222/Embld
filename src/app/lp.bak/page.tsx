@@ -25,7 +25,7 @@ export default function LandingPage() {
               <div className="bg-primary-600 text-white p-2 rounded-lg">
                 <Sparkles className="h-6 w-6" />
               </div>
-              <span className="text-xl font-bold text-gray-900">Embld</span>
+              <span className="text-xl font-bold text-gray-900">EmBld</span>
             </div>
             <div className="flex items-center space-x-4">
               <Link
@@ -108,7 +108,7 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              なぜEmbldが選ばれるのか？
+              なぜEmBldが選ばれるのか？
             </h2>
             <p className="text-lg text-gray-600">
               アイデアを収益化する最も簡単で確実な方法
@@ -407,7 +407,7 @@ export default function LandingPage() {
                 <div className="bg-primary-600 text-white p-2 rounded-lg">
                   <Sparkles className="h-6 w-6" />
                 </div>
-                <span className="text-xl font-bold text-white">Embld</span>
+                <span className="text-xl font-bold text-white">EmBld</span>
               </div>
               <p className="text-sm">
                 アイデアと開発者をつなぐ
@@ -444,7 +444,7 @@ export default function LandingPage() {
           </div>
           
           <div className="border-t border-gray-800 pt-8 text-center text-sm">
-            <p>&copy; 2025 Embld. All rights reserved.</p>
+            <p>&copy; 2025 EmBld. All rights reserved.</p>
           </div>
         </div>
       </footer>

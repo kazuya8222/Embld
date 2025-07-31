@@ -592,7 +592,7 @@ export default async function IdeaDetailPage({
                   <div className="flex items-center justify-between pt-4 border-t">
                     <div className="flex items-center gap-2 text-gray-500">
                       <Code className="w-4 h-4" />
-                      <span>開発: Embldチーム</span>
+                      <span>開発: EmBldチーム</span>
                     </div>
                     
                     <div className="flex items-center gap-3">
@@ -635,7 +635,7 @@ export default async function IdeaDetailPage({
               開発準備中
             </h3>
             <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
-              このアイデアは現在Embldチームが開発を検討しています。
+              このアイデアは現在EmBldチームが開発を検討しています。
               「ほしい！」やコメントで応援していただくと、開発優先度が上がります。
             </p>
           </div>

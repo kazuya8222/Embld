@@ -12,7 +12,7 @@ export function Footer() {
               <div className="bg-primary-600 text-white p-2 rounded-lg">
                 <Grid3X3 className="h-6 w-6" />
               </div>
-              <span className="text-xl font-bold text-gray-900">Embld</span>
+              <span className="text-xl font-bold text-gray-900">EmBld</span>
             </div>
             <p className="text-sm text-gray-600 leading-relaxed">
               アイデアと開発者をマッチングし、実現したアプリの収益を共有するプラットフォーム
@@ -120,7 +120,7 @@ export function Footer() {
 
         <div className="mt-8 pt-8 border-t border-gray-200">
           <p className="text-center text-sm text-gray-500">
-            © 2025 Embld. All rights reserved.
+            © 2025 EmBld. All rights reserved.
           </p>
         </div>
       </div>

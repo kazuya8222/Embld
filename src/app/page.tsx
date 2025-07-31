@@ -36,7 +36,7 @@ export default async function LandingPage() {
               <div className="bg-primary-600 text-white p-2 rounded-lg">
                 <Sparkles className="h-6 w-6" />
               </div>
-              <span className="text-xl font-bold text-gray-900">Embld</span>
+              <span className="text-xl font-bold text-gray-900">EmBld</span>
             </div>
             <div className="flex items-center space-x-4">
               <Link
@@ -67,7 +67,7 @@ export default async function LandingPage() {
           
           <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
             「こんなアプリがあったらいいな」を投稿するだけ。
-            Embldがあなたのアイデアを実現し、
+            EmBldがあなたのアイデアを実現し、
             アプリ収益の<span className="font-bold text-gray-900">20%があなたに還元</span>されます。
           </p>
           
@@ -115,7 +115,7 @@ export default async function LandingPage() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              なぜEmbldが選ばれるのか？
+              なぜEmBldが選ばれるのか？
             </h2>
           </div>
 
@@ -177,7 +177,7 @@ export default async function LandingPage() {
                 <Zap className="w-8 h-8 text-purple-600" />
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-3">
-                Embldが実現
+                EmBldが実現
               </h3>
               <p className="text-gray-600 mb-4">
                 アイデアをブラッシュアップし、開発からリリースまで完全サポート。
@@ -226,7 +226,7 @@ export default async function LandingPage() {
               </div>
               <h3 className="font-bold text-gray-900 mb-2">企画・設計</h3>
               <p className="text-sm text-gray-600">
-                Embldがアイデアを分析し、実現可能な企画に
+                EmBldがアイデアを分析し、実現可能な企画に
               </p>
             </div>
             <div className="text-center">
@@ -235,7 +235,7 @@ export default async function LandingPage() {
               </div>
               <h3 className="font-bold text-gray-900 mb-2">開発・リリース</h3>
               <p className="text-sm text-gray-600">
-                Embldがアプリを開発し、ストアにリリース
+                EmBldがアプリを開発し、ストアにリリース
               </p>
             </div>
             <div className="text-center">
@@ -404,7 +404,7 @@ export default async function LandingPage() {
                 <div className="bg-primary-600 text-white p-2 rounded-lg">
                   <Sparkles className="h-6 w-6" />
                 </div>
-                <span className="text-xl font-bold text-white">Embld</span>
+                <span className="text-xl font-bold text-white">EmBld</span>
               </div>
               <p className="text-sm">
                 アイデアと開発者をつなぐ
@@ -441,7 +441,7 @@ export default async function LandingPage() {
           </div>
           
           <div className="border-t border-gray-800 pt-8 text-center text-sm">
-            <p>&copy; 2025 Embld. All rights reserved.</p>
+            <p>&copy; 2025 EmBld. All rights reserved.</p>
           </div>
         </div>
       </footer>

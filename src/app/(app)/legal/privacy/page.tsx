@@ -1,8 +1,8 @@
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'プライバシーポリシー - Embld',
-  description: 'Embldのプライバシーポリシー'
+  title: 'プライバシーポリシー - EmBld',
+  description: 'EmBldのプライバシーポリシー'
 }
 
 export default function PrivacyPage() {
@@ -14,7 +14,7 @@ export default function PrivacyPage() {
 
       <div className="prose prose-gray max-w-none">
         <h2 className="text-2xl font-bold mt-8 mb-4">1. はじめに</h2>
-        <p>Embld（以下、「当サービス」）は、ユーザーのプライバシーを尊重し、個人情報の保護に努めています。</p>
+        <p>EmBld（以下、「当サービス」）は、ユーザーのプライバシーを尊重し、個人情報の保護に努めています。</p>
 
         <h2 className="text-2xl font-bold mt-8 mb-4">2. 収集する情報</h2>
         <h3 className="text-xl font-semibold mt-6 mb-3">2.1 アカウント情報</h3>
