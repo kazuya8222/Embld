@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/utils/supabase/server'
-import { Database } from '@/lib/supabase/database.types'
 
 export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url)
@@ -20,12 +19,13 @@ export async function GET(request: NextRequest) {
       
       if (authError) {
         console.error('Auth exchange error:', authError)
-        return NextResponse.redirect(`${requestUrl.origin}?error=${encodeURIComponent(authError.message)}`)
+        return NextResponse.redirect(`${requestUrl.origin}/auth/login?error=${encodeURIComponent(authError.message)}`)
       }
       
       if (authData.user) {
         console.log('User authenticated:', authData.user.email)
         
+        // ユーザープロフィールの確認と作成
         const { data: existingUser } = await supabase
           .from('users')
           .select('id')
@@ -52,13 +52,26 @@ export async function GET(request: NextRequest) {
         } else {
           console.log('User profile already exists')
         }
+
+        // 認証成功後、リダイレクトレスポンスを作成
+        const response = NextResponse.redirect(`${requestUrl.origin}/home`)
+        
+        // セッションをクッキーに設定
+        response.cookies.set('sb-auth-token', 'authenticated', {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+          maxAge: 60 * 60 * 24 * 7, // 1週間
+        })
+
+        return response
       }
     } catch (error) {
       console.error('Callback error:', error)
-      return NextResponse.redirect(`${requestUrl.origin}?error=callback_failed`)
+      return NextResponse.redirect(`${requestUrl.origin}/auth/login?error=callback_failed`)
     }
   }
 
-  console.log('Redirecting to home page')
-  return NextResponse.redirect(`${requestUrl.origin}/home`)
+  // コードがない場合はログインページへ
+  return NextResponse.redirect(`${requestUrl.origin}/auth/login`)
 }

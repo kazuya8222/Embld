@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { cn } from '@/lib/utils/cn'
@@ -22,6 +22,11 @@ export function Navigation() {
   const { user, userProfile, signOut } = useAuth()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
+
+  // デバッグ用
+  useEffect(() => {
+    console.log('Navigation - Auth state:', { user: user?.email, userProfile })
+  }, [user, userProfile])
 
   const handleSignOut = async () => {
     try {

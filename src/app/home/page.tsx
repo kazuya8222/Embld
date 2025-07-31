@@ -2,6 +2,7 @@ import { createClient } from '@/utils/supabase/server'
 import { IdeaCard } from '@/components/ideas/IdeaCard'
 import { CATEGORIES } from '@/types'
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 import { Plus, Search, TrendingUp, Sparkles } from 'lucide-react'
 
 interface SearchParams {
@@ -35,7 +36,13 @@ export default async function HomePage({
 }) {
   const supabase = await createClient()
   
+  // 認証状態を確認
   const { data: { session } } = await supabase.auth.getSession()
+  
+  // ログインしていない場合はログインページへリダイレクト
+  if (!session) {
+    redirect('/auth/login')
+  }
   
   let query = supabase
     .from('ideas')
