@@ -61,30 +61,47 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setUserProfile(fallbackProfile)
           }
         } else {
-          // フォールバック: 標準クライアント
+          // フォールバック: 標準クライアント（複数回チェック）
           console.log('No direct session, checking standard client...')
-          const { data: { session } } = await supabase.auth.getSession()
-          setUser(session?.user ?? null)
           
-          if (session?.user) {
-            console.log('Standard session found, syncing to direct client...')
+          const checkStandardSession = async (attempt = 1) => {
+            const { data: { session } } = await supabase.auth.getSession()
             
-            // 標準クライアントのセッションを直接クライアントに同期
-            const sessionData = {
-              access_token: session.access_token,
-              refresh_token: session.refresh_token,
-              expires_at: Math.floor(Date.now() / 1000) + session.expires_in,
-              user: session.user
+            if (session?.user) {
+              console.log(`Standard session found on attempt ${attempt}:`, session.user.email)
+              setUser(session.user)
+              
+              // 標準クライアントのセッションを直接クライアントに同期
+              const sessionData = {
+                access_token: session.access_token,
+                refresh_token: session.refresh_token,
+                expires_at: Math.floor(Date.now() / 1000) + session.expires_in,
+                user: session.user
+              }
+              localStorage.setItem('supabase.auth.token', JSON.stringify(sessionData))
+              console.log('Session synced from AuthProvider')
+              
+              // ストレージイベントをトリガー
+              window.dispatchEvent(new Event('storage'))
+              
+              const { data: profile } = await supabase
+                .from('users')
+                .select('*')
+                .eq('id', session.user.id)
+                .single()
+              setUserProfile(profile)
+            } else {
+              console.log(`No standard session found on attempt ${attempt}`)
+              setUser(null)
+              
+              // 最大3回まで再試行（Googleログイン直後の場合）
+              if (attempt < 3) {
+                setTimeout(() => checkStandardSession(attempt + 1), 1000)
+              }
             }
-            localStorage.setItem('supabase.auth.token', JSON.stringify(sessionData))
-            
-            const { data: profile } = await supabase
-              .from('users')
-              .select('*')
-              .eq('id', session.user.id)
-              .single()
-            setUserProfile(profile)
           }
+          
+          await checkStandardSession()
         }
       } catch (error) {
         console.error('Error getting initial session:', error)

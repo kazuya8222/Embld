@@ -19,13 +19,14 @@ export function AuthSyncTrigger() {
       url.searchParams.delete('auth')
       window.history.replaceState({}, '', url.toString())
       
-      // セッション同期を強制実行
-      const forceSync = async () => {
+      // セッション同期を強制実行（リトライ機能付き）
+      const forceSync = async (retryCount = 0) => {
         try {
+          console.log(`Attempting session sync (attempt ${retryCount + 1})...`)
           const { data: { session } } = await supabase.auth.getSession()
           
           if (session?.user) {
-            console.log('Forcing session sync for Google login:', session.user.email)
+            console.log('SUCCESS: Session found for Google login:', session.user.email)
             
             const sessionData = {
               access_token: session.access_token,
@@ -35,7 +36,7 @@ export function AuthSyncTrigger() {
             }
             
             localStorage.setItem('supabase.auth.token', JSON.stringify(sessionData))
-            console.log('Session synced to localStorage')
+            console.log('Session synced to localStorage:', sessionData.user.email)
             
             // ストレージイベントを複数回トリガー
             window.dispatchEvent(new Event('storage'))
@@ -47,13 +48,28 @@ export function AuthSyncTrigger() {
               console.log('Reloading page to ensure auth state sync')
               window.location.reload()
             }, 1000)
+          } else {
+            console.log(`No session found (attempt ${retryCount + 1}), retrying...`)
+            
+            // 最大5回リトライ
+            if (retryCount < 5) {
+              setTimeout(() => forceSync(retryCount + 1), 1000 * (retryCount + 1))
+            } else {
+              console.error('Failed to get session after 5 attempts, giving up')
+            }
           }
         } catch (error) {
-          console.error('Failed to force session sync:', error)
+          console.error(`Failed to force session sync (attempt ${retryCount + 1}):`, error)
+          
+          // エラーの場合もリトライ
+          if (retryCount < 5) {
+            setTimeout(() => forceSync(retryCount + 1), 1000 * (retryCount + 1))
+          }
         }
       }
       
-      forceSync()
+      // 初期遅延を追加（Googleログイン処理の完了を待つ）
+      setTimeout(() => forceSync(), 500)
     }
   }, [searchParams, supabase])
 
