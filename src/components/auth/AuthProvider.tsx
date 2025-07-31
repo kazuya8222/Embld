@@ -101,11 +101,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = useCallback(async () => {
     try {
-      await supabase.auth.signOut()
+      // ローカル状態を即座にクリア
+      setUser(null)
+      setUserProfile(null)
+      
+      // Supabaseからのログアウト（エラーが発生しても続行）
+      await supabase.auth.signOut({ scope: 'local' })
+      
+      // ページ遷移
+      router.push('/auth/login')
+      
     } catch (error) {
       console.warn('Supabase signOut error:', error)
-    } finally {
-      // 常にローカル状態をクリア
+      // エラーが発生してもログアウト状態にする
       setUser(null)
       setUserProfile(null)
       router.push('/auth/login')

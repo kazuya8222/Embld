@@ -9,6 +9,7 @@ interface SearchParams {
   status?: string
   search?: string
   sort?: string
+  author?: string
 }
 
 // ホームページ用の軽量なIdea型
@@ -61,6 +62,10 @@ export default async function HomePage({
 
   if (searchParams.search) {
     query = query.or(`title.ilike.%${searchParams.search}%,problem.ilike.%${searchParams.search}%`)
+  }
+
+  if (searchParams.author === 'me' && session?.user?.id) {
+    query = query.eq('user_id', session.user.id)
   }
 
   // データベースレベルでソート処理
@@ -227,6 +232,9 @@ export default async function HomePage({
           {/* 選択中のカテゴリを隠しフィールドで保持 */}
           {searchParams.category && (
             <input type="hidden" name="category" value={searchParams.category} />
+          )}
+          {searchParams.author && (
+            <input type="hidden" name="author" value={searchParams.author} />
           )}
         </form>
       </div>
