@@ -1,19 +1,25 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
+
+interface DebugInfo {
+  environment?: {
+    NEXT_PUBLIC_SUPABASE_URL: string
+    currentUrl: string
+    callbackUrl: string
+  }
+  currentSession?: string
+  error?: string
+}
 
 export function GoogleAuthDebug() {
   const [authUrl, setAuthUrl] = useState('')
-  const [debugInfo, setDebugInfo] = useState<any>({})
+  const [debugInfo, setDebugInfo] = useState<DebugInfo>({})
   const supabase = createClient()
 
-  useEffect(() => {
-    checkGoogleAuthSetup()
-  }, [])
-
-  const checkGoogleAuthSetup = async () => {
-    const info: any = {
+  const checkGoogleAuthSetup = useCallback(async () => {
+    const info: DebugInfo = {
       environment: {
         NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL ? '✅ Set' : '❌ Not set',
         currentUrl: window.location.origin,
@@ -26,7 +32,11 @@ export function GoogleAuthDebug() {
     info.currentSession = session ? 'Active' : 'None'
 
     setDebugInfo(info)
-  }
+  }, [supabase])
+
+  useEffect(() => {
+    checkGoogleAuthSetup()
+  }, [checkGoogleAuthSetup])
 
   const testGoogleAuth = async () => {
     try {
@@ -42,7 +52,7 @@ export function GoogleAuthDebug() {
       })
 
       if (error) {
-        setDebugInfo(prev => ({
+        setDebugInfo((prev: DebugInfo) => ({
           ...prev,
           error: error.message
         }))
@@ -52,7 +62,7 @@ export function GoogleAuthDebug() {
         window.location.href = data.url
       }
     } catch (err: any) {
-      setDebugInfo(prev => ({
+      setDebugInfo((prev: DebugInfo) => ({
         ...prev,
         error: err.message
       }))
