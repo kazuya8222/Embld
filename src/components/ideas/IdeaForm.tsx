@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { directSupabase } from '@/lib/supabase/direct-client'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { CATEGORIES, CoreFeature } from '@/types'
 import { cn } from '@/lib/utils/cn'
@@ -261,40 +260,27 @@ export function IdeaForm({ initialData, ideaId }: IdeaFormProps) {
         let result
         if (ideaId) {
           // 更新処理
-          console.log('Updating existing idea with direct client...')
-          result = await directSupabase.update('ideas', minimalData, { id: ideaId })
+          console.log('Updating existing idea...')
+          result = await supabase
+            .from('ideas')
+            .update(minimalData)
+            .eq('id', ideaId)
+            .select()
         } else {
           // 新規作成処理
-          console.log('Inserting new idea with direct client...')
-          result = await directSupabase.insert('ideas', minimalData)
+          console.log('Inserting new idea...')
+          result = await supabase
+            .from('ideas')
+            .insert(minimalData)
+            .select()
         }
 
         const endTime = Date.now()
-        console.log(`Direct operation completed in ${endTime - startTime}ms`)
+        console.log(`Operation completed in ${endTime - startTime}ms`)
 
         if (result.error) {
-          console.error('Direct operation error:', result.error)
-          setError(`直接操作エラー: ${result.error.message}`)
-          
-          // フォールバック: 標準クライアント
-          console.log('Falling back to standard Supabase client...')
-          const fallbackPromise = ideaId 
-            ? supabase.from('ideas').update(minimalData).eq('id', ideaId)
-            : supabase.from('ideas').insert(minimalData).select().single()
-          
-          const timeoutPromise = new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('フォールバック操作タイムアウト')), 5000)
-          )
-          
-          const fallbackResult = await Promise.race([fallbackPromise, timeoutPromise]) as any
-          
-          if (fallbackResult.error) {
-            setError(`フォールバックエラー: ${fallbackResult.error.message}`)
-          } else {
-            console.log('Fallback successful')
-            const targetId = ideaId || fallbackResult.data?.id
-            router.push(`/ideas/${targetId}`)
-          }
+          console.error('Operation error:', result.error)
+          setError(`エラー: ${result.error.message}`)
         } else {
           console.log('Direct operation successful:', result.data)
           const targetId = ideaId || result.data?.id
