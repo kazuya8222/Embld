@@ -23,24 +23,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [userProfile, setUserProfile] = useState<any | null>(null)
   const [loading, setLoading] = useState(true)
+  const [mounted, setMounted] = useState(false)
   const supabase = createClient()
   const router = useRouter()
 
   useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  useEffect(() => {
+    if (!mounted) return
+
     const getInitialSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      setUser(session?.user ?? null)
-      
-      if (session?.user) {
-        const { data: profile } = await supabase
-          .from('users')
-          .select('*')
-          .eq('id', session.user.id)
-          .single()
-        setUserProfile(profile)
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        setUser(session?.user ?? null)
+        
+        if (session?.user) {
+          const { data: profile } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', session.user.id)
+            .single()
+          setUserProfile(profile)
+        }
+      } catch (error) {
+        console.error('Error getting initial session:', error)
+      } finally {
+        setLoading(false)
       }
-      
-      setLoading(false)
     }
 
     getInitialSession()
@@ -65,7 +76,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     )
 
     return () => subscription.unsubscribe()
-  }, [supabase])
+  }, [supabase, mounted])
 
   const signOut = async () => {
     try {
@@ -89,6 +100,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUserProfile(null)
       router.push('/auth/login')
     }
+  }
+
+  // ハイドレーションエラーを防ぐため、初回レンダリング時はローディング状態を維持
+  if (!mounted) {
+    return (
+      <AuthContext.Provider value={{ user: null, userProfile: null, loading: true, signOut }}>
+        {children}
+      </AuthContext.Provider>
+    )
   }
 
   return (
