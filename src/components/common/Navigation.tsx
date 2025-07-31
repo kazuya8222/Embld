@@ -54,12 +54,6 @@ export function Navigation() {
           {/* デスクトップナビゲーション */}
           <nav className="hidden md:flex items-center space-x-1">
             <Link
-              href="/home"
-              className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md transition-colors"
-            >
-              案件を探す
-            </Link>
-            <Link
               href="/apps"
               className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md transition-colors"
             >
@@ -171,13 +165,6 @@ export function Navigation() {
       {isMenuOpen && (
         <div className="md:hidden bg-white border-t border-gray-200">
           <div className="px-4 py-3 space-y-1">
-            <Link
-            href="/home"
-            className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md transition-colors"
-            onClick={() => setIsMenuOpen(false)}
-            >
-            案件を探す
-            </Link>
             <Link
               href="/apps"
               className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md transition-colors"

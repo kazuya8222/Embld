@@ -10,7 +10,6 @@ interface AuthContextType {
   userProfile: any | null
   loading: boolean
   signOut: () => Promise<void>
-  refreshAuth: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -18,7 +17,6 @@ const AuthContext = createContext<AuthContextType>({
   userProfile: null,
   loading: true,
   signOut: async () => {},
-  refreshAuth: async () => {},
 })
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -28,90 +26,49 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const supabase = createClient()
   const router = useRouter()
 
-  const fetchUserProfile = async (userId: string) => {
-    try {
-      const { data: profile } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', userId)
-        .single()
-      
-      return profile
-    } catch (error) {
-      console.error('Failed to fetch user profile:', error)
-      return null
-    }
-  }
-
-  const refreshAuth = async () => {
-    try {
-      const { data: { session }, error } = await supabase.auth.getSession()
-      
-      if (error) throw error
-      
-      if (session?.user) {
-        setUser(session.user)
-        const profile = await fetchUserProfile(session.user.id)
-        setUserProfile(profile)
-      } else {
-        setUser(null)
-        setUserProfile(null)
-      }
-    } catch (error) {
-      console.error('Error refreshing auth:', error)
-      setUser(null)
-      setUserProfile(null)
-    }
-  }
-
   useEffect(() => {
-    // 初回認証チェック
-    const initAuth = async () => {
+    // 初期認証状態のチェック
+    const checkUser = async () => {
       try {
-        // セッションを取得
         const { data: { session } } = await supabase.auth.getSession()
         
         if (session?.user) {
           setUser(session.user)
-          const profile = await fetchUserProfile(session.user.id)
+          
+          // ユーザープロフィールを取得
+          const { data: profile } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', session.user.id)
+            .single()
+          
           setUserProfile(profile)
         }
       } catch (error) {
-        console.error('Auth initialization error:', error)
+        console.error('Error checking auth:', error)
       } finally {
         setLoading(false)
       }
     }
 
-    initAuth()
+    checkUser()
 
     // 認証状態の変更を監視
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth state changed:', event, session?.user?.email)
+        console.log('Auth state changed:', event)
         
         if (session?.user) {
           setUser(session.user)
-          const profile = await fetchUserProfile(session.user.id)
-          setUserProfile(profile)
           
-          // 新規ユーザーの場合、プロフィールを作成
-          if (event === 'SIGNED_IN' && !profile) {
-            const { error } = await supabase
-              .from('users')
-              .insert({
-                id: session.user.id,
-                email: session.user.email!,
-                username: session.user.user_metadata?.name || session.user.email!.split('@')[0],
-                google_avatar_url: session.user.user_metadata?.avatar_url,
-                auth_provider: session.user.app_metadata?.provider || 'email',
-              })
-            
-            if (!error) {
-              const newProfile = await fetchUserProfile(session.user.id)
-              setUserProfile(newProfile)
-            }
-          }
+          // ユーザープロフィールを取得
+          const { data: profile } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', session.user.id)
+            .single()
+          
+          setUserProfile(profile)
         } else {
           setUser(null)
           setUserProfile(null)
@@ -121,18 +78,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     )
 
-    // URLパラメータでリフレッシュを検出
-    const checkUrlRefresh = () => {
-      const urlParams = new URLSearchParams(window.location.search)
-      if (urlParams.get('t')) {
-        refreshAuth()
-        // パラメータを削除
-        window.history.replaceState({}, '', window.location.pathname)
-      }
-    }
-    
-    checkUrlRefresh()
-
     return () => {
       subscription.unsubscribe()
     }
@@ -140,20 +85,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     try {
-      setLoading(true)
       await supabase.auth.signOut()
       setUser(null)
       setUserProfile(null)
       router.push('/auth/login')
     } catch (error) {
       console.error('Sign out error:', error)
-    } finally {
-      setLoading(false)
     }
   }
 
   return (
-    <AuthContext.Provider value={{ user, userProfile, loading, signOut, refreshAuth }}>
+    <AuthContext.Provider value={{ user, userProfile, loading, signOut }}>
       {children}
     </AuthContext.Provider>
   )

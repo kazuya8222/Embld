@@ -3,7 +3,7 @@ import { IdeaCard } from '@/components/ideas/IdeaCard'
 import { CATEGORIES } from '@/types'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { Plus, Search, TrendingUp, Sparkles } from 'lucide-react'
+import { Plus, Search, TrendingUp, Sparkles, DollarSign, Zap, PiggyBank } from 'lucide-react'
 
 interface SearchParams {
   category?: string
@@ -36,6 +36,11 @@ export default async function HomePage({
 }) {
   const supabase = await createClient()
   const { data: { session } } = await supabase.auth.getSession()
+  
+  // 未認証の場合はログインページへ
+  if (!session) {
+    redirect('/auth/login')
+  }
   
   let query = supabase
     .from('ideas')
@@ -122,43 +127,67 @@ export default async function HomePage({
 
   return (
     <div className="space-y-6">
-      {/* シンプルなヘッダー */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">
-              アイデアを探す
+      {/* 収益化ヘッダー */}
+      <div className="bg-gradient-to-r from-primary-50 to-purple-50 rounded-xl shadow-sm border border-primary-200 p-8">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold text-gray-900 mb-4">
+              あなたのアイデアを収益化しよう
             </h1>
-            <p className="text-gray-600">
-              実現を待っているアイデアや、開発中のプロジェクトを見つけよう
+            <p className="text-lg text-gray-700">
+              投稿したアイデアが実現されれば、アプリ収益の<span className="font-bold text-primary-600">20%</span>があなたのものに
             </p>
           </div>
-          <Link
-            href="/ideas/new"
-            className="btn btn-primary flex items-center gap-2"
-          >
-            <Plus className="w-4 h-4" />
-            アイデアを投稿
-          </Link>
-        </div>
 
-        {/* 統計情報 */}
-        <div className="grid grid-cols-3 gap-4 mt-6">
-          <div className="text-center p-4 bg-gray-50 rounded-lg">
-            <p className="text-2xl font-bold text-gray-900">{ideasWithCounts.length}</p>
-            <p className="text-sm text-gray-600">投稿されたアイデア</p>
+          {/* 収益化のポイント */}
+          <div className="grid md:grid-cols-3 gap-6 mb-8">
+            <div className="bg-white rounded-lg p-6 text-center shadow-sm">
+              <DollarSign className="w-12 h-12 text-green-600 mx-auto mb-3" />
+              <h3 className="font-bold text-gray-900 mb-2">継続的な収入</h3>
+              <p className="text-sm text-gray-600">
+                アプリが使われ続ける限り、毎月収益が振り込まれます
+              </p>
+            </div>
+            <div className="bg-white rounded-lg p-6 text-center shadow-sm">
+              <Zap className="w-12 h-12 text-yellow-600 mx-auto mb-3" />
+              <h3 className="font-bold text-gray-900 mb-2">リスクゼロ</h3>
+              <p className="text-sm text-gray-600">
+                開発費用は一切不要。アイデアを投稿するだけでOK
+              </p>
+            </div>
+            <div className="bg-white rounded-lg p-6 text-center shadow-sm">
+              <PiggyBank className="w-12 h-12 text-purple-600 mx-auto mb-3" />
+              <h3 className="font-bold text-gray-900 mb-2">収益予測</h3>
+              <p className="text-sm text-gray-600">
+                人気アプリなら月10万円以上の収益も夢じゃない
+              </p>
+            </div>
           </div>
-          <div className="text-center p-4 bg-gray-50 rounded-lg">
-            <p className="text-2xl font-bold text-primary-600">20%</p>
-            <p className="text-sm text-gray-600">収益還元率</p>
-          </div>
-          <div className="text-center p-4 bg-gray-50 rounded-lg">
-            <p className="text-2xl font-bold text-green-600">
-              {ideasWithCounts.filter(idea => idea.status === 'completed').length}
+
+          {/* CTA */}
+          <div className="text-center">
+            <Link
+              href="/ideas/new"
+              className="inline-flex items-center gap-2 bg-primary-600 text-white px-8 py-3 rounded-lg font-medium text-lg hover:bg-primary-700 transition-all transform hover:scale-105 shadow-lg"
+            >
+              <Plus className="w-5 h-5" />
+              今すぐアイデアを投稿して収益化
+            </Link>
+            <p className="text-sm text-gray-600 mt-3">
+              ※ 投稿は完全無料。クレジットカード不要
             </p>
-            <p className="text-sm text-gray-600">実現したアプリ</p>
           </div>
         </div>
+      </div>
+
+      {/* アイデア一覧ヘッダー */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <h2 className="text-xl font-bold text-gray-900 mb-2">
+          投稿されたアイデア
+        </h2>
+        <p className="text-gray-600">
+          どんなアイデアが投稿されているか見てみよう
+        </p>
       </div>
 
       {/* 検索・フィルタ */}
@@ -241,7 +270,7 @@ export default async function HomePage({
                   : 'まだアイデアが投稿されていません'}
               </h3>
               <p className="text-gray-600 mb-6">
-                最初のアイデアを投稿して、開発者とマッチングしましょう
+                最初のアイデアを投稿して、収益化のチャンスを掴もう
               </p>
               <Link
                 href="/ideas/new"
@@ -255,25 +284,21 @@ export default async function HomePage({
         )}
       </div>
 
-      {/* プレミアムへの誘導 */}
-      <div className="bg-gradient-to-r from-primary-50 to-purple-50 rounded-xl p-6 border border-primary-200">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-lg font-bold text-gray-900 mb-1">
-              <Sparkles className="w-5 h-5 inline text-yellow-500 mr-1" />
-              プレミアムプランでもっと詳しく
-            </h3>
-            <p className="text-sm text-gray-600">
-              アイデアの詳細分析や需要予測データを確認できます
-            </p>
-          </div>
-          <Link
-            href="/premium"
-            className="btn btn-primary text-sm"
-          >
-            詳細を見る
-          </Link>
-        </div>
+      {/* 収益化促進バナー */}
+      <div className="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-xl p-6 border border-yellow-300 text-center">
+        <h3 className="text-lg font-bold text-gray-900 mb-2">
+          💡 アイデアはありませんか？
+        </h3>
+        <p className="text-gray-700 mb-4">
+          日常の「こんなアプリがあったら便利なのに」という思いが、収益を生む可能性があります
+        </p>
+        <Link
+          href="/ideas/new"
+          className="inline-flex items-center gap-2 bg-orange-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-orange-700 transition-colors"
+        >
+          <Plus className="w-4 h-4" />
+          アイデアを投稿
+        </Link>
       </div>
     </div>
   )
