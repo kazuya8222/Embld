@@ -55,18 +55,23 @@ export async function middleware(request: NextRequest) {
   );
 
   // セッションを更新（重要：これによりクッキーが更新される）
-  await supabase.auth.getUser()
+  const { data: { user } } = await supabase.auth.getUser()
 
   const {
     data: { session },
   } = await supabase.auth.getSession()
 
   // 保護されたルートへのアクセス制御
-  const protectedPaths = ['/profile', '/premium', '/ideas/new']
+  const protectedPaths = ['/home', '/profile', '/premium', '/ideas/new']
   const isProtectedPath = protectedPaths.some(path => request.nextUrl.pathname.startsWith(path))
 
   if (!session && isProtectedPath) {
     return NextResponse.redirect(new URL('/auth/login', request.url))
+  }
+  
+  // ログイン済みのユーザーがログインページにアクセスした場合
+  if (session && request.nextUrl.pathname.startsWith('/auth/login')) {
+    return NextResponse.redirect(new URL('/home', request.url))
   }
 
   return response

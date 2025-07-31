@@ -35,14 +35,7 @@ export default async function HomePage({
   searchParams: SearchParams
 }) {
   const supabase = await createClient()
-  
-  // 認証状態を確認
   const { data: { session } } = await supabase.auth.getSession()
-  
-  // ログインしていない場合はログインページへリダイレクト
-  if (!session) {
-    redirect('/auth/login')
-  }
   
   let query = supabase
     .from('ideas')

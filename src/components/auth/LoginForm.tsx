@@ -49,12 +49,17 @@ export function LoginForm() {
     setMessage('')
     
     console.log('Starting Google login...')
-    console.log('Redirect URL:', `${window.location.origin}/auth/callback`)
+    const redirectUrl = `${window.location.origin}/auth/callback`
+    console.log('Redirect URL:', redirectUrl)
     
-    const { error } = await supabase.auth.signInWithOAuth({
+    const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: redirectUrl,
+        queryParams: {
+          access_type: 'offline',
+          prompt: 'consent',
+        },
       },
     })
     
@@ -64,6 +69,7 @@ export function LoginForm() {
       setLoading(false)
     } else {
       console.log('Google login initiated successfully')
+      // OAuthプロバイダーにリダイレクトされる
     }
   }
 
