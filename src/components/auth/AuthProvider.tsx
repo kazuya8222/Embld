@@ -36,28 +36,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const getInitialSession = async () => {
       try {
-        console.log('Checking initial session...')
-        
-        // 標準クライアントを優先してチェック
         const { data: { session } } = await supabase.auth.getSession()
         
         if (session?.user) {
-          console.log('Standard session found:', session.user.email)
           setUser(session.user)
           
-          const { data: profile } = await supabase
+          // プロフィール取得にタイムアウトを追加
+          const profilePromise = supabase
             .from('users')
             .select('*')
             .eq('id', session.user.id)
             .single()
+          
+          const timeoutPromise = new Promise((resolve) => 
+            setTimeout(() => resolve({ data: null }), 3000)
+          )
+          
+          const { data: profile } = await Promise.race([profilePromise, timeoutPromise]) as any
           setUserProfile(profile)
         } else {
-          console.log('No standard session found')
           setUser(null)
           setUserProfile(null)
         }
       } catch (error) {
-        console.error('Error getting initial session:', error)
+        setUser(null)
+        setUserProfile(null)
       } finally {
         setLoading(false)
       }
@@ -67,18 +70,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     
     // 標準クライアントの状態変更を監視
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log('Auth state change:', event, session?.user?.email)
-        
+      async (_event, session) => {
         if (session?.user) {
           setUser(session.user)
           
-          const { data: profile } = await supabase
-            .from('users')
-            .select('*')
-            .eq('id', session.user.id)
-            .single()
-          setUserProfile(profile)
+          // プロフィール取得にタイムアウトを追加
+          try {
+            const profilePromise = supabase
+              .from('users')
+              .select('*')
+              .eq('id', session.user.id)
+              .single()
+            
+            const timeoutPromise = new Promise((resolve) => 
+              setTimeout(() => resolve({ data: null }), 2000)
+            )
+            
+            const { data: profile } = await Promise.race([profilePromise, timeoutPromise]) as any
+            setUserProfile(profile)
+          } catch (error) {
+            setUserProfile(null)
+          }
         } else {
           setUser(null)
           setUserProfile(null)
@@ -94,45 +106,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [supabase, mounted])
 
   const signOut = async () => {
-    console.log('AuthProvider: signOut 関数が呼ばれました')
     try {
-      console.log('AuthProvider: supabase.auth.signOut() を実行中...')
-      
       // タイムアウト付きでログアウト処理
       const signOutPromise = supabase.auth.signOut()
       const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('ログアウト処理がタイムアウトしました')), 5000)
+        setTimeout(() => reject(new Error('ログアウト処理がタイムアウトしました')), 3000)
       )
       
       try {
         await Promise.race([signOutPromise, timeoutPromise])
-        console.log('AuthProvider: supabase signOut 成功')
       } catch (signOutError) {
-        console.log('AuthProvider: supabase signOut タイムアウト/エラー、ローカル処理で継続')
+        // タイムアウトまたはエラーでもローカル処理で継続
       }
       
-      // ローカルストレージのクリア
+      // ローカルストレージのクリア（特定のキーのみ）
       try {
-        localStorage.clear()
-        console.log('AuthProvider: ローカルストレージをクリアしました')
+        localStorage.removeItem('supabase.auth.token')
+        sessionStorage.clear()
       } catch (storageError) {
-        console.log('AuthProvider: ローカルストレージクリアに失敗')
+        // ストレージクリアエラーは無視
       }
       
       setUser(null)
       setUserProfile(null)
-      console.log('AuthProvider: 状態をクリアしました')
-      
-      console.log('AuthProvider: ログインページにリダイレクト中...')
       router.push('/auth/login')
     } catch (error) {
-      console.error('AuthProvider: Signout error:', error)
-      
       // エラーが発生しても強制的にローカル状態をクリア
       try {
-        localStorage.clear()
+        localStorage.removeItem('supabase.auth.token')
+        sessionStorage.clear()
       } catch (storageError) {
-        console.log('強制ローカルストレージクリアに失敗')
+        // 無視
       }
       
       setUser(null)
