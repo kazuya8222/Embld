@@ -181,17 +181,6 @@ export class DirectSupabaseClient {
     }
   }
 
-  // 認証されたリクエスト用のヘッダーを取得
-  private async getAuthHeaders() {
-    const { data } = await this.getSession()
-    const headers = { ...this.headers }
-    
-    if (data.session?.access_token) {
-      headers['Authorization'] = `Bearer ${data.session.access_token}`
-    }
-    
-    return headers
-  }
 }
 
 // シングルトンインスタンスをエクスポート
