@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useState, useMemo, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import type { User } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/client'
@@ -41,19 +41,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (session?.user) {
           setUser(session.user)
           
-          // プロフィール取得にタイムアウトを追加
-          const profilePromise = supabase
-            .from('users')
-            .select('*')
-            .eq('id', session.user.id)
-            .single()
-          
-          const timeoutPromise = new Promise((resolve) => 
-            setTimeout(() => resolve({ data: null }), 3000)
-          )
-          
-          const { data: profile } = await Promise.race([profilePromise, timeoutPromise]) as any
-          setUserProfile(profile)
+          // プロフィール取得を簡素化
+          try {
+            const { data: profile } = await supabase
+              .from('users')
+              .select('*')
+              .eq('id', session.user.id)
+              .single()
+            setUserProfile(profile)
+          } catch (error) {
+            console.warn('Failed to fetch user profile:', error)
+            setUserProfile(null)
+          }
         } else {
           setUser(null)
           setUserProfile(null)
@@ -74,21 +73,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (session?.user) {
           setUser(session.user)
           
-          // プロフィール取得にタイムアウトを追加
+          // プロフィール取得を簡素化
           try {
-            const profilePromise = supabase
+            const { data: profile } = await supabase
               .from('users')
               .select('*')
               .eq('id', session.user.id)
               .single()
-            
-            const timeoutPromise = new Promise((resolve) => 
-              setTimeout(() => resolve({ data: null }), 2000)
-            )
-            
-            const { data: profile } = await Promise.race([profilePromise, timeoutPromise]) as any
             setUserProfile(profile)
           } catch (error) {
+            console.warn('Failed to fetch user profile:', error)
             setUserProfile(null)
           }
         } else {
@@ -105,45 +99,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [supabase, mounted])
 
-  const signOut = async () => {
+  const signOut = useCallback(async () => {
     try {
-      // タイムアウト付きでログアウト処理
-      const signOutPromise = supabase.auth.signOut()
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('ログアウト処理がタイムアウトしました')), 3000)
-      )
-      
-      try {
-        await Promise.race([signOutPromise, timeoutPromise])
-      } catch (signOutError) {
-        // タイムアウトまたはエラーでもローカル処理で継続
-      }
-      
-      // ローカルストレージのクリア（特定のキーのみ）
-      try {
-        localStorage.removeItem('supabase.auth.token')
-        sessionStorage.clear()
-      } catch (storageError) {
-        // ストレージクリアエラーは無視
-      }
-      
-      setUser(null)
-      setUserProfile(null)
-      router.push('/auth/login')
+      await supabase.auth.signOut()
     } catch (error) {
-      // エラーが発生しても強制的にローカル状態をクリア
-      try {
-        localStorage.removeItem('supabase.auth.token')
-        sessionStorage.clear()
-      } catch (storageError) {
-        // 無視
-      }
-      
+      console.warn('Supabase signOut error:', error)
+    } finally {
+      // 常にローカル状態をクリア
       setUser(null)
       setUserProfile(null)
       router.push('/auth/login')
     }
-  }
+  }, [supabase, router])
+
+  // Contextの値をメモ化してパフォーマンス最適化
+  const contextValue = useMemo(() => ({
+    user,
+    userProfile,
+    loading,
+    signOut
+  }), [user, userProfile, loading, signOut])
 
   // ハイドレーションエラーを防ぐため、初回レンダリング時はローディング状態を維持
   if (!mounted) {
@@ -155,7 +130,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, userProfile, loading, signOut }}>
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   )

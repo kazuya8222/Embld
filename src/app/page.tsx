@@ -11,6 +11,23 @@ interface SearchParams {
   sort?: string
 }
 
+// ホームページ用の軽量なIdea型
+interface HomePageIdea {
+  id: string
+  title: string
+  problem: string
+  category: string
+  status: string
+  created_at: string
+  user: {
+    username: string
+    avatar_url?: string
+  }
+  wants_count: number
+  comments_count: number
+  user_has_wanted: boolean
+}
+
 export default async function HomePage({
   searchParams,
 }: {
@@ -20,14 +37,19 @@ export default async function HomePage({
   
   const { data: { session } } = await supabase.auth.getSession()
   
+  // パフォーマンス最適化: 必要最小限のデータのみ取得
   let query = supabase
     .from('ideas')
     .select(`
-      *,
-      user:users(username, avatar_url),
-      wants(id, user_id),
-      comments(id)
+      id,
+      title,
+      problem,
+      category,
+      status,
+      created_at,
+      user:users(username, avatar_url)
     `)
+    .limit(20) // 初期表示件数を制限
 
   if (searchParams.category) {
     query = query.eq('category', searchParams.category)
@@ -41,7 +63,8 @@ export default async function HomePage({
     query = query.or(`title.ilike.%${searchParams.search}%,problem.ilike.%${searchParams.search}%`)
   }
 
-  // Always order by created_at for now, we'll sort on the client side
+  // データベースレベルでソート処理
+  const sortBy = searchParams.sort || 'created_at'
   query = query.order('created_at', { ascending: false })
 
   const { data: ideas, error } = await query
@@ -51,15 +74,53 @@ export default async function HomePage({
     return <div>アイデアの取得に失敗しました</div>
   }
 
-  const ideasWithCounts = ideas?.map(idea => ({
-    ...idea,
-    wants_count: idea.wants?.length || 0,
-    comments_count: idea.comments?.length || 0,
-    user_has_wanted: session ? idea.wants?.some((want: any) => want.user_id === session.user.id) || false : false,
-  })) || []
+  // wantsとcommentsの数を効率的に取得
+  const ideaIds = ideas?.map(idea => idea.id) || []
+  
+  const [wantsResult, commentsResult, userWantsResult] = await Promise.all([
+    // wants数を取得
+    supabase
+      .from('wants')
+      .select('idea_id')
+      .in('idea_id', ideaIds),
+    
+    // comments数を取得
+    supabase
+      .from('comments')
+      .select('idea_id')
+      .in('idea_id', ideaIds),
+    
+    // ユーザーのwant状態を取得
+    session?.user?.id ? supabase
+      .from('wants')
+      .select('idea_id')
+      .eq('user_id', session.user.id)
+      .in('idea_id', ideaIds) : Promise.resolve({ data: [] })
+  ])
 
-  // Sort on the client side based on user preference
-  const sortBy = searchParams.sort || 'created_at'
+  // カウントを集計
+  const wantsCounts: Record<string, number> = {}
+  const commentsCounts: Record<string, number> = {}
+  
+  wantsResult.data?.forEach(want => {
+    wantsCounts[want.idea_id] = (wantsCounts[want.idea_id] || 0) + 1
+  })
+  
+  commentsResult.data?.forEach(comment => {
+    commentsCounts[comment.idea_id] = (commentsCounts[comment.idea_id] || 0) + 1
+  })
+
+  const userWants = userWantsResult.data?.map(want => want.idea_id) || []
+
+  let ideasWithCounts = ideas?.map(idea => ({
+    ...idea,
+    user: Array.isArray(idea.user) ? idea.user[0] : idea.user,
+    wants_count: wantsCounts[idea.id] || 0,
+    comments_count: commentsCounts[idea.id] || 0,
+    user_has_wanted: userWants.includes(idea.id),
+  }) as HomePageIdea) || []
+
+  // クライアントサイドソートを保持（パフォーマンスのため数が少ない場合のみ）
   if (sortBy === 'wants') {
     ideasWithCounts.sort((a, b) => b.wants_count - a.wants_count)
   } else if (sortBy === 'comments') {
@@ -173,7 +234,7 @@ export default async function HomePage({
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         {ideasWithCounts.length > 0 ? (
           ideasWithCounts.map((idea) => (
-            <IdeaCard key={idea.id} idea={idea} />
+            <IdeaCard key={idea.id} idea={idea as any} />
           ))
         ) : (
           <div className="col-span-full text-center py-12">

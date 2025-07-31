@@ -1,12 +1,30 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import { Inter, Roboto, Noto_Sans_JP } from 'next/font/google'
 import './globals.css'
 import { AuthProvider } from '@/components/auth/AuthProvider'
 import { Navigation } from '@/components/common/Navigation'
 import { Footer } from '@/components/common/Footer'
 import { WelcomeModal } from '@/components/common/WelcomeModal'
 
-const inter = Inter({ subsets: ['latin'] })
+const inter = Inter({ 
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-inter'
+})
+
+const roboto = Roboto({ 
+  weight: ['400', '500', '700'],
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-roboto'
+})
+
+const notoSansJP = Noto_Sans_JP({ 
+  weight: ['400', '500', '700'],
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-noto-sans-jp'
+})
 
 export const metadata: Metadata = {
   title: 'EmBld - アイデアを実現する開発パートナー',
@@ -20,7 +38,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ja">
-      <body className={inter.className}>
+      <body className={`${inter.variable} ${roboto.variable} ${notoSansJP.variable} font-sans`}>
         <AuthProvider>
           <div className="min-h-screen bg-gray-50 flex flex-col">
             <Navigation />
