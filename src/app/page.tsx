@@ -353,9 +353,9 @@ export default async function LandingPage() {
             {/* カード1 */}
             <div className="bg-green-500 text-white rounded-2xl p-8 text-center">
               <p className="text-lg font-bold mb-6">
-                "本業以外の収入源が
+                &ldquo;本業以外の収入源が
                 <br />
-                欲しいけど時間がない"
+                欲しいけど時間がない&rdquo;
               </p>
               <div className="w-32 h-40 bg-white/20 rounded-lg mx-auto flex items-center justify-center">
                 <Users className="w-16 h-16 text-white/60" />
@@ -365,9 +365,9 @@ export default async function LandingPage() {
             {/* カード2 */}
             <div className="bg-blue-500 text-white rounded-2xl p-8 text-center">
               <p className="text-lg font-bold mb-6">
-                "アイデアはあるけど
+                &ldquo;アイデアはあるけど
                 <br />
-                開発スキルがない"
+                開発スキルがない&rdquo;
               </p>
               <div className="w-32 h-40 bg-white/20 rounded-lg mx-auto flex items-center justify-center">
                 <Lightbulb className="w-16 h-16 text-white/60" />
@@ -377,9 +377,9 @@ export default async function LandingPage() {
             {/* カード3 */}
             <div className="bg-green-500 text-white rounded-2xl p-8 text-center">
               <p className="text-lg font-bold mb-6">
-                "将来の資産として
+                &ldquo;将来の資産として
                 <br />
-                継続的な収入が欲しい"
+                継続的な収入が欲しい&rdquo;
               </p>
               <div className="w-32 h-40 bg-white/20 rounded-lg mx-auto flex items-center justify-center">
                 <Wallet className="w-16 h-16 text-white/60" />
