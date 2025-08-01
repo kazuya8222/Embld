@@ -129,3 +129,30 @@
 .animate-pulse-scale {
   animation: pulse-scale 2s ease-in-out infinite;
 }
+
+/* Gentle floating animation for hero illustration */
+@keyframes gentle-float {
+  0%, 100% {
+    transform: translateY(0px) translateX(0px);
+  }
+  25% {
+    transform: translateY(-8px) translateX(3px);
+  }
+  50% {
+    transform: translateY(5px) translateX(-3px);
+  }
+  75% {
+    transform: translateY(-5px) translateX(3px);
+  }
+}
+
+.floating-animation {
+  animation: gentle-float 6s ease-in-out infinite;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .floating-animation {
+    animation: none;
+  }
+}

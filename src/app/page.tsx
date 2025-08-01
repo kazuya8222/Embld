@@ -36,7 +36,7 @@ export default async function LandingPage() {
               <div className="bg-gradient-to-r from-blue-500 to-green-500 text-white p-2 rounded-lg">
                 <Sparkles className="h-6 w-6" />
               </div>
-              <span className="text-2xl font-black text-gray-900 italic transform -skew-x-12">エンビルド</span>
+              <span className="text-2xl font-black text-gray-900">EMBLD</span>
             </div>
             <nav className="hidden md:flex items-center space-x-8 mr-8">
               <Link href="#service" className="text-gray-600 hover:text-gray-900 font-medium">サービス紹介</Link>
@@ -95,17 +95,18 @@ export default async function LandingPage() {
               </Link>
             </div>
             
-            {/* 右側：イラストプレースホルダー */}
+            {/* 右側：イラスト */}
             <div className="relative">
-              <div className="bg-gray-200 rounded-2xl aspect-square flex items-center justify-center">
-                <div className="text-center">
-                  <Users className="w-24 h-24 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-500">ここにイラストを配置</p>
-                </div>
+              <div className="relative aspect-square">
+                <img 
+                  src="/images/Shiny Happy - Party Time.svg"
+                  alt="エンビルドで収益化を実現"
+                  className="w-full h-full object-contain floating-animation scale-110"
+                />
               </div>
               {/* 装飾的な要素 */}
-              <div className="absolute -top-4 -right-4 w-24 h-24 bg-blue-100 rounded-full opacity-50"></div>
-              <div className="absolute -bottom-4 -left-4 w-32 h-32 bg-green-100 rounded-full opacity-50"></div>
+              <div className="absolute -top-4 -right-4 w-24 h-24 bg-blue-100 rounded-full opacity-50 animate-pulse"></div>
+              <div className="absolute -bottom-4 -left-4 w-32 h-32 bg-green-100 rounded-full opacity-50 animate-pulse" style={{ animationDelay: '1s' }}></div>
             </div>
           </div>
         </div>
@@ -161,51 +162,75 @@ export default async function LandingPage() {
 
           <div className="grid md:grid-cols-3 gap-8 mb-16">
             {/* ステップ1 */}
-            <div className="bg-white rounded-2xl p-8 shadow-lg text-center">
-              <div className="w-32 h-32 bg-blue-100 rounded-2xl mx-auto mb-6 flex items-center justify-center">
-                <Lightbulb className="w-16 h-16 text-blue-600" />
+            <div className="bg-white rounded-2xl overflow-hidden shadow-lg">
+              <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-8">
+                <div className="w-32 h-32 mx-auto">
+                  <img 
+                    src="/images/Shiny Happy - Sitting.svg"
+                    alt="アイデアを投稿"
+                    className="w-full h-full object-contain"
+                  />
+                </div>
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-4">
-                1. アイデアを投稿
-              </h3>
-              <p className="text-gray-600">
-                あなたの経験や気付きから生まれた
-                アイデアを投稿します。企画や要件定義は
-                AIがサポートするので、思いついたことを
-                そのまま投稿できます。
-              </p>
+              <div className="p-8 text-center">
+                <h3 className="text-xl font-bold text-gray-900 mb-4">
+                  1. アイデアを投稿
+                </h3>
+                <p className="text-gray-600">
+                  あなたの経験や気付きから生まれた
+                  アイデアを投稿します。企画や要件定義は
+                  AIがサポートするので、思いついたことを
+                  そのまま投稿できます。
+                </p>
+              </div>
             </div>
 
             {/* ステップ2 */}
-            <div className="bg-white rounded-2xl p-8 shadow-lg text-center">
-              <div className="w-32 h-32 bg-green-100 rounded-2xl mx-auto mb-6 flex items-center justify-center">
-                <Users className="w-16 h-16 text-green-600" />
+            <div className="bg-white rounded-2xl overflow-hidden shadow-lg">
+              <div className="bg-gradient-to-br from-green-50 to-green-100 p-8">
+                <div className="w-32 h-32 mx-auto">
+                  <img 
+                    src="/images/Shiny Happy - Stats and Graphs.svg"
+                    alt="エンビルドが開発"
+                    className="w-full h-full object-contain"
+                  />
+                </div>
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-4">
-                2. エンビルドが開発
-              </h3>
-              <p className="text-gray-600">
-                エンビルドがアイデアを分析し、実現可能な
-                仕様に落とし込みます。開発から
-                リリースまで、すべてエンビルドが
-                責任を持って実行します。
-              </p>
+              <div className="p-8 text-center">
+                <h3 className="text-xl font-bold text-gray-900 mb-4">
+                  2. エンビルドが開発
+                </h3>
+                <p className="text-gray-600">
+                  エンビルドがアイデアを分析し、実現可能な
+                  仕様に落とし込みます。開発から
+                  リリースまで、すべてエンビルドが
+                  責任を持って実行します。
+                </p>
+              </div>
             </div>
 
             {/* ステップ3 */}
-            <div className="bg-white rounded-2xl p-8 shadow-lg text-center">
-              <div className="w-32 h-32 bg-orange-100 rounded-2xl mx-auto mb-6 flex items-center justify-center">
-                <DollarSign className="w-16 h-16 text-orange-600" />
+            <div className="bg-white rounded-2xl overflow-hidden shadow-lg">
+              <div className="bg-gradient-to-br from-orange-50 to-orange-100 p-8">
+                <div className="w-32 h-32 mx-auto">
+                  <img 
+                    src="/images/Shiny Happy - Home Vacation.svg"
+                    alt="収益を受け取る"
+                    className="w-full h-full object-contain"
+                  />
+                </div>
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-4">
-                3. 収益を受け取る
-              </h3>
-              <p className="text-gray-600">
-                アプリがリリースされ収益が発生すると、
-                その20%があなたに還元されます。
-                毎月自動的に振り込まれ、
-                振込手数料も0円です。
-              </p>
+              <div className="p-8 text-center">
+                <h3 className="text-xl font-bold text-gray-900 mb-4">
+                  3. 収益を受け取る
+                </h3>
+                <p className="text-gray-600">
+                  アプリがリリースされ収益が発生すると、
+                  その20%があなたに還元されます。
+                  毎月自動的に振り込まれ、
+                  振込手数料も0円です。
+                </p>
+              </div>
             </div>
           </div>
 
@@ -396,7 +421,7 @@ export default async function LandingPage() {
                 <div className="bg-gradient-to-r from-blue-500 to-green-500 text-white p-2 rounded-lg">
                   <Sparkles className="h-6 w-6" />
                 </div>
-                <span className="text-2xl font-black text-white italic transform -skew-x-12">エンビルド</span>
+                <span className="text-2xl font-black text-white">EMBLD</span>
               </div>
               <p className="text-sm">
                 アイデアと開発者をつなぐ
