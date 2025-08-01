@@ -38,30 +38,38 @@ export function Navigation() {
   }
 
   return (
-    <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
+    <header className="bg-white border-b border-gray-100 sticky top-0 z-50 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* ロゴ */}
           <div className="flex items-center">
             <Link href="/home" className="flex items-center space-x-3">
-              <div className="bg-primary-600 text-white p-2 rounded-lg">
-                <Grid3X3 className="h-6 w-6" />
-              </div>
-              <span className="text-xl font-bold text-gray-900">EmBld</span>
+              <img 
+                src="/images/EnBld_logo_icon_monochrome.svg"
+                alt="EMBLD Icon"
+                className="h-10 w-10"
+              />
+              <span className="text-2xl font-black text-gray-900">EMBLD</span>
             </Link>
           </div>
 
           {/* デスクトップナビゲーション */}
-          <nav className="hidden md:flex items-center space-x-1">
+          <nav className="hidden md:flex items-center space-x-6">
+            <Link
+              href="/home"
+              className="text-gray-600 hover:text-gray-900 font-medium transition-colors"
+            >
+              ホーム
+            </Link>
             <Link
               href="/apps"
-              className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md transition-colors"
+              className="text-gray-600 hover:text-gray-900 font-medium transition-colors"
             >
               完成アプリ
             </Link>
             <Link
               href="/premium"
-              className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md transition-colors flex items-center gap-1"
+              className="text-gray-600 hover:text-gray-900 font-medium transition-colors flex items-center gap-1"
             >
               <Crown className="h-4 w-4 text-yellow-500" />
               プレミアム
@@ -69,7 +77,7 @@ export function Navigation() {
           </nav>
 
           {/* 右側のアクション */}
-          <div className="hidden md:flex items-center space-x-3">
+          <div className="hidden md:flex items-center space-x-4">
             {user ? (
               <>
                 {/* 通知アイコン */}
@@ -85,7 +93,7 @@ export function Navigation() {
                 {/* アイデア投稿ボタン */}
                 <Link
                   href="/ideas/new"
-                  className="btn btn-primary flex items-center gap-2"
+                  className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-green-500 text-white px-6 py-2.5 rounded-full font-bold hover:shadow-lg transition-all transform hover:scale-105"
                 >
                   <Plus className="h-4 w-4" />
                   アイデア投稿
@@ -98,32 +106,32 @@ export function Navigation() {
                     onBlur={() => setTimeout(() => setIsUserMenuOpen(false), 200)}
                     className="flex items-center space-x-2 p-2 text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors"
                   >
-                    <div className="h-8 w-8 bg-gray-300 rounded-full flex items-center justify-center">
-                      <User className="h-5 w-5 text-gray-600" />
+                    <div className="h-8 w-8 bg-gradient-to-br from-blue-100 to-green-100 rounded-full flex items-center justify-center">
+                      <User className="h-5 w-5 text-blue-600" />
                     </div>
                     <span className="text-sm font-medium">{userProfile?.username || 'ユーザー'}</span>
                     <ChevronDown className="h-4 w-4" />
                   </button>
                   
                   {isUserMenuOpen && (
-                    <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2">
+                    <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-gray-100 py-2 overflow-hidden">
                       <Link
                         href="/profile"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                        className="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                       >
                         マイページ
                       </Link>
                       <Link
                         href="/profile/settings"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                        className="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                       >
                         設定
                       </Link>
-                      <hr className="my-2 border-gray-200" />
+                      <hr className="my-2 border-gray-100" />
                       <button
                         type="button"
                         onClick={handleSignOut}
-                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                        className="block w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                       >
                         ログアウト
                       </button>
@@ -135,13 +143,13 @@ export function Navigation() {
               <>
                 <Link
                   href="/auth/login"
-                  className="btn btn-secondary"
+                  className="text-gray-600 hover:text-gray-900 px-4 py-2 text-sm font-medium transition-colors"
                 >
                   ログイン
                 </Link>
                 <Link
                   href="/auth/register"
-                  className="btn btn-primary"
+                  className="bg-gradient-to-r from-blue-500 to-green-500 text-white px-6 py-2.5 rounded-full text-sm font-bold hover:shadow-lg transition-all"
                 >
                   新規登録
                 </Link>
@@ -163,18 +171,25 @@ export function Navigation() {
 
       {/* モバイルメニュー */}
       {isMenuOpen && (
-        <div className="md:hidden bg-white border-t border-gray-200">
+        <div className="md:hidden bg-white border-t border-gray-100">
           <div className="px-4 py-3 space-y-1">
             <Link
+              href="/home"
+              className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              ホーム
+            </Link>
+            <Link
               href="/apps"
-              className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md transition-colors"
+              className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors"
               onClick={() => setIsMenuOpen(false)}
             >
               完成アプリ
             </Link>
             <Link
               href="/premium"
-              className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md transition-colors flex items-center gap-2"
+              className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors flex items-center gap-2"
               onClick={() => setIsMenuOpen(false)}
             >
               <Crown className="h-4 w-4 text-yellow-500" />
@@ -183,10 +198,10 @@ export function Navigation() {
             
             {user ? (
               <>
-                <hr className="my-2 border-gray-200" />
+                <hr className="my-2 border-gray-100" />
                 <Link
                   href="/ideas/new"
-                  className="block w-full btn btn-primary text-center"
+                  className="block w-full bg-gradient-to-r from-blue-500 to-green-500 text-white px-4 py-3 rounded-full font-bold text-center"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   <Plus className="h-4 w-4 inline mr-2" />
@@ -194,7 +209,7 @@ export function Navigation() {
                 </Link>
                 <Link
                   href="/profile"
-                  className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md transition-colors"
+                  className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   マイページ
@@ -202,24 +217,24 @@ export function Navigation() {
                 <button
                   type="button"
                   onClick={handleSignOut}
-                  className="block w-full text-left px-3 py-2 text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md transition-colors"
+                  className="block w-full text-left px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors"
                 >
                   ログアウト
                 </button>
               </>
             ) : (
               <>
-                <hr className="my-2 border-gray-200" />
+                <hr className="my-2 border-gray-100" />
                 <Link
                   href="/auth/login"
-                  className="block w-full btn btn-secondary text-center mb-2"
+                  className="block w-full text-center px-4 py-2 text-gray-600 font-medium mb-2"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   ログイン
                 </Link>
                 <Link
                   href="/auth/register"
-                  className="block w-full btn btn-primary text-center"
+                  className="block w-full bg-gradient-to-r from-blue-500 to-green-500 text-white px-4 py-3 rounded-full font-bold text-center"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   新規登録

@@ -74,12 +74,12 @@ export function IdeaCard({ idea }: IdeaCardProps) {
 
   const getCategoryStyle = (category: string) => {
     const styles: { [key: string]: string } = {
-      'リモート案件': 'bg-blue-50 text-blue-700 border-blue-200',
-      '経験少なめOK案件': 'bg-green-50 text-green-700 border-green-200',
-      '急募案件': 'bg-red-50 text-red-700 border-red-200',
-      '高単価案件': 'bg-yellow-50 text-yellow-700 border-yellow-200',
+      'リモート案件': 'bg-blue-100 text-blue-700',
+      '経験少なめOK案件': 'bg-green-100 text-green-700',
+      '急募案件': 'bg-red-100 text-red-700',
+      '高単価案件': 'bg-yellow-100 text-yellow-700',
     }
-    return styles[category] || 'bg-gray-50 text-gray-700 border-gray-200'
+    return styles[category] || 'bg-gray-100 text-gray-700'
   }
 
   const getStatusStyle = (status: string) => {
@@ -92,15 +92,15 @@ export function IdeaCard({ idea }: IdeaCardProps) {
   }
 
   return (
-    <div className="card hover:shadow-lg transition-all duration-200">
+    <div className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden">
       <div className="p-6 space-y-4">
         {/* ヘッダー部分 */}
         <div className="flex items-start justify-between">
           <div className="flex flex-wrap items-center gap-2">
-            <span className={`inline-flex px-3 py-1 text-xs font-medium rounded-full border ${getCategoryStyle(idea.category)}`}>
+            <span className={`inline-flex px-3 py-1 text-xs font-bold rounded-full ${getCategoryStyle(idea.category)}`}>
               {idea.category}
             </span>
-            <span className={`inline-flex px-2 py-1 text-xs font-medium rounded ${getStatusStyle(idea.status)}`}>
+            <span className={`inline-flex px-2 py-1 text-xs font-bold rounded-lg ${getStatusStyle(idea.status)}`}>
               {idea.status === 'open' ? '募集中' :
                idea.status === 'in_development' ? '開発中' : '完成'}
             </span>
@@ -113,7 +113,7 @@ export function IdeaCard({ idea }: IdeaCardProps) {
 
         {/* タイトルと説明 */}
         <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2 hover:text-primary-600 transition-colors">
+          <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2 hover:text-blue-600 transition-colors">
             <Link href={`/ideas/${idea.id}`}>
               {idea.title}
             </Link>
@@ -130,7 +130,7 @@ export function IdeaCard({ idea }: IdeaCardProps) {
             {idea.tags.slice(0, 3).map((tag, index) => (
               <span
                 key={index}
-                className="inline-flex px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded hover:bg-gray-200 transition-colors"
+                className="inline-flex px-3 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded-full hover:bg-gray-200 transition-colors"
               >
                 {tag}
               </span>
@@ -148,10 +148,10 @@ export function IdeaCard({ idea }: IdeaCardProps) {
           <div className="flex items-center gap-4">
             {/* 投稿者情報 */}
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-                <User className="w-4 h-4 text-gray-500" />
+              <div className="w-8 h-8 bg-gradient-to-br from-blue-100 to-green-100 rounded-full flex items-center justify-center">
+                <User className="w-4 h-4 text-blue-600" />
               </div>
-              <span className="text-sm text-gray-600">{idea.user.username}</span>
+              <span className="text-sm font-medium text-gray-700">{idea.user.username}</span>
             </div>
 
             {/* 統計情報 */}
@@ -159,9 +159,9 @@ export function IdeaCard({ idea }: IdeaCardProps) {
               <button
                 onClick={handleWantToggle}
                 disabled={loading}
-                className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+                className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-bold transition-all ${
                   isWanted
-                    ? 'bg-primary-100 text-primary-700 hover:bg-primary-200'
+                    ? 'bg-red-100 text-red-600 hover:bg-red-200'
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
@@ -169,16 +169,16 @@ export function IdeaCard({ idea }: IdeaCardProps) {
                 <span>{wantsCount}</span>
               </button>
               
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1 text-gray-600">
                 <MessageCircle className="w-4 h-4" />
-                <span>{idea.comments_count}</span>
+                <span className="font-medium">{idea.comments_count}</span>
               </div>
             </div>
           </div>
 
           <Link
             href={`/ideas/${idea.id}`}
-            className="btn btn-primary text-sm"
+            className="bg-gradient-to-r from-blue-500 to-green-500 text-white px-4 py-2 rounded-full text-sm font-bold hover:shadow-lg transition-all transform hover:scale-105"
           >
             詳細を見る
           </Link>
