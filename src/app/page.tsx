@@ -75,7 +75,6 @@ export default async function LandingPage() {
           <div className="text-center text-white">
             <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight">
               EmBld
-              <span className="text-3xl md:text-4xl block mt-2 font-medium">Supported by AI</span>
             </h1>
             
             <p className="text-xl md:text-2xl mb-12 max-w-3xl mx-auto leading-relaxed font-medium">
@@ -189,9 +188,9 @@ export default async function LandingPage() {
               </h3>
               <p className="text-gray-600">
                 あなたの経験や気付きから生まれた
-                アイデアを投稿します。「時間がない」
-                「技術がない」などあなたの状況に
-                合わせて詳しく説明しましょう。
+                アイデアを投稿します。企画や要件定義は
+                AIがサポートするので、思いついたことを
+                そのまま投稿できます。
               </p>
             </div>
 
@@ -201,13 +200,13 @@ export default async function LandingPage() {
                 <Users className="w-16 h-16 text-green-600" />
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-4">
-                2. ※即マッチング
+                2. EmBldが開発
               </h3>
               <p className="text-gray-600">
-                EmBldプロフィールなどの情報を入力すれば、
-                初回最短15分で応募完了です。企業との
-                面接などで長く待つ必要なくマッチングが
-                即完了します。
+                EmBldがアイデアを分析し、実現可能な
+                仕様に落とし込みます。開発から
+                リリースまで、すべてEmBldが
+                責任を持って実行します。
               </p>
             </div>
 
@@ -217,19 +216,19 @@ export default async function LandingPage() {
                 <DollarSign className="w-16 h-16 text-orange-600" />
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-4">
-                3. 給与を受け取る
+                3. 収益を受け取る
               </h3>
               <p className="text-gray-600">
-                半給与はEmBldで管理されるので勤務後即時
-                反映され、好きなときに口座から引き出
-                せます。口座振込申請もいつでも手数料
-                0円です。
+                アプリがリリースされ収益が発生すると、
+                その20%があなたに還元されます。
+                毎月自動的に振り込まれ、
+                振込手数料も0円です。
               </p>
             </div>
           </div>
 
           <p className="text-center text-sm text-gray-500">
-            ※一部の企業や募集では書類選考が必要な場合もあります。詳細は各募集をご確認ください。
+            ※一部のアイデアは市場性や技術的な観点から採用されない場合もあります。
           </p>
         </div>
       </section>
@@ -244,15 +243,15 @@ export default async function LandingPage() {
           </div>
           
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-8">
-            アイデアなしで収益化と即マッチング。
+            選考なしで収益化と即開発。
             <br />
-            最短15分で応募完了
+            最短15分でアイデア投稿完了
           </h2>
           
           <p className="text-center text-blue-100 mb-16 max-w-3xl mx-auto">
-            情報入力などの応募手続きは初回最短15分、2回目以降は最短5分で完了します。
+            アイデア投稿は初回最短15分、2回目以降は最短5分で完了します。
             <br />
-            ※面接や書類選考が不要なので、求人案件との即マッチングが成立します。採用の合否連絡を待つ必要もありません。
+            ※面接や書類選考が不要なので、アイデアが採用されれば即座に開発が開始されます。審査結果を待つ必要もありません。
           </p>
 
           {/* 特徴の図解 */}
@@ -264,7 +263,7 @@ export default async function LandingPage() {
                   <div className="w-32 h-32 bg-white rounded-full mx-auto mb-4 flex items-center justify-center">
                     <FileText className="w-16 h-16 text-blue-600" />
                   </div>
-                  <p className="text-xl font-bold">応募</p>
+                  <p className="text-xl font-bold">アイデア投稿</p>
                 </div>
                 
                 {/* 矢印 */}
@@ -280,7 +279,7 @@ export default async function LandingPage() {
                   <div className="w-32 h-32 bg-white rounded-full mx-auto mb-4 flex items-center justify-center">
                     <Users className="w-16 h-16 text-blue-600" />
                   </div>
-                  <p className="text-xl font-bold">※マッチング</p>
+                  <p className="text-xl font-bold">開発開始</p>
                 </div>
               </div>
               
@@ -303,9 +302,9 @@ export default async function LandingPage() {
           </div>
           
           <p className="text-center text-xs text-blue-200 mt-8">
-            ※一部の企業や募集では書類選考が必要な場合もあります。また、採用の合否がすでに決定していたり、
+            ※一部のアイデアは市場性や技術的な観点から採用されない場合もあります。
             <br />
-            応募が定員に達している場合もあります。詳細は各募集をご確認ください。
+            また、類似のアプリがすでに開発中の場合もあります。
           </p>
         </div>
       </section>
@@ -320,13 +319,13 @@ export default async function LandingPage() {
           </div>
           
           <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-900 mb-8">
-            条件に合った仕事はEmBldでお知らせ
+            あなたのアイデアの進捗をEmBldでお知らせ
           </h2>
           
           <p className="text-center text-gray-600 mb-16 max-w-3xl mx-auto">
-            あなたの仕事経験をもとに、条件に合った仕事をEmBldでお知らせします。さらに優しい履歴をもとに、
+            投稿したアイデアの開発状況や収益レポートをEmBldでお知らせします。
             <br />
-            特別なキャンペーンをご案内いたします。EmBldを使うほど便利でお得にご利用いただけます。
+            さらに、あなたの興味分野に合わせた新機能やキャンペーンもご案内。EmBldを使うほど便利でお得にご利用いただけます。
           </p>
 
           {/* スマートフォンのモックアップ */}
@@ -393,7 +392,7 @@ export default async function LandingPage() {
         
         <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-8">
-            いつでもすぐに時間を有効活用できる
+            いつでもすぐにアイデアを収益化できる
           </h2>
           
           <Link
