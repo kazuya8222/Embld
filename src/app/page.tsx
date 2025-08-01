@@ -4,7 +4,6 @@ import Link from 'next/link'
 import { 
   ArrowRight, 
   Users, 
-  Sparkles,
   Star,
   DollarSign,
   MessageSquare,
@@ -33,9 +32,11 @@ export default async function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-3">
-              <div className="bg-gradient-to-r from-blue-500 to-green-500 text-white p-2 rounded-lg">
-                <Sparkles className="h-6 w-6" />
-              </div>
+              <img 
+                src="/images/EnBld_logo_icon_monochrome.svg"
+                alt="EMBLD Icon"
+                className="h-10 w-10"
+              />
               <span className="text-2xl font-black text-gray-900">EMBLD</span>
             </div>
             <nav className="hidden md:flex items-center space-x-8 mr-8">
@@ -418,9 +419,11 @@ export default async function LandingPage() {
           <div className="grid md:grid-cols-4 gap-8 mb-8">
             <div>
               <div className="flex items-center space-x-3 mb-4">
-                <div className="bg-gradient-to-r from-blue-500 to-green-500 text-white p-2 rounded-lg">
-                  <Sparkles className="h-6 w-6" />
-                </div>
+                <img 
+                  src="/images/EnBld_logo_icon_monochrome.svg"
+                  alt="EMBLD Icon"
+                  className="h-10 w-10 brightness-0 invert"
+                />
                 <span className="text-2xl font-black text-white">EMBLD</span>
               </div>
               <p className="text-sm">
