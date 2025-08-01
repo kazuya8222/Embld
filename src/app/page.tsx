@@ -79,12 +79,12 @@ export default async function LandingPage() {
               <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-8 leading-tight">
                 あなたのアイデアが<br />
                 毎月の収入に変わる<br />
-                <span className="text-blue-600">収益20%</span>を永続的に！
+                <span className="text-blue-600">収益30%</span>を永続的に！
               </h1>
               
               <p className="text-xl text-gray-600 mb-10 leading-relaxed">
                 エンビルドなら、アイデアを投稿するだけで<br />
-                開発・運営・収益化まですべてお任せ。リスクゼロで始められます。
+                開発・運営・収益化まですべてお任せ。売上の30%が永続的に還元されます。
               </p>
               
               <Link
@@ -227,7 +227,7 @@ export default async function LandingPage() {
                 </h3>
                 <p className="text-gray-600">
                   アプリがリリースされ収益が発生すると、
-                  その20%があなたに還元されます。
+                  その30%があなたに還元されます。
                   毎月自動的に振り込まれ、
                   振込手数料も0円です。
                 </p>
@@ -327,13 +327,13 @@ export default async function LandingPage() {
           </div>
           
           <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-900 mb-8">
-            あなたのアイデアの進捗をエンビルドでお知らせ
+            優れたアイデアから優先的に開発をスタート
           </h2>
           
           <p className="text-center text-gray-600 mb-16 max-w-3xl mx-auto">
-            投稿したアイデアの開発状況や収益レポートをエンビルドでお知らせします。
+            投稿されたアイデアは、市場性・実現可能性・収益性を基準に評価され、
             <br />
-            さらに、あなたの興味分野に合わせた新機能やキャンペーンもご案内。エンビルドを使うほど便利でお得にご利用いただけます。
+            優れたものから順次開発を開始。開発状況は随時お知らせします。
           </p>
 
           {/* スマートフォンのモックアップ */}
@@ -353,9 +353,9 @@ export default async function LandingPage() {
             {/* カード1 */}
             <div className="bg-green-500 text-white rounded-2xl p-8 text-center">
               <p className="text-lg font-bold mb-6">
-                "急にアイデアが浮かんだ
+                "本業以外の収入源が
                 <br />
-                ので、明日実現したい"
+                欲しいけど時間がない"
               </p>
               <div className="w-32 h-40 bg-white/20 rounded-lg mx-auto flex items-center justify-center">
                 <Users className="w-16 h-16 text-white/60" />
@@ -365,21 +365,21 @@ export default async function LandingPage() {
             {/* カード2 */}
             <div className="bg-blue-500 text-white rounded-2xl p-8 text-center">
               <p className="text-lg font-bold mb-6">
-                "ランチタイムの
+                "アイデアはあるけど
                 <br />
-                3時間だけ実現したい"
+                開発スキルがない"
               </p>
               <div className="w-32 h-40 bg-white/20 rounded-lg mx-auto flex items-center justify-center">
-                <Clock className="w-16 h-16 text-white/60" />
+                <Lightbulb className="w-16 h-16 text-white/60" />
               </div>
             </div>
 
             {/* カード3 */}
             <div className="bg-green-500 text-white rounded-2xl p-8 text-center">
               <p className="text-lg font-bold mb-6">
-                "カード使いすぎちゃった！
+                "将来の資産として
                 <br />
-                もう少しお金がほしい"
+                継続的な収入が欲しい"
               </p>
               <div className="w-32 h-40 bg-white/20 rounded-lg mx-auto flex items-center justify-center">
                 <Wallet className="w-16 h-16 text-white/60" />
