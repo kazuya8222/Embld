@@ -3,17 +3,17 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { 
   ArrowRight, 
-  Check, 
-  TrendingUp, 
-  Shield, 
   Users, 
   Sparkles,
-  ChevronRight,
   Star,
   DollarSign,
-  Zap,
   MessageSquare,
-  Award
+  Lightbulb,
+  Rocket,
+  Wallet,
+  Clock,
+  Smartphone,
+  FileText
 } from 'lucide-react'
 
 export default async function LandingPage() {
@@ -27,17 +27,23 @@ export default async function LandingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen">
       {/* ヘッダー */}
       <header className="fixed top-0 w-full bg-white/95 backdrop-blur-sm z-50 border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-3">
-              <div className="bg-primary-600 text-white p-2 rounded-lg">
+              <div className="bg-gradient-to-r from-blue-500 to-green-500 text-white p-2 rounded-lg">
                 <Sparkles className="h-6 w-6" />
               </div>
               <span className="text-xl font-bold text-gray-900">EmBld</span>
             </div>
+            <nav className="hidden md:flex items-center space-x-8 mr-8">
+              <Link href="#service" className="text-gray-600 hover:text-gray-900 font-medium">サービス紹介</Link>
+              <Link href="#how-it-works" className="text-gray-600 hover:text-gray-900 font-medium">使い方</Link>
+              <Link href="#features" className="text-gray-600 hover:text-gray-900 font-medium">特徴</Link>
+              <Link href="#faq" className="text-gray-600 hover:text-gray-900 font-medium">こんな人におすすめ</Link>
+            </nav>
             <div className="flex items-center space-x-4">
               <Link
                 href="/auth/login"
@@ -47,351 +53,356 @@ export default async function LandingPage() {
               </Link>
               <Link
                 href="/auth/register"
-                className="bg-primary-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary-700 transition-colors"
+                className="bg-gradient-to-r from-blue-500 to-green-500 text-white px-6 py-2.5 rounded-full text-sm font-bold hover:shadow-lg transition-all"
               >
-                新規登録
+                無料で始める
               </Link>
             </div>
           </div>
         </div>
       </header>
 
-      {/* ヒーローセクション */}
-      <section className="pt-24 pb-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-6xl mx-auto text-center">
-
-          
-          <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
-            アイデアが<span className="text-primary-600">収益</span>に変わる
-          </h1>
-          
-          <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
-            「こんなアプリがあったらいいな」を投稿するだけ。
-            EmBldがあなたのアイデアを実現し、
-            アプリ収益の<span className="font-bold text-gray-900">20%があなたに還元</span>されます。
-          </p>
-          
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
-            <Link
-              href="/auth/register"
-              className="inline-flex items-center gap-2 bg-primary-600 text-white px-8 py-4 rounded-lg font-medium text-lg hover:bg-primary-700 transition-all transform hover:scale-105 shadow-lg"
-            >
-              無料でアイデアを投稿する
-              <ArrowRight className="w-5 h-5" />
-            </Link>
-            <Link
-              href="#how-it-works"
-              className="inline-flex items-center gap-2 text-gray-700 px-6 py-3 font-medium hover:text-primary-600 transition-colors"
-            >
-              仕組みを詳しく見る
-              <ChevronRight className="w-5 h-5" />
-            </Link>
-          </div>
-          
-          <p className="text-sm text-gray-500">
-            ※ クレジットカード不要・完全無料でスタート
-          </p>
+      {/* ヒーローセクション - 青と緑のグラデーション背景 */}
+      <section className="pt-24 pb-20 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-500 via-teal-400 to-green-500"></div>
+        <div className="absolute bottom-0 left-0 w-full">
+          <svg viewBox="0 0 1440 200" className="w-full">
+            <path fill="#ffffff" d="M0,160L48,144C96,128,192,96,288,85.3C384,75,480,85,576,101.3C672,117,768,139,864,138.7C960,139,1056,117,1152,101.3C1248,85,1344,75,1392,69.3L1440,64L1440,200L1392,200C1344,200,1248,200,1152,200C1056,200,960,200,864,200C768,200,672,200,576,200C480,200,384,200,288,200C192,200,96,200,48,200L0,200Z"></path>
+          </svg>
         </div>
-
-        {/* 実績数値 */}
-        <div className="max-w-4xl mx-auto mt-16 grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="text-center">
-            <p className="text-4xl font-bold text-primary-600 mb-2">20%</p>
-            <p className="text-gray-600">収益還元率</p>
-          </div>
-          <div className="text-center">
-            <p className="text-4xl font-bold text-primary-600 mb-2">¥0</p>
-            <p className="text-gray-600">初期費用・月額費用</p>
-          </div>
-          <div className="text-center">
-            <p className="text-4xl font-bold text-primary-600 mb-2">100%</p>
-            <p className="text-gray-600">アイデアの権利保護</p>
-          </div>
-        </div>
-      </section>
-
-      {/* 特徴セクション */}
-      <section className="py-16 bg-gray-50">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              なぜEmBldが選ばれるのか？
-            </h2>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="bg-white rounded-xl p-8 shadow-sm hover:shadow-md transition-shadow">
-              <div className="bg-green-100 w-16 h-16 rounded-lg flex items-center justify-center mb-6">
-                <DollarSign className="w-8 h-8 text-green-600" />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">
-                リスクゼロで始められる
-              </h3>
-              <p className="text-gray-600 mb-4">
-                初期費用や月額料金は一切不要。アイデア投稿も完全無料です。
-              </p>
-              <ul className="space-y-2">
-                <li className="flex items-start gap-2">
-                  <Check className="w-5 h-5 text-green-600 mt-0.5" />
-                  <span className="text-sm text-gray-600">登録料・月額費なし</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <Check className="w-5 h-5 text-green-600 mt-0.5" />
-                  <span className="text-sm text-gray-600">アイデア投稿無制限</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <Check className="w-5 h-5 text-green-600 mt-0.5" />
-                  <span className="text-sm text-gray-600">隠れたコストなし</span>
-                </li>
-              </ul>
-            </div>
-
-            <div className="bg-white rounded-xl p-8 shadow-sm hover:shadow-md transition-shadow">
-              <div className="bg-blue-100 w-16 h-16 rounded-lg flex items-center justify-center mb-6">
-                <Shield className="w-8 h-8 text-blue-600" />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">
-                確実な収益保証
-              </h3>
-              <p className="text-gray-600 mb-4">
-                契約で定められた収益の20%は必ずあなたのものに。透明性の高い収益分配。
-              </p>
-              <ul className="space-y-2">
-                <li className="flex items-start gap-2">
-                  <Check className="w-5 h-5 text-green-600 mt-0.5" />
-                  <span className="text-sm text-gray-600">契約書で保証</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <Check className="w-5 h-5 text-green-600 mt-0.5" />
-                  <span className="text-sm text-gray-600">月次レポート提供</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <Check className="w-5 h-5 text-green-600 mt-0.5" />
-                  <span className="text-sm text-gray-600">振込手数料も無料</span>
-                </li>
-              </ul>
-            </div>
-
-            <div className="bg-white rounded-xl p-8 shadow-sm hover:shadow-md transition-shadow">
-              <div className="bg-purple-100 w-16 h-16 rounded-lg flex items-center justify-center mb-6">
-                <Zap className="w-8 h-8 text-purple-600" />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">
-                EmBldが実現
-              </h3>
-              <p className="text-gray-600 mb-4">
-                アイデアをブラッシュアップし、開発からリリースまで完全サポート。
-              </p>
-              <ul className="space-y-2">
-                <li className="flex items-start gap-2">
-                  <Check className="w-5 h-5 text-green-600 mt-0.5" />
-                  <span className="text-sm text-gray-600">市場調査サポート</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <Check className="w-5 h-5 text-green-600 mt-0.5" />
-                  <span className="text-sm text-gray-600">UI/UXデザイン支援</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <Check className="w-5 h-5 text-green-600 mt-0.5" />
-                  <span className="text-sm text-gray-600">マーケティング支援</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 仕組み説明 */}
-      <section id="how-it-works" className="py-16 bg-white">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              どうやって収益化するのか
-            </h2>
-          </div>
-
-          <div className="grid md:grid-cols-4 gap-8">
-            <div className="text-center">
-              <div className="bg-primary-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl font-bold text-primary-700">1</span>
-              </div>
-              <h3 className="font-bold text-gray-900 mb-2">アイデア投稿</h3>
-              <p className="text-sm text-gray-600">
-                日常で感じた「こんなアプリがあったら」を投稿
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="bg-primary-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl font-bold text-primary-700">2</span>
-              </div>
-              <h3 className="font-bold text-gray-900 mb-2">企画・設計</h3>
-              <p className="text-sm text-gray-600">
-                EmBldがアイデアを分析し、実現可能な企画に
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="bg-primary-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl font-bold text-primary-700">3</span>
-              </div>
-              <h3 className="font-bold text-gray-900 mb-2">開発・リリース</h3>
-              <p className="text-sm text-gray-600">
-                EmBldがアプリを開発し、ストアにリリース
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="bg-primary-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl font-bold text-primary-700">4</span>
-              </div>
-              <h3 className="font-bold text-gray-900 mb-2">収益受取</h3>
-              <p className="text-sm text-gray-600">
-                アプリ収益の20%が毎月あなたの口座に振り込まれる
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 成功事例 */}
-      <section className="py-16 bg-gray-50">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              実際の成功事例
-            </h2>
-            <p className="text-lg text-gray-600">
-              アイデア投稿者の生の声をお聞きください
+        
+        <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center text-white">
+            <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight">
+              EmBld
+              <span className="text-3xl md:text-4xl block mt-2 font-medium">Supported by AI</span>
+            </h1>
+            
+            <p className="text-xl md:text-2xl mb-12 max-w-3xl mx-auto leading-relaxed font-medium">
+              EmBldは「時間がない」や「技術がない」人のための
+              <br />
+              アイデア収益化サービスです。
             </p>
+
+            {/* イラストプレースホルダー */}
+            <div className="max-w-4xl mx-auto mb-8 bg-white/20 backdrop-blur-sm rounded-2xl p-8 border border-white/30">
+              <div className="flex justify-center items-center space-x-4 md:space-x-8">
+                {/* 人物イラストのプレースホルダー */}
+                <div className="text-center">
+                  <div className="w-24 h-32 md:w-32 md:h-40 bg-white/30 rounded-lg mb-2 flex items-center justify-center">
+                    <Users className="w-12 h-12 text-white/60" />
+                  </div>
+                  <p className="text-sm text-white/80">アイデアを持つ人</p>
+                </div>
+                <div className="text-center">
+                  <div className="w-24 h-32 md:w-32 md:h-40 bg-white/30 rounded-lg mb-2 flex items-center justify-center">
+                    <Smartphone className="w-12 h-12 text-white/60" />
+                  </div>
+                  <p className="text-sm text-white/80">開発者</p>
+                </div>
+                <div className="text-center">
+                  <div className="w-24 h-32 md:w-32 md:h-40 bg-white/30 rounded-lg mb-2 flex items-center justify-center">
+                    <Rocket className="w-12 h-12 text-white/60" />
+                  </div>
+                  <p className="text-sm text-white/80">起業家</p>
+                </div>
+              </div>
+            </div>
           </div>
+
+          {/* QRコードとアプリダウンロードカード */}
+          <div className="max-w-md mx-auto">
+            <div className="bg-white rounded-2xl shadow-xl p-6 text-center">
+              <div className="inline-flex items-center gap-2 bg-orange-500 text-white px-4 py-2 rounded-full text-sm font-bold mb-4">
+                <Sparkles className="w-4 h-4" />
+                <span>お仕事の最新情報を見逃さない</span>
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">
+                EmBldの<br />アプリができました！
+              </h3>
+              <p className="text-sm text-gray-600 mb-4">右のQRから今すぐダウンロード</p>
+              {/* QRコードプレースホルダー */}
+              <div className="w-32 h-32 bg-gray-200 rounded-lg mx-auto flex items-center justify-center">
+                <span className="text-gray-500 text-xs">QRコード</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* サービス紹介セクション */}
+      <section id="service" className="py-20 bg-white">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-4">
+            <span className="inline-block bg-orange-500 text-white px-6 py-2 rounded-full text-sm font-bold mb-6">
+              サービス紹介
+            </span>
+          </div>
+          
+          <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-900 mb-12">
+            時間や技術がなくても収益化できる
+          </h2>
+          
+          <p className="text-center text-gray-600 mb-16 max-w-3xl mx-auto">
+            EmBldではすぐに働ける優秀な開発者を探せるので、「急にアイデアが浮かんだ」
+            <br />
+            「時間がない」そんな悩みを持つ方でも効率的に収益化できます。
+          </p>
+
+          {/* 動画プレースホルダー */}
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-gradient-to-br from-blue-100 to-green-100 rounded-2xl p-8 shadow-lg">
+              <div className="aspect-video bg-white rounded-lg flex items-center justify-center">
+                <div className="text-center">
+                  <div className="w-20 h-20 bg-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <div className="w-0 h-0 border-l-[20px] border-l-white border-t-[12px] border-t-transparent border-b-[12px] border-b-transparent ml-2"></div>
+                  </div>
+                  <p className="text-gray-600">サービス紹介動画</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 使い方セクション */}
+      <section id="how-it-works" className="py-20 bg-gray-50">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-4">
+            <span className="inline-block bg-orange-500 text-white px-6 py-2 rounded-full text-sm font-bold mb-6">
+              サービス使い方
+            </span>
+          </div>
+          
+          <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-900 mb-16">
+            EmBldの使い方
+          </h2>
+
+          <div className="grid md:grid-cols-3 gap-8 mb-16">
+            {/* ステップ1 */}
+            <div className="bg-white rounded-2xl p-8 shadow-lg text-center">
+              <div className="w-32 h-32 bg-blue-100 rounded-2xl mx-auto mb-6 flex items-center justify-center">
+                <Lightbulb className="w-16 h-16 text-blue-600" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-4">
+                1. アイデアを投稿
+              </h3>
+              <p className="text-gray-600">
+                あなたの経験や気付きから生まれた
+                アイデアを投稿します。「時間がない」
+                「技術がない」などあなたの状況に
+                合わせて詳しく説明しましょう。
+              </p>
+            </div>
+
+            {/* ステップ2 */}
+            <div className="bg-white rounded-2xl p-8 shadow-lg text-center">
+              <div className="w-32 h-32 bg-green-100 rounded-2xl mx-auto mb-6 flex items-center justify-center">
+                <Users className="w-16 h-16 text-green-600" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-4">
+                2. ※即マッチング
+              </h3>
+              <p className="text-gray-600">
+                EmBldプロフィールなどの情報を入力すれば、
+                初回最短15分で応募完了です。企業との
+                面接などで長く待つ必要なくマッチングが
+                即完了します。
+              </p>
+            </div>
+
+            {/* ステップ3 */}
+            <div className="bg-white rounded-2xl p-8 shadow-lg text-center">
+              <div className="w-32 h-32 bg-orange-100 rounded-2xl mx-auto mb-6 flex items-center justify-center">
+                <DollarSign className="w-16 h-16 text-orange-600" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-4">
+                3. 給与を受け取る
+              </h3>
+              <p className="text-gray-600">
+                半給与はEmBldで管理されるので勤務後即時
+                反映され、好きなときに口座から引き出
+                せます。口座振込申請もいつでも手数料
+                0円です。
+              </p>
+            </div>
+          </div>
+
+          <p className="text-center text-sm text-gray-500">
+            ※一部の企業や募集では書類選考が必要な場合もあります。詳細は各募集をご確認ください。
+          </p>
+        </div>
+      </section>
+
+      {/* 特徴セクション - 青い背景 */}
+      <section id="features" className="py-20 bg-blue-600 text-white">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-4">
+            <span className="inline-block bg-orange-500 text-white px-6 py-2 rounded-full text-sm font-bold mb-6">
+              サービス特徴
+            </span>
+          </div>
+          
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-8">
+            アイデアなしで収益化と即マッチング。
+            <br />
+            最短15分で応募完了
+          </h2>
+          
+          <p className="text-center text-blue-100 mb-16 max-w-3xl mx-auto">
+            情報入力などの応募手続きは初回最短15分、2回目以降は最短5分で完了します。
+            <br />
+            ※面接や書類選考が不要なので、求人案件との即マッチングが成立します。採用の合否連絡を待つ必要もありません。
+          </p>
+
+          {/* 特徴の図解 */}
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
+              <div className="grid md:grid-cols-2 gap-8 items-center">
+                {/* 左側：応募 */}
+                <div className="text-center">
+                  <div className="w-32 h-32 bg-white rounded-full mx-auto mb-4 flex items-center justify-center">
+                    <FileText className="w-16 h-16 text-blue-600" />
+                  </div>
+                  <p className="text-xl font-bold">応募</p>
+                </div>
+                
+                {/* 矢印 */}
+                <div className="flex items-center justify-center">
+                  <div className="bg-green-500 text-white px-6 py-3 rounded-full font-bold flex items-center gap-2">
+                    <span>EmBld</span>
+                    <ArrowRight className="w-5 h-5" />
+                  </div>
+                </div>
+                
+                {/* 右側：マッチング */}
+                <div className="text-center md:col-start-2">
+                  <div className="w-32 h-32 bg-white rounded-full mx-auto mb-4 flex items-center justify-center">
+                    <Users className="w-16 h-16 text-blue-600" />
+                  </div>
+                  <p className="text-xl font-bold">※マッチング</p>
+                </div>
+              </div>
+              
+              {/* 下部の説明 */}
+              <div className="grid md:grid-cols-3 gap-4 mt-8">
+                <div className="bg-blue-700 rounded-lg p-4 text-center">
+                  <Users className="w-8 h-8 mx-auto mb-2" />
+                  <p className="text-sm font-bold">履歴書</p>
+                </div>
+                <div className="bg-blue-700 rounded-lg p-4 text-center">
+                  <FileText className="w-8 h-8 mx-auto mb-2" />
+                  <p className="text-sm font-bold">面接</p>
+                </div>
+                <div className="bg-blue-700 rounded-lg p-4 text-center">
+                  <Clock className="w-8 h-8 mx-auto mb-2" />
+                  <p className="text-sm font-bold">合否待ち</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <p className="text-center text-xs text-blue-200 mt-8">
+            ※一部の企業や募集では書類選考が必要な場合もあります。また、採用の合否がすでに決定していたり、
+            <br />
+            応募が定員に達している場合もあります。詳細は各募集をご確認ください。
+          </p>
+        </div>
+      </section>
+
+      {/* こんな人におすすめセクション */}
+      <section id="faq" className="py-20 bg-gray-50">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-4">
+            <span className="inline-block bg-orange-500 text-white px-6 py-2 rounded-full text-sm font-bold mb-6">
+              サービス特徴2
+            </span>
+          </div>
+          
+          <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-900 mb-8">
+            条件に合った仕事はEmBldでお知らせ
+          </h2>
+          
+          <p className="text-center text-gray-600 mb-16 max-w-3xl mx-auto">
+            あなたの仕事経験をもとに、条件に合った仕事をEmBldでお知らせします。さらに優しい履歴をもとに、
+            <br />
+            特別なキャンペーンをご案内いたします。EmBldを使うほど便利でお得にご利用いただけます。
+          </p>
+
+          {/* スマートフォンのモックアップ */}
+          <div className="max-w-2xl mx-auto mb-16">
+            <div className="bg-white rounded-3xl shadow-xl p-8">
+              <div className="aspect-[9/16] bg-gray-100 rounded-2xl flex items-center justify-center">
+                <MessageSquare className="w-16 h-16 text-gray-400" />
+              </div>
+            </div>
+          </div>
+
+          <h3 className="text-2xl font-bold text-center text-gray-900 mb-12">
+            こんな人におすすめ
+          </h3>
 
           <div className="grid md:grid-cols-3 gap-8">
-            <div className="bg-white rounded-xl p-6 shadow-sm">
-              <div className="flex items-center gap-1 mb-4">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
-                ))}
-              </div>
-              <p className="text-gray-700 mb-4 leading-relaxed">
-                「家計簿アプリのアイデアを投稿して半年。今では月15万円の副収入になっています。本業以外の収入源ができて、生活に余裕が生まれました。」
+            {/* カード1 */}
+            <div className="bg-green-500 text-white rounded-2xl p-8 text-center">
+              <p className="text-lg font-bold mb-6">
+                "急にアイデアが浮かんだ
+                <br />
+                ので、明日実現したい"
               </p>
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center">
-                  <Users className="w-6 h-6 text-gray-500" />
-                </div>
-                <div>
-                  <p className="font-semibold text-gray-900">田中 健太さん</p>
-                  <p className="text-sm text-gray-600">30代・会社員</p>
-                </div>
+              <div className="w-32 h-40 bg-white/20 rounded-lg mx-auto flex items-center justify-center">
+                <Users className="w-16 h-16 text-white/60" />
               </div>
             </div>
 
-            <div className="bg-white rounded-xl p-6 shadow-sm">
-              <div className="flex items-center gap-1 mb-4">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
-                ))}
-              </div>
-              <p className="text-gray-700 mb-4 leading-relaxed">
-                「専業主婦の私でも、料理レシピ管理アプリのアイデアで月8万円の収入。子供の教育費の足しになって本当に助かっています。」
+            {/* カード2 */}
+            <div className="bg-blue-500 text-white rounded-2xl p-8 text-center">
+              <p className="text-lg font-bold mb-6">
+                "ランチタイムの
+                <br />
+                3時間だけ実現したい"
               </p>
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center">
-                  <Users className="w-6 h-6 text-gray-500" />
-                </div>
-                <div>
-                  <p className="font-semibold text-gray-900">佐藤 美咲さん</p>
-                  <p className="text-sm text-gray-600">40代・主婦</p>
-                </div>
+              <div className="w-32 h-40 bg-white/20 rounded-lg mx-auto flex items-center justify-center">
+                <Clock className="w-16 h-16 text-white/60" />
               </div>
             </div>
 
-            <div className="bg-white rounded-xl p-6 shadow-sm">
-              <div className="flex items-center gap-1 mb-4">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
-                ))}
-              </div>
-              <p className="text-gray-700 mb-4 leading-relaxed">
-                「学生時代に投稿した勉強管理アプリが大ヒット。今では月20万円以上の収入があり、起業の資金にしています。」
+            {/* カード3 */}
+            <div className="bg-green-500 text-white rounded-2xl p-8 text-center">
+              <p className="text-lg font-bold mb-6">
+                "カード使いすぎちゃった！
+                <br />
+                もう少しお金がほしい"
               </p>
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center">
-                  <Users className="w-6 h-6 text-gray-500" />
-                </div>
-                <div>
-                  <p className="font-semibold text-gray-900">鈴木 翔太さん</p>
-                  <p className="text-sm text-gray-600">20代・起業家</p>
-                </div>
+              <div className="w-32 h-40 bg-white/20 rounded-lg mx-auto flex items-center justify-center">
+                <Wallet className="w-16 h-16 text-white/60" />
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* FAQ */}
-      <section className="py-16 bg-white">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              よくある質問
-            </h2>
-          </div>
-
-          <div className="space-y-6">
-            <div className="bg-gray-50 rounded-lg p-6">
-              <h3 className="font-bold text-gray-900 mb-2">
-                Q. 本当に無料で始められますか？
-              </h3>
-              <p className="text-gray-600">
-                A. はい、登録・アイデア投稿・収益受取まで、すべて完全無料です。隠れた費用は一切ありません。
-              </p>
-            </div>
-
-            <div className="bg-gray-50 rounded-lg p-6">
-              <h3 className="font-bold text-gray-900 mb-2">
-                Q. どんなアイデアでも投稿できますか？
-              </h3>
-              <p className="text-gray-600">
-                A. 日常生活で「こんなアプリがあったら便利」と思うアイデアなら何でも投稿可能です。技術的な知識は不要です。
-              </p>
-            </div>
-
-            <div className="bg-gray-50 rounded-lg p-6">
-              <h3 className="font-bold text-gray-900 mb-2">
-                Q. 収益はいつから受け取れますか？
-              </h3>
-              <p className="text-gray-600">
-                A. アプリがリリースされ、収益が発生した月の翌月末から振込が開始されます。その後は毎月自動的に振り込まれます。
-              </p>
-            </div>
-
-            <div className="bg-gray-50 rounded-lg p-6">
-              <h3 className="font-bold text-gray-900 mb-2">
-                Q. アイデアが盗まれる心配はありませんか？
-              </h3>
-              <p className="text-gray-600">
-                A. すべてのアイデアは利用規約と法的保護のもとで管理されています。また、開発者との契約も弊社が仲介します。
-              </p>
-            </div>
-          </div>
+      {/* CTA セクション */}
+      <section className="py-20 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-green-500 via-teal-400 to-blue-500"></div>
+        <div className="absolute top-0 left-0 w-full">
+          <svg viewBox="0 0 1440 100" className="w-full">
+            <path fill="#f9fafb" d="M0,64L48,58.7C96,53,192,43,288,37.3C384,32,480,32,576,37.3C672,43,768,53,864,58.7C960,64,1056,64,1152,58.7C1248,53,1344,43,1392,37.3L1440,32L1440,0L1392,0C1344,0,1248,0,1152,0C1056,0,960,0,864,0C768,0,672,0,576,0C480,0,384,0,288,0C192,0,96,0,48,0L0,0Z"></path>
+          </svg>
         </div>
-      </section>
-
-      {/* CTA */}
-      <section className="py-16 bg-primary-600">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-bold text-white mb-8">
-            アイデアを持っているなら、今すぐ始めよう
+        
+        <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-8">
+            いつでもすぐに時間を有効活用できる
           </h2>
+          
           <Link
             href="/auth/register"
-            className="inline-flex items-center gap-2 bg-white text-primary-600 px-8 py-4 rounded-lg font-medium text-lg hover:bg-gray-50 transition-all transform hover:scale-105 shadow-lg"
+            className="inline-flex items-center gap-2 bg-white text-blue-600 px-8 py-4 rounded-full font-bold text-lg hover:shadow-xl transition-all transform hover:scale-105"
           >
-            無料で始める
+            サービストップはこちら
             <ArrowRight className="w-5 h-5" />
           </Link>
-          <p className="text-primary-100 mt-4 text-sm">
-            登録は1分で完了・クレジットカード不要
-          </p>
         </div>
       </section>
 
@@ -401,7 +412,7 @@ export default async function LandingPage() {
           <div className="grid md:grid-cols-4 gap-8 mb-8">
             <div>
               <div className="flex items-center space-x-3 mb-4">
-                <div className="bg-primary-600 text-white p-2 rounded-lg">
+                <div className="bg-gradient-to-r from-blue-500 to-green-500 text-white p-2 rounded-lg">
                   <Sparkles className="h-6 w-6" />
                 </div>
                 <span className="text-xl font-bold text-white">EmBld</span>
