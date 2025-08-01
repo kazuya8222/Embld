@@ -12,7 +12,6 @@ import {
   X, 
   Plus,
   Grid3X3,
-  Crown,
   ChevronDown,
   Bell,
   MessageSquare
@@ -66,13 +65,6 @@ export function Navigation() {
               className="text-gray-600 hover:text-gray-900 font-medium transition-colors"
             >
               完成アプリ
-            </Link>
-            <Link
-              href="/premium"
-              className="text-gray-600 hover:text-gray-900 font-medium transition-colors flex items-center gap-1"
-            >
-              <Crown className="h-4 w-4 text-yellow-500" />
-              プレミアム
             </Link>
           </nav>
 
@@ -186,14 +178,6 @@ export function Navigation() {
               onClick={() => setIsMenuOpen(false)}
             >
               完成アプリ
-            </Link>
-            <Link
-              href="/premium"
-              className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors flex items-center gap-2"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              <Crown className="h-4 w-4 text-yellow-500" />
-              プレミアム
             </Link>
             
             {user ? (

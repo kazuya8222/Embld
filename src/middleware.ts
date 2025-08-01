@@ -60,7 +60,7 @@ export async function middleware(request: NextRequest) {
 
   // 保護されたルートへのアクセス制御
   // /home と /ideas/[id] は誰でもアクセス可能に変更
-  const protectedPaths = ['/profile', '/premium', '/ideas/new', '/ideas/*/edit']
+  const protectedPaths = ['/profile', '/ideas/new', '/ideas/*/edit']
   const isProtectedPath = protectedPaths.some(path => {
     const pattern = path.replace('*', '[^/]+')
     const regex = new RegExp(`^${pattern}$`)

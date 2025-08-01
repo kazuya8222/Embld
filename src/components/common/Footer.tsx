@@ -25,7 +25,6 @@ export function Footer() {
             <ul className="space-y-2 text-sm">
               <li><Link href="/ideas/new" className="hover:text-white">アイデア投稿</Link></li>
               <li><Link href="/apps" className="hover:text-white">完成アプリ一覧</Link></li>
-              <li><Link href="/premium" className="hover:text-white">プレミアムプラン</Link></li>
             </ul>
           </div>
           
