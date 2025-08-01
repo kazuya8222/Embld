@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { ChevronUp, MessageCircle, Search, Filter, TrendingUp, Clock, Sparkles, DollarSign, Flame, Star } from 'lucide-react'
+import { ChevronUp, MessageCircle, Search, Filter, TrendingUp, Clock, Sparkles, DollarSign, Flame, Star, Lightbulb, ArrowRight } from 'lucide-react'
 import { ProductHuntIdeaItem } from '@/components/ideas/ProductHuntIdeaItem'
 import { PostIdeaButton } from '@/components/common/PostIdeaButton'
 import { CATEGORIES } from '@/types'
@@ -54,6 +54,22 @@ export default function HomePageClient({ ideasWithCounts, searchParams }: HomePa
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-6xl mx-auto px-4 py-6">
+        {/* アイデア投稿を促すバナー */}
+        <div className="bg-gradient-to-r from-blue-500 to-green-500 rounded-2xl p-8 mb-8 text-white">
+          <div className="flex items-center gap-3 mb-4">
+            <Lightbulb className="w-8 h-8" />
+            <h1 className="text-2xl font-bold">あなたのアイデアが収益に変わる</h1>
+          </div>
+          <p className="text-lg mb-6 text-white/90">
+            アイデアを投稿して、実現されたアプリの収益の30%を受け取りましょう。<br />
+            開発はEMBLDチームが担当。あなたはアイデアを考えるだけでOK！
+          </p>
+          <PostIdeaButton className="inline-flex items-center gap-2 bg-white text-blue-600 px-6 py-3 rounded-full font-bold hover:bg-gray-100 transition-all transform hover:scale-105">
+            <span>アイデアを投稿する</span>
+            <ArrowRight className="w-5 h-5" />
+          </PostIdeaButton>
+        </div>
+
         <div className="flex gap-6">
           {/* メインコンテンツ */}
           <div className="flex-1 space-y-8">

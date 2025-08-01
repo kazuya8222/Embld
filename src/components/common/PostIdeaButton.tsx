@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/utils/supabase/client'
 
-export function PostIdeaButton({ className }: { className?: string }) {
+export function PostIdeaButton({ className, children }: { className?: string, children?: React.ReactNode }) {
   const router = useRouter()
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
   
@@ -31,7 +31,7 @@ export function PostIdeaButton({ className }: { className?: string }) {
       onClick={handleClick}
       className={className}
     >
-      アイデアを投稿
+      {children || 'アイデアを投稿'}
     </Link>
   )
 }
