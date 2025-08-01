@@ -1,15 +1,16 @@
 import { createClient } from '@/utils/supabase/server'
-import { IdeaCard } from '@/components/ideas/IdeaCard'
+import { ProductHuntIdeaItem } from '@/components/ideas/ProductHuntIdeaItem'
 import { CATEGORIES } from '@/types'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { Plus, Search, TrendingUp, Sparkles, DollarSign, Zap, PiggyBank, Lightbulb, Rocket, Users } from 'lucide-react'
+import { ChevronUp, MessageCircle, Search, Filter, TrendingUp, Clock, Sparkles } from 'lucide-react'
 
 interface SearchParams {
   category?: string
   status?: string
   search?: string
   sort?: string
+  date?: string
 }
 
 interface HomePageIdea {
@@ -54,7 +55,7 @@ export default async function HomePage({
       tags,
       user:users(username, avatar_url)
     `)
-    .limit(20)
+    .limit(50)
 
   if (searchParams.category) {
     query = query.eq('category', searchParams.category)
@@ -68,7 +69,17 @@ export default async function HomePage({
     query = query.or(`title.ilike.%${searchParams.search}%,problem.ilike.%${searchParams.search}%`)
   }
 
-  const sortBy = searchParams.sort || 'created_at'
+  // 日付フィルタ
+  const today = new Date()
+  if (searchParams.date === 'today') {
+    const startOfDay = new Date(today.setHours(0, 0, 0, 0))
+    query = query.gte('created_at', startOfDay.toISOString())
+  } else if (searchParams.date === 'week') {
+    const weekAgo = new Date(today.setDate(today.getDate() - 7))
+    query = query.gte('created_at', weekAgo.toISOString())
+  }
+
+  const sortBy = searchParams.sort || 'wants'
   query = query.order('created_at', { ascending: false })
 
   const { data: ideas, error } = await query
@@ -123,183 +134,220 @@ export default async function HomePage({
     ideasWithCounts.sort((a, b) => b.wants_count - a.wants_count)
   } else if (sortBy === 'comments') {
     ideasWithCounts.sort((a, b) => b.comments_count - a.comments_count)
+  } else if (sortBy === 'new') {
+    ideasWithCounts.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* 収益化ヘッダー - LPスタイル */}
-      <div className="bg-gradient-to-br from-blue-500 via-teal-400 to-green-500 text-white py-12">
+      {/* ProductHunt風ヘッダー */}
+      <div className="bg-white border-b sticky top-0 z-10">
         <div className="max-w-6xl mx-auto px-4">
-          <div className="text-center">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">
-              あなたのアイデアを収益化しよう
-            </h1>
-            <p className="text-xl md:text-2xl mb-8">
-              投稿したアイデアが実現されれば、アプリ収益の<span className="font-black text-2xl md:text-3xl">30%</span>があなたのものに
-            </p>
-          </div>
-
-          {/* 収益化のポイント */}
-          <div className="grid md:grid-cols-3 gap-6 mb-8">
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 text-center border border-white/20">
-              <DollarSign className="w-12 h-12 text-white mx-auto mb-3" />
-              <h3 className="font-bold text-white mb-2">継続的な収入</h3>
-              <p className="text-sm text-white/90">
-                アプリが使われ続ける限り、毎月収益が振り込まれます
-              </p>
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center space-x-8">
+              <h1 className="text-xl font-bold text-gray-900">💡 アイデアボード</h1>
+              
+              {/* タブ */}
+              <nav className="hidden md:flex items-center space-x-6">
+                <Link
+                  href="/home?sort=wants"
+                  className={`text-sm font-medium transition-colors pb-1 ${
+                    sortBy === 'wants' 
+                      ? 'text-orange-600 border-b-2 border-orange-600' 
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  <TrendingUp className="w-4 h-4 inline mr-1" />
+                  人気
+                </Link>
+                <Link
+                  href="/home?sort=new"
+                  className={`text-sm font-medium transition-colors pb-1 ${
+                    sortBy === 'new' 
+                      ? 'text-orange-600 border-b-2 border-orange-600' 
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  <Sparkles className="w-4 h-4 inline mr-1" />
+                  新着
+                </Link>
+                <Link
+                  href="/home?sort=comments"
+                  className={`text-sm font-medium transition-colors pb-1 ${
+                    sortBy === 'comments' 
+                      ? 'text-orange-600 border-b-2 border-orange-600' 
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  <MessageCircle className="w-4 h-4 inline mr-1" />
+                  話題
+                </Link>
+              </nav>
             </div>
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 text-center border border-white/20">
-              <Zap className="w-12 h-12 text-white mx-auto mb-3" />
-              <h3 className="font-bold text-white mb-2">リスクゼロ</h3>
-              <p className="text-sm text-white/90">
-                開発費用は一切不要。アイデアを投稿するだけでOK
-              </p>
-            </div>
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 text-center border border-white/20">
-              <PiggyBank className="w-12 h-12 text-white mx-auto mb-3" />
-              <h3 className="font-bold text-white mb-2">収益予測</h3>
-              <p className="text-sm text-white/90">
-                人気アプリなら月10万円以上の収益も夢じゃない
-              </p>
-            </div>
-          </div>
 
-          {/* CTA */}
-          <div className="text-center">
-            <Link
-              href="/ideas/new"
-              className="inline-flex items-center gap-2 bg-white text-blue-600 px-8 py-4 rounded-full font-bold text-lg hover:shadow-xl transition-all transform hover:scale-105"
-            >
-              <Plus className="w-5 h-5" />
-              今すぐアイデアを投稿して収益化
-            </Link>
-            <p className="text-sm text-white/80 mt-3">
-              ※ 投稿は完全無料。クレジットカード不要
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
-        {/* アイデア一覧ヘッダー */}
-        <div className="bg-white rounded-2xl shadow-lg p-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">
-            💡 投稿されたアイデア
-          </h2>
-          <p className="text-gray-600">
-            どんなアイデアが投稿されているか見てみよう
-          </p>
-        </div>
-
-        {/* 検索・フィルタ */}
-        <div className="bg-white rounded-2xl shadow-lg p-6">
-          <form method="GET" className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-              <div className="relative md:col-span-2">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            {/* 右側のアクション */}
+            <div className="flex items-center space-x-4">
+              {/* 検索 */}
+              <form method="GET" className="relative hidden md:block">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <input
                   type="text"
                   name="search"
                   defaultValue={searchParams.search}
-                  className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                  placeholder="キーワードで検索..."
+                  className="pl-9 pr-4 py-2 bg-gray-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:bg-white transition-all w-64"
+                  placeholder="アイデアを検索..."
                 />
-              </div>
-              
-              <select
-                name="sort"
-                defaultValue={searchParams.sort || 'created_at'}
-                className="px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-              >
-                <option value="created_at">新着順</option>
-                <option value="wants">人気順</option>
-                <option value="comments">コメント順</option>
-              </select>
-              
-              <button
-                type="submit"
-                className="bg-gradient-to-r from-blue-500 to-green-500 text-white px-6 py-3 rounded-lg font-bold hover:shadow-lg transition-all"
-              >
-                検索
-              </button>
-            </div>
-            
-            {/* カテゴリフィルタ */}
-            <div className="flex flex-wrap gap-2">
+              </form>
+
+              {/* 投稿ボタン */}
               <Link
-                href="/home"
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                  !searchParams.category
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
+                href="/ideas/new"
+                className="bg-orange-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-orange-700 transition-colors"
               >
-                すべて
+                アイデアを投稿
               </Link>
-              {CATEGORIES.map((category) => (
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-6xl mx-auto px-4 py-6">
+        <div className="flex gap-6">
+          {/* メインコンテンツ */}
+          <div className="flex-1">
+            {/* 日付フィルタ */}
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center space-x-4">
+                <h2 className="text-lg font-semibold text-gray-900">
+                  {searchParams.date === 'today' ? '今日のアイデア' : 
+                   searchParams.date === 'week' ? '今週のアイデア' : 
+                   'すべてのアイデア'}
+                </h2>
+                <div className="flex items-center space-x-2">
+                  <Link
+                    href="/home"
+                    className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
+                      !searchParams.date 
+                        ? 'bg-gray-900 text-white' 
+                        : 'text-gray-600 hover:bg-gray-100'
+                    }`}
+                  >
+                    すべて
+                  </Link>
+                  <Link
+                    href="/home?date=today"
+                    className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
+                      searchParams.date === 'today' 
+                        ? 'bg-gray-900 text-white' 
+                        : 'text-gray-600 hover:bg-gray-100'
+                    }`}
+                  >
+                    今日
+                  </Link>
+                  <Link
+                    href="/home?date=week"
+                    className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
+                      searchParams.date === 'week' 
+                        ? 'bg-gray-900 text-white' 
+                        : 'text-gray-600 hover:bg-gray-100'
+                    }`}
+                  >
+                    今週
+                  </Link>
+                </div>
+              </div>
+            </div>
+
+            {/* アイデアリスト */}
+            <div className="space-y-2">
+              {ideasWithCounts.length > 0 ? (
+                ideasWithCounts.map((idea, index) => (
+                  <ProductHuntIdeaItem key={idea.id} idea={idea} />
+                ))
+              ) : (
+                <div className="text-center py-12">
+                  <div className="text-gray-500">
+                    <Sparkles className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                    <p className="text-lg font-medium">アイデアが見つかりませんでした</p>
+                    <p className="text-sm mt-2">最初のアイデアを投稿してみましょう！</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* サイドバー */}
+          <div className="hidden lg:block w-80 space-y-6">
+            {/* カテゴリフィルタ */}
+            <div className="bg-white rounded-lg border p-4">
+              <h3 className="font-semibold text-gray-900 mb-3">
+                <Filter className="w-4 h-4 inline mr-1" />
+                カテゴリ
+              </h3>
+              <div className="space-y-2">
                 <Link
-                  key={category}
-                  href={`/home?category=${encodeURIComponent(category)}`}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                    searchParams.category === category
-                      ? 'bg-blue-500 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  href="/home"
+                  className={`block px-3 py-2 rounded-md text-sm transition-colors ${
+                    !searchParams.category
+                      ? 'bg-orange-100 text-orange-700 font-medium'
+                      : 'text-gray-600 hover:bg-gray-50'
                   }`}
                 >
-                  {category}
+                  すべてのカテゴリ
                 </Link>
-              ))}
-            </div>
-          </form>
-        </div>
-
-        {/* アイデア一覧 */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {ideasWithCounts.length > 0 ? (
-            ideasWithCounts.map((idea) => (
-              <IdeaCard key={idea.id} idea={idea as any} />
-            ))
-          ) : (
-            <div className="col-span-full text-center py-16">
-              <div className="max-w-md mx-auto">
-                <div className="bg-gradient-to-br from-blue-100 to-green-100 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6">
-                  <Search className="w-12 h-12 text-blue-600" />
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">
-                  {searchParams.category || searchParams.search
-                    ? '条件に一致するアイデアが見つかりませんでした'
-                    : 'まだアイデアが投稿されていません'}
-                </h3>
-                <p className="text-gray-600 mb-6">
-                  最初のアイデアを投稿して、収益化のチャンスを掴もう
-                </p>
-                <Link
-                  href="/ideas/new"
-                  className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-green-500 text-white px-6 py-3 rounded-full font-bold hover:shadow-lg transition-all transform hover:scale-105"
-                >
-                  <Plus className="w-4 h-4" />
-                  アイデアを投稿する
-                </Link>
+                {CATEGORIES.map((category) => (
+                  <Link
+                    key={category}
+                    href={`/home?category=${encodeURIComponent(category)}`}
+                    className={`block px-3 py-2 rounded-md text-sm transition-colors ${
+                      searchParams.category === category
+                        ? 'bg-orange-100 text-orange-700 font-medium'
+                        : 'text-gray-600 hover:bg-gray-50'
+                    }`}
+                  >
+                    {category}
+                  </Link>
+                ))}
               </div>
             </div>
-          )}
-        </div>
 
-        {/* 収益化促進バナー */}
-        <div className="bg-gradient-to-r from-orange-100 to-yellow-100 rounded-2xl p-8 text-center shadow-lg">
-          <h3 className="text-2xl font-bold text-gray-900 mb-3">
-            💡 アイデアはありませんか？
-          </h3>
-          <p className="text-gray-700 mb-6 text-lg">
-            日常の「こんなアプリがあったら便利なのに」という思いが、収益を生む可能性があります
-          </p>
-          <Link
-            href="/ideas/new"
-            className="inline-flex items-center gap-2 bg-orange-500 text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-orange-600 transition-all transform hover:scale-105 shadow-lg"
-          >
-            <Plus className="w-5 h-5" />
-            アイデアを投稿
-          </Link>
+            {/* 収益化の説明 */}
+            <div className="bg-gradient-to-br from-orange-50 to-yellow-50 rounded-lg border border-orange-200 p-4">
+              <h3 className="font-semibold text-gray-900 mb-2">
+                💰 収益化の仕組み
+              </h3>
+              <p className="text-sm text-gray-700 mb-3">
+                投稿したアイデアが実現されると、アプリ収益の30%があなたに還元されます。
+              </p>
+              <Link
+                href="/ideas/new"
+                className="block w-full text-center bg-orange-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-orange-700 transition-colors"
+              >
+                アイデアを投稿する
+              </Link>
+            </div>
+
+            {/* ガイドライン */}
+            <div className="bg-white rounded-lg border p-4">
+              <h3 className="font-semibold text-gray-900 mb-3">
+                📝 投稿のヒント
+              </h3>
+              <ul className="space-y-2 text-sm text-gray-600">
+                <li className="flex items-start">
+                  <span className="mr-2">•</span>
+                  <span>具体的な問題を解決するアイデアが人気</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="mr-2">•</span>
+                  <span>ターゲットユーザーを明確に</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="mr-2">•</span>
+                  <span>実現可能性を考慮しよう</span>
+                </li>
+              </ul>
+            </div>
+          </div>
         </div>
       </div>
     </div>
