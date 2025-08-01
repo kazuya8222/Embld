@@ -176,10 +176,12 @@ export default async function LandingPage() {
                 </div>
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-4 text-center">
-                短時間でアイデアを投稿
+                隙間時間にアイデアを投稿
               </h3>
               <p className="text-gray-600 text-center leading-relaxed">
-                隙間時間で気軽に投稿可能。初回でも最短15分、2回目以降は最短5分で完了します。通勤時間や休憩時間を有効活用できます。
+                隙間時間で気軽に投稿できます。
+                <br />
+                通勤時間や休憩時間を有効活用しましょう。
               </p>
             </div>
 
@@ -191,7 +193,7 @@ export default async function LandingPage() {
                 </div>
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-4 text-center">
-                自社開発AIがサービス化をサポート
+                AIがサービス化をサポート
               </h3>
               <p className="text-gray-600 text-center leading-relaxed">
                 アイデアの質を向上させる独自のAIが、あなたの思いつきを企画案レベルまでブラッシュアップ。誰でも質の高い提案が可能に。
