@@ -3,10 +3,7 @@ import HomePageClient from '@/components/home/HomePageClient'
 
 interface SearchParams {
   category?: string
-  status?: string
   search?: string
-  sort?: string
-  date?: string
 }
 
 interface HomePageIdea {
@@ -52,25 +49,10 @@ export default async function HomePage({
     query = query.eq('category', searchParams.category)
   }
 
-  if (searchParams.status) {
-    query = query.eq('status', searchParams.status)
-  }
-
   if (searchParams.search) {
     query = query.or(`title.ilike.%${searchParams.search}%,problem.ilike.%${searchParams.search}%`)
   }
 
-  // 日付フィルタ
-  const today = new Date()
-  if (searchParams.date === 'today') {
-    const startOfDay = new Date(today.setHours(0, 0, 0, 0))
-    query = query.gte('created_at', startOfDay.toISOString())
-  } else if (searchParams.date === 'week') {
-    const weekAgo = new Date(today.setDate(today.getDate() - 7))
-    query = query.gte('created_at', weekAgo.toISOString())
-  }
-
-  const sortBy = searchParams.sort || 'wants'
   query = query.order('created_at', { ascending: false })
 
   const { data: ideas, error } = await query
@@ -120,14 +102,6 @@ export default async function HomePage({
     comments_count: commentsCounts[idea.id] || 0,
     user_has_wanted: userWants.includes(idea.id),
   }) as HomePageIdea) || []
-
-  if (sortBy === 'wants') {
-    ideasWithCounts.sort((a, b) => b.wants_count - a.wants_count)
-  } else if (sortBy === 'comments') {
-    ideasWithCounts.sort((a, b) => b.comments_count - a.comments_count)
-  } else if (sortBy === 'new') {
-    ideasWithCounts.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-  }
 
   return (
     <HomePageClient 
