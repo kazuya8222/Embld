@@ -148,10 +148,10 @@ export function Navigation() {
                   ログイン
                 </Link>
                 <Link
-                  href="/auth/register"
+                  href="/home"
                   className="bg-gradient-to-r from-blue-500 to-green-500 text-white px-6 py-2.5 rounded-full text-sm font-bold hover:shadow-lg transition-all"
                 >
-                  新規登録
+                  アイデアを見る
                 </Link>
               </>
             )}
@@ -233,11 +233,11 @@ export function Navigation() {
                   ログイン
                 </Link>
                 <Link
-                  href="/auth/register"
+                  href="/home"
                   className="block w-full bg-gradient-to-r from-blue-500 to-green-500 text-white px-4 py-3 rounded-full font-bold text-center"
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  新規登録
+                  アイデアを見る
                 </Link>
               </>
             )}

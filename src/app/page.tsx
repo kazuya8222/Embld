@@ -15,16 +15,12 @@ import {
   FileText
 } from 'lucide-react'
 import { ScrollFadeIn } from '@/components/ScrollFadeIn'
+import { Footer } from '@/components/common/Footer'
 
 export default async function LandingPage() {
   // サーバーサイドで認証状態をチェック
   const supabase = await createClient()
   const { data: { session } } = await supabase.auth.getSession()
-  
-  // ログイン済みの場合はホームへリダイレクト
-  if (session) {
-    redirect('/home')
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
@@ -62,18 +58,37 @@ export default async function LandingPage() {
               <Link href="#faq" className="text-gray-600 hover:text-gray-900 font-medium">FAQ</Link>
             </nav>
             <div className="flex items-center space-x-4">
-              <Link
-                href="/auth/login"
-                className="text-gray-600 hover:text-gray-900 px-4 py-2 text-sm font-medium transition-colors"
-              >
-                ログイン
-              </Link>
-              <Link
-                href="/auth/register"
-                className="bg-gradient-to-r from-blue-500 to-green-500 text-white px-6 py-2.5 rounded-full text-sm font-bold hover:shadow-lg transition-all"
-              >
-                無料で始める
-              </Link>
+              {session ? (
+                <>
+                  <Link
+                    href="/profile"
+                    className="text-gray-600 hover:text-gray-900 px-4 py-2 text-sm font-medium transition-colors"
+                  >
+                    プロフィール
+                  </Link>
+                  <Link
+                    href="/home"
+                    className="bg-gradient-to-r from-blue-500 to-green-500 text-white px-6 py-2.5 rounded-full text-sm font-bold hover:shadow-lg transition-all"
+                  >
+                    アイデアを見る
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link
+                    href="/auth/login"
+                    className="text-gray-600 hover:text-gray-900 px-4 py-2 text-sm font-medium transition-colors"
+                  >
+                    ログイン
+                  </Link>
+                  <Link
+                    href="/home"
+                    className="bg-gradient-to-r from-blue-500 to-green-500 text-white px-6 py-2.5 rounded-full text-sm font-bold hover:shadow-lg transition-all"
+                  >
+                    無料で始める
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -102,10 +117,10 @@ export default async function LandingPage() {
               </p>
               
               <Link
-                href="/auth/register"
+                href="/home"
                 className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-green-500 text-white px-10 py-4 rounded-full font-bold text-lg hover:shadow-lg transition-all transform hover:scale-105"
               >
-                アイデアを投稿する
+                アイデアを見る
                 <ArrowRight className="w-5 h-5" />
               </Link>
             </div>
@@ -412,7 +427,7 @@ export default async function LandingPage() {
           </p>
           
           <Link
-            href="/auth/register"
+            href="/home"
             className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-green-500 text-white px-8 py-4 rounded-full font-bold text-lg hover:shadow-lg transition-all transform hover:scale-105"
           >
             無料で始める
@@ -513,57 +528,7 @@ export default async function LandingPage() {
       </section>
 
       {/* フッター */}
-      <footer className="bg-gray-900 text-gray-300 py-12">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-4 gap-8 mb-8">
-            <div>
-              <div className="flex items-center space-x-3 mb-4">
-                <img 
-                  src="/images/EnBld_logo_icon_monochrome.svg"
-                  alt="EMBLD Icon"
-                  className="h-10 w-10 brightness-0 invert"
-                />
-                <span className="text-2xl font-black text-white">EMBLD</span>
-              </div>
-              <p className="text-sm">
-                アイデアと開発者をつなぐ
-                収益シェアプラットフォーム
-              </p>
-            </div>
-            
-            <div>
-              <h3 className="font-semibold text-white mb-3">サービス</h3>
-              <ul className="space-y-2 text-sm">
-                <li><Link href="/ideas/new" className="hover:text-white">アイデア投稿</Link></li>
-                <li><Link href="/apps" className="hover:text-white">完成アプリ一覧</Link></li>
-                <li><Link href="/premium" className="hover:text-white">プレミアムプラン</Link></li>
-              </ul>
-            </div>
-            
-            <div>
-              <h3 className="font-semibold text-white mb-3">サポート</h3>
-              <ul className="space-y-2 text-sm">
-                <li><a href="#" className="hover:text-white">ヘルプセンター</a></li>
-                <li><a href="#" className="hover:text-white">お問い合わせ</a></li>
-                <li><a href="#" className="hover:text-white">よくある質問</a></li>
-              </ul>
-            </div>
-            
-            <div>
-              <h3 className="font-semibold text-white mb-3">法的情報</h3>
-              <ul className="space-y-2 text-sm">
-                <li><Link href="/legal/privacy" className="hover:text-white">プライバシーポリシー</Link></li>
-                <li><Link href="/legal/terms" className="hover:text-white">利用規約</Link></li>
-                <li><a href="#" className="hover:text-white">特定商取引法</a></li>
-              </ul>
-            </div>
-          </div>
-          
-          <div className="border-t border-gray-800 pt-8 text-center text-sm">
-            <p>&copy; 2025 EmBld. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
       </div>
     </div>
   )

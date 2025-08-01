@@ -73,7 +73,7 @@ export default async function IdeaDetailPage({
     })
   }
 
-  const isOwner = session?.user.id === idea.user_id
+  const isOwner = session?.user?.id === idea.user_id
 
   // 企画書フォーマットの項目が入力されているかチェック
   const hasProjectPlan = idea.service_name || idea.catch_copy || idea.service_description ||
@@ -84,7 +84,7 @@ export default async function IdeaDetailPage({
     <div className="max-w-4xl mx-auto space-y-8">
       <div className="flex items-center gap-4">
         <Link
-          href="/"
+          href="/home"
           className="flex items-center gap-2 text-gray-600 hover:text-primary-600 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
