@@ -36,13 +36,6 @@ export default async function AppsPage() {
           <h1 className="text-2xl font-bold text-gray-900">完成アプリ</h1>
           <p className="text-gray-600 mt-1">アイデアから生まれた素晴らしいアプリたち</p>
         </div>
-        <Link
-          href="/ideas"
-          className="bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 transition-colors flex items-center gap-2"
-        >
-          <Plus className="w-4 h-4" />
-          アイデアを見る
-        </Link>
       </div>
 
       {appsWithStats.length === 0 ? (
@@ -56,18 +49,12 @@ export default async function AppsPage() {
           <p className="text-gray-600 mb-6 max-w-md mx-auto">
             アイデアを投稿して、Enbltチームが開発します。収益の20%がアイデア投稿者に還元されます！
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex justify-center">
             <Link
               href="/ideas/new"
               className="bg-primary-600 text-white px-6 py-2 rounded-md hover:bg-primary-700 transition-colors"
             >
               アイデアを投稿
-            </Link>
-            <Link
-              href="/ideas"
-              className="border border-gray-300 text-gray-700 px-6 py-2 rounded-md hover:bg-gray-50 transition-colors"
-            >
-              既存のアイデアを見る
             </Link>
           </div>
         </div>
