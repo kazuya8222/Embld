@@ -36,7 +36,7 @@ export default async function LandingPage() {
               <div className="bg-gradient-to-r from-blue-500 to-green-500 text-white p-2 rounded-lg">
                 <Sparkles className="h-6 w-6" />
               </div>
-              <span className="text-xl font-bold text-gray-900">EmBld</span>
+              <span className="text-2xl font-black text-gray-900 italic transform -skew-x-12">エンビルド</span>
             </div>
             <nav className="hidden md:flex items-center space-x-8 mr-8">
               <Link href="#service" className="text-gray-600 hover:text-gray-900 font-medium">サービス紹介</Link>
@@ -62,68 +62,50 @@ export default async function LandingPage() {
         </div>
       </header>
 
-      {/* ヒーローセクション - 青と緑のグラデーション背景 */}
-      <section className="pt-24 pb-20 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-500 via-teal-400 to-green-500"></div>
-        <div className="absolute bottom-0 left-0 w-full">
-          <svg viewBox="0 0 1440 200" className="w-full">
-            <path fill="#ffffff" d="M0,160L48,144C96,128,192,96,288,85.3C384,75,480,85,576,101.3C672,117,768,139,864,138.7C960,139,1056,117,1152,101.3C1248,85,1344,75,1392,69.3L1440,64L1440,200L1392,200C1344,200,1248,200,1152,200C1056,200,960,200,864,200C768,200,672,200,576,200C480,200,384,200,288,200C192,200,96,200,48,200L0,200Z"></path>
-          </svg>
-        </div>
-        
-        <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center text-white">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight">
-              EmBld
-            </h1>
-            
-            <p className="text-xl md:text-2xl mb-12 max-w-3xl mx-auto leading-relaxed font-medium">
-              EmBldは「時間がない」や「技術がない」人のための
-              <br />
-              アイデア収益化サービスです。
-            </p>
-
-            {/* イラストプレースホルダー */}
-            <div className="max-w-4xl mx-auto mb-8 bg-white/20 backdrop-blur-sm rounded-2xl p-8 border border-white/30">
-              <div className="flex justify-center items-center space-x-4 md:space-x-8">
-                {/* 人物イラストのプレースホルダー */}
-                <div className="text-center">
-                  <div className="w-24 h-32 md:w-32 md:h-40 bg-white/30 rounded-lg mb-2 flex items-center justify-center">
-                    <Users className="w-12 h-12 text-white/60" />
-                  </div>
-                  <p className="text-sm text-white/80">アイデアを持つ人</p>
-                </div>
-                <div className="text-center">
-                  <div className="w-24 h-32 md:w-32 md:h-40 bg-white/30 rounded-lg mb-2 flex items-center justify-center">
-                    <Smartphone className="w-12 h-12 text-white/60" />
-                  </div>
-                  <p className="text-sm text-white/80">開発者</p>
-                </div>
-                <div className="text-center">
-                  <div className="w-24 h-32 md:w-32 md:h-40 bg-white/30 rounded-lg mb-2 flex items-center justify-center">
-                    <Rocket className="w-12 h-12 text-white/60" />
-                  </div>
-                  <p className="text-sm text-white/80">起業家</p>
-                </div>
+      {/* ヒーローセクション - シンプルな背景 */}
+      <section className="pt-32 pb-20 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            {/* 左側：テキストコンテンツ */}
+            <div>
+              <div className="flex flex-wrap gap-3 mb-8">
+                <span className="text-sm text-gray-600 border border-gray-300 px-3 py-1 rounded-full">アイデア投稿</span>
+                <span className="text-sm text-gray-600 border border-gray-300 px-3 py-1 rounded-full">収益シェア</span>
+                <span className="text-sm text-gray-600 border border-gray-300 px-3 py-1 rounded-full">AI支援</span>
+                <span className="text-sm text-gray-600 border border-gray-300 px-3 py-1 rounded-full">マーケティング</span>
               </div>
+              
+              <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-8 leading-tight">
+                あなたのアイデアが<br />
+                毎月の収入に変わる<br />
+                <span className="text-blue-600">収益20%</span>を永続的に！
+              </h1>
+              
+              <p className="text-xl text-gray-600 mb-10 leading-relaxed">
+                エンビルドなら、アイデアを投稿するだけで<br />
+                開発・運営・収益化まですべてお任せ。リスクゼロで始められます。
+              </p>
+              
+              <Link
+                href="/auth/register"
+                className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-green-500 text-white px-10 py-4 rounded-full font-bold text-lg hover:shadow-lg transition-all transform hover:scale-105"
+              >
+                アイデアを投稿する
+                <ArrowRight className="w-5 h-5" />
+              </Link>
             </div>
-          </div>
-
-          {/* QRコードとアプリダウンロードカード */}
-          <div className="max-w-md mx-auto">
-            <div className="bg-white rounded-2xl shadow-xl p-6 text-center">
-              <div className="inline-flex items-center gap-2 bg-orange-500 text-white px-4 py-2 rounded-full text-sm font-bold mb-4">
-                <Sparkles className="w-4 h-4" />
-                <span>お仕事の最新情報を見逃さない</span>
+            
+            {/* 右側：イラストプレースホルダー */}
+            <div className="relative">
+              <div className="bg-gray-200 rounded-2xl aspect-square flex items-center justify-center">
+                <div className="text-center">
+                  <Users className="w-24 h-24 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-500">ここにイラストを配置</p>
+                </div>
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">
-                EmBldの<br />アプリができました！
-              </h3>
-              <p className="text-sm text-gray-600 mb-4">右のQRから今すぐダウンロード</p>
-              {/* QRコードプレースホルダー */}
-              <div className="w-32 h-32 bg-gray-200 rounded-lg mx-auto flex items-center justify-center">
-                <span className="text-gray-500 text-xs">QRコード</span>
-              </div>
+              {/* 装飾的な要素 */}
+              <div className="absolute -top-4 -right-4 w-24 h-24 bg-blue-100 rounded-full opacity-50"></div>
+              <div className="absolute -bottom-4 -left-4 w-32 h-32 bg-green-100 rounded-full opacity-50"></div>
             </div>
           </div>
         </div>
@@ -143,7 +125,7 @@ export default async function LandingPage() {
           </h2>
           
           <p className="text-center text-gray-600 mb-16 max-w-3xl mx-auto">
-            EmBldではすぐに働ける優秀な開発者を探せるので、「急にアイデアが浮かんだ」
+            エンビルドではすぐに働ける優秀な開発者を探せるので、「急にアイデアが浮かんだ」
             <br />
             「時間がない」そんな悩みを持つ方でも効率的に収益化できます。
           </p>
@@ -174,7 +156,7 @@ export default async function LandingPage() {
           </div>
           
           <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-900 mb-16">
-            EmBldの使い方
+            エンビルドの使い方
           </h2>
 
           <div className="grid md:grid-cols-3 gap-8 mb-16">
@@ -200,12 +182,12 @@ export default async function LandingPage() {
                 <Users className="w-16 h-16 text-green-600" />
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-4">
-                2. EmBldが開発
+                2. エンビルドが開発
               </h3>
               <p className="text-gray-600">
-                EmBldがアイデアを分析し、実現可能な
+                エンビルドがアイデアを分析し、実現可能な
                 仕様に落とし込みます。開発から
-                リリースまで、すべてEmBldが
+                リリースまで、すべてエンビルドが
                 責任を持って実行します。
               </p>
             </div>
@@ -269,7 +251,7 @@ export default async function LandingPage() {
                 {/* 矢印 */}
                 <div className="flex items-center justify-center">
                   <div className="bg-green-500 text-white px-6 py-3 rounded-full font-bold flex items-center gap-2">
-                    <span>EmBld</span>
+                    <span>エンビルド</span>
                     <ArrowRight className="w-5 h-5" />
                   </div>
                 </div>
@@ -319,13 +301,13 @@ export default async function LandingPage() {
           </div>
           
           <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-900 mb-8">
-            あなたのアイデアの進捗をEmBldでお知らせ
+            あなたのアイデアの進捗をエンビルドでお知らせ
           </h2>
           
           <p className="text-center text-gray-600 mb-16 max-w-3xl mx-auto">
-            投稿したアイデアの開発状況や収益レポートをEmBldでお知らせします。
+            投稿したアイデアの開発状況や収益レポートをエンビルドでお知らせします。
             <br />
-            さらに、あなたの興味分野に合わせた新機能やキャンペーンもご案内。EmBldを使うほど便利でお得にご利用いただけます。
+            さらに、あなたの興味分野に合わせた新機能やキャンペーンもご案内。エンビルドを使うほど便利でお得にご利用いただけます。
           </p>
 
           {/* スマートフォンのモックアップ */}
@@ -414,7 +396,7 @@ export default async function LandingPage() {
                 <div className="bg-gradient-to-r from-blue-500 to-green-500 text-white p-2 rounded-lg">
                   <Sparkles className="h-6 w-6" />
                 </div>
-                <span className="text-xl font-bold text-white">EmBld</span>
+                <span className="text-2xl font-black text-white italic transform -skew-x-12">エンビルド</span>
               </div>
               <p className="text-sm">
                 アイデアと開発者をつなぐ
