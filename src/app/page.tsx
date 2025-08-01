@@ -169,10 +169,14 @@ export default async function LandingPage() {
           {/* 3つの特徴を横並びで表示 */}
           <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {/* 特徴1: 短時間でアイデアを投稿 */}
-            <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow">
+            <div className="bg-gray-100 rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow">
               <div className="flex justify-center mb-6">
-                <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center">
-                  <Clock className="w-10 h-10 text-blue-600" />
+                <div className="w-32 h-32">
+                  <img 
+                    src="/images/Shiny Happy - Soda.svg"
+                    alt="隙間時間にアイデアを投稿"
+                    className="w-full h-full object-contain"
+                  />
                 </div>
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-4 text-center">
@@ -185,26 +189,34 @@ export default async function LandingPage() {
               </p>
             </div>
 
-            {/* 特徴2: 自社開発AIがサービス化をサポート */}
-            <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow">
+                        {/* 特徴2: 自社開発AIがサービス化をサポート */}
+            <div className="bg-gray-100 rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow">
               <div className="flex justify-center mb-6">
-                <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center">
-                  <Lightbulb className="w-10 h-10 text-green-600" />
+                <div className="w-32 h-32">
+                  <img 
+                    src="/images/Shiny Happy - Graph.svg"
+                    alt="AIがサービス化をサポート"
+                    className="w-full h-full object-contain"
+                  />
                 </div>
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-4 text-center">
                 AIがサービス化をサポート
               </h3>
               <p className="text-gray-600 text-center leading-relaxed">
-                アイデアの質を向上させる独自のAIが、あなたの思いつきを企画案レベルまでブラッシュアップ。誰でも質の高い提案が可能に。
+                 AIがアイデアの質を向上。あなたの思いつきを企画案レベルまでブラッシュアップします。誰でも質の高い提案が可能に。
               </p>
             </div>
 
             {/* 特徴3: 開発は優秀なエンジニアが担当 */}
-            <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow">
+            <div className="bg-gray-100 rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow">
               <div className="flex justify-center mb-6">
-                <div className="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center">
-                  <Users className="w-10 h-10 text-purple-600" />
+                <div className="w-32 h-32">
+                  <img 
+                    src="/images/Shiny Happy - Lamp.svg"
+                    alt="開発は優秀なエンジニアが担当"
+                    className="w-full h-full object-contain"
+                  />
                 </div>
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-4 text-center">
@@ -236,14 +248,14 @@ export default async function LandingPage() {
             <ScrollFadeIn delay={50}>
               <div className="flex justify-start">
                 <div className="w-full max-w-lg">
-                  <div className="bg-gray-100 rounded-2xl p-8">
-                    <div className="w-44 h-44 mx-auto mb-6">
-                      <img 
-                        src="/images/Shiny Happy - Sitting.svg"
-                        alt="アイデアを投稿"
-                        className="w-full h-full object-contain"
-                      />
-                    </div>
+                  <div className="w-44 h-44 mx-auto mb-0 relative z-10">
+                    <img 
+                      src="/images/Shiny Happy - Sitting.svg"
+                      alt="アイデアを投稿"
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                  <div className="bg-gray-100 rounded-b-2xl p-8 pt-12 -mt-6">
                     <h3 className="text-2xl font-bold text-gray-900 mb-3 text-center">
                       1. アイデアを投稿
                     </h3>
@@ -265,14 +277,14 @@ export default async function LandingPage() {
             <ScrollFadeIn delay={50}>
               <div className="flex justify-end">
                 <div className="w-full max-w-lg">
-                  <div className="bg-gray-100 rounded-2xl p-8">
-                    <div className="w-44 h-44 mx-auto mb-6">
-                      <img 
-                        src="/images/Shiny Happy - Stats and Graphs.svg"
-                        alt="アイデアのブラッシュアップ"
-                        className="w-full h-full object-contain"
-                      />
-                    </div>
+                  <div className="w-44 h-44 mx-auto mb-0 relative z-10">
+                    <img 
+                      src="/images/Shiny Happy - Stats and Graphs.svg"
+                      alt="アイデアのブラッシュアップ"
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                  <div className="bg-gray-100 rounded-b-2xl p-8 pt-12 -mt-6">
                     <h3 className="text-2xl font-bold text-gray-900 mb-3 text-center">
                       2. アイデアのブラッシュアップ
                     </h3>
@@ -294,14 +306,14 @@ export default async function LandingPage() {
             <ScrollFadeIn delay={50}>
               <div className="flex justify-start">
                 <div className="w-full max-w-lg">
-                  <div className="bg-gray-100 rounded-2xl p-8">
-                    <div className="w-44 h-44 mx-auto mb-6">
-                      <img 
-                        src="/images/Shiny Happy - Party Time.svg"
-                        alt="サービスのテスト"
-                        className="w-full h-full object-contain"
-                      />
-                    </div>
+                  <div className="w-44 h-44 mx-auto mb-0 relative z-10">
+                    <img 
+                      src="/images/Shiny Happy - Socializing.svg"
+                      alt="サービスのテスト"
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                  <div className="bg-gray-100 rounded-b-2xl p-8 pt-12 -mt-6">
                     <h3 className="text-2xl font-bold text-gray-900 mb-3 text-center">
                       3. サービスのテスト
                     </h3>
@@ -323,14 +335,14 @@ export default async function LandingPage() {
             <ScrollFadeIn delay={50}>
               <div className="flex justify-end">
                 <div className="w-full max-w-lg">
-                  <div className="bg-gray-100 rounded-2xl p-8">
-                    <div className="w-44 h-44 mx-auto mb-6">
-                      <img 
-                        src="/images/Shiny Happy - Home Vacation.svg"
-                        alt="収益を受け取る"
-                        className="w-full h-full object-contain"
-                      />
-                    </div>
+                  <div className="w-44 h-44 mx-auto mb-0 relative z-10">
+                    <img 
+                      src="/images/Shiny Happy - Home Vacation.svg"
+                      alt="収益を受け取る"
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                  <div className="bg-gray-100 rounded-b-2xl p-8 pt-12 -mt-6">
                     <h3 className="text-2xl font-bold text-gray-900 mb-3 text-center">
                       4. 収益を受け取る
                     </h3>
@@ -356,28 +368,26 @@ export default async function LandingPage() {
       </section>
 
       {/* CTA セクション - 登録を促す */}
-      <section className="py-20 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-green-500 via-teal-400 to-blue-500"></div>
-        
-        <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
+      <section className="py-20 bg-gray-100">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
             今すぐアイデアを収益化しよう
           </h2>
           
-          <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
-            登録は無料。アイデアを投稿して、
+          <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+            アイデアを投稿して、
             あなたのアイデアが収益を生み出す瞬間を体験してください。
           </p>
           
           <Link
             href="/auth/register"
-            className="inline-flex items-center gap-2 bg-white text-blue-600 px-8 py-4 rounded-full font-bold text-lg hover:shadow-xl transition-all transform hover:scale-105"
+            className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-green-500 text-white px-8 py-4 rounded-full font-bold text-lg hover:shadow-lg transition-all transform hover:scale-105"
           >
             無料で始める
             <ArrowRight className="w-5 h-5" />
           </Link>
           
-          <p className="text-sm text-white/70 mt-4">
+          <p className="text-sm text-gray-500 mt-4">
             ※クレジットカード不要・月額費用なし
           </p>
         </div>
