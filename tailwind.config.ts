@@ -8,6 +8,16 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      animation: {
+        'spin-slow': 'spin 2s linear infinite',
+        'fade-in': 'fadeIn 0.5s ease-in-out',
+      },
+      keyframes: {
+        fadeIn: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+      },
       colors: {
         primary: {
           50: '#f0f7ff',

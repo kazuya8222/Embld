@@ -12,7 +12,11 @@ import {
   Wallet,
   Clock,
   Smartphone,
-  FileText
+  FileText,
+  Info,
+  Settings,
+  ClipboardList,
+  HelpCircle
 } from 'lucide-react'
 import { ScrollFadeIn } from '@/components/ScrollFadeIn'
 import { Footer } from '@/components/common/Footer'
@@ -52,10 +56,34 @@ export default async function LandingPage() {
               <span className="text-2xl font-black text-white">EMBLD</span>
             </div>
             <nav className="hidden md:flex items-center space-x-8 mr-8">
-              <Link href="#service" className="text-gray-300 hover:text-white font-medium">サービス紹介</Link>
-              <Link href="#features" className="text-gray-300 hover:text-white font-medium">サービス特徴</Link>
-              <Link href="#how-it-works" className="text-gray-300 hover:text-white font-medium">利用手順</Link>
-              <Link href="#faq" className="text-gray-300 hover:text-white font-medium">FAQ</Link>
+              <Link 
+                href="#service" 
+                className="flex items-center gap-2 pb-1 border-b-2 border-transparent text-gray-400 hover:text-white transition-all font-medium"
+              >
+                <Info className="w-4 h-4" />
+                サービス紹介
+              </Link>
+              <Link 
+                href="#features" 
+                className="flex items-center gap-2 pb-1 border-b-2 border-transparent text-gray-400 hover:text-white transition-all font-medium"
+              >
+                <Settings className="w-4 h-4" />
+                サービス特徴
+              </Link>
+              <Link 
+                href="#how-it-works" 
+                className="flex items-center gap-2 pb-1 border-b-2 border-transparent text-gray-400 hover:text-white transition-all font-medium"
+              >
+                <ClipboardList className="w-4 h-4" />
+                利用手順
+              </Link>
+              <Link 
+                href="#faq" 
+                className="flex items-center gap-2 pb-1 border-b-2 border-transparent text-gray-400 hover:text-white transition-all font-medium"
+              >
+                <HelpCircle className="w-4 h-4" />
+                FAQ
+              </Link>
             </nav>
             <div className="flex items-center space-x-4">
               {session ? (

@@ -14,14 +14,19 @@ import {
   Grid3X3,
   ChevronDown,
   Bell,
-  MessageSquare
+  MessageSquare,
+  Home,
+  Package
 } from 'lucide-react'
+import { usePathname } from 'next/navigation'
 
 export function Navigation() {
   const { user, userProfile, signOut } = useAuth()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
 
+  const pathname = usePathname()
+  
   // デバッグ用
   useEffect(() => {
     console.log('Navigation - Auth state:', { user: user?.email, userProfile })
@@ -57,17 +62,27 @@ export function Navigation() {
           </div>
 
           {/* デスクトップナビゲーション */}
-          <nav className="hidden md:flex items-center space-x-6">
+          <nav className="hidden md:flex items-center space-x-8">
             <Link
               href="/home"
-              className="text-gray-300 hover:text-white font-medium transition-colors"
+              className={`flex items-center gap-2 pb-1 border-b-2 transition-all font-medium ${
+                pathname === '/home' || pathname === '/'
+                  ? 'text-white border-white'
+                  : 'text-gray-400 border-transparent hover:text-white'
+              }`}
             >
+              <Home className="w-4 h-4" />
               ホーム
             </Link>
             <Link
               href="/apps"
-              className="text-gray-300 hover:text-white font-medium transition-colors"
+              className={`flex items-center gap-2 pb-1 border-b-2 transition-all font-medium ${
+                pathname === '/apps'
+                  ? 'text-white border-white'
+                  : 'text-gray-400 border-transparent hover:text-white'
+              }`}
             >
+              <Package className="w-4 h-4" />
               完成アプリ
             </Link>
           </nav>

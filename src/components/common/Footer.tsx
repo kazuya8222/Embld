@@ -23,26 +23,26 @@ export function Footer() {
           <div>
             <h3 className="font-semibold text-white mb-3">サービス</h3>
             <ul className="space-y-2 text-sm">
-              <li><Link href="/ideas/new" className="hover:text-white">アイデア投稿</Link></li>
-              <li><Link href="/apps" className="hover:text-white">完成アプリ一覧</Link></li>
+              <li><Link href="/ideas/new" className="text-gray-400 hover:text-white transition-colors">アイデア投稿</Link></li>
+              <li><Link href="/apps" className="text-gray-400 hover:text-white transition-colors">完成アプリ一覧</Link></li>
             </ul>
           </div>
           
           <div>
             <h3 className="font-semibold text-white mb-3">サポート</h3>
             <ul className="space-y-2 text-sm">
-              <li><a href="#" className="hover:text-white">ヘルプセンター</a></li>
-              <li><a href="#" className="hover:text-white">お問い合わせ</a></li>
-              <li><a href="#" className="hover:text-white">よくある質問</a></li>
+              <li><a href="#" className="text-gray-400 hover:text-white transition-colors">ヘルプセンター</a></li>
+              <li><a href="#" className="text-gray-400 hover:text-white transition-colors">お問い合わせ</a></li>
+              <li><a href="#" className="text-gray-400 hover:text-white transition-colors">よくある質問</a></li>
             </ul>
           </div>
           
           <div>
             <h3 className="font-semibold text-white mb-3">法的情報</h3>
             <ul className="space-y-2 text-sm">
-              <li><Link href="/legal/privacy" className="hover:text-white">プライバシーポリシー</Link></li>
-              <li><Link href="/legal/terms" className="hover:text-white">利用規約</Link></li>
-              <li><a href="#" className="hover:text-white">特定商取引法</a></li>
+              <li><Link href="/legal/privacy" className="text-gray-400 hover:text-white transition-colors">プライバシーポリシー</Link></li>
+              <li><Link href="/legal/terms" className="text-gray-400 hover:text-white transition-colors">利用規約</Link></li>
+              <li><a href="#" className="text-gray-400 hover:text-white transition-colors">特定商取引法</a></li>
             </ul>
           </div>
         </div>

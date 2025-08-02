@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Inter, Noto_Sans_JP } from 'next/font/google'
 import './globals.css'
 import { AuthProvider } from '@/components/auth/AuthProvider'
+import { LoadingProvider } from '@/components/loading/LoadingProvider'
 import { Navigation } from '@/components/common/Navigation'
 import { Footer } from '@/components/common/Footer'
 
@@ -33,7 +34,9 @@ export default function RootLayout({
     <html lang="ja" className={`${inter.variable} ${notoSansJP.variable}`}>
       <body className="font-sans bg-white">
         <AuthProvider>
-          {children}
+          <LoadingProvider>
+            {children}
+          </LoadingProvider>
         </AuthProvider>
       </body>
     </html>

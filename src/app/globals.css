@@ -180,3 +180,17 @@
   opacity: 1;
   transform: translateY(0);
 }
+
+/* Loading screen fade animation */
+.loading-fade-out {
+  animation: fadeOut 0.3s ease-in-out forwards;
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
