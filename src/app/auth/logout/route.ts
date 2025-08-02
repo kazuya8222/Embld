@@ -19,9 +19,17 @@ export async function POST() {
     revalidatePath('/home', 'page')
     
     // 本番環境でのリダイレクトURLを動的に生成
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 
-                   process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 
-                   'http://localhost:3000'
+    let baseUrl = 'https://www.em-bld.com'
+    
+    // 開発環境の場合はlocalhostを使用
+    if (process.env.NODE_ENV === 'development') {
+      baseUrl = 'http://localhost:3000'
+    }
+    
+    // 環境変数が設定されている場合はそれを使用
+    if (process.env.NEXT_PUBLIC_APP_URL) {
+      baseUrl = process.env.NEXT_PUBLIC_APP_URL
+    }
     
     const redirectUrl = new URL('/auth/login', baseUrl)
     
@@ -51,9 +59,15 @@ export async function POST() {
     console.error('Unexpected error during signout:', error)
     
     // エラーが発生してもリダイレクト
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 
-                   process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 
-                   'http://localhost:3000'
+    let baseUrl = 'https://www.em-bld.com'
+    
+    if (process.env.NODE_ENV === 'development') {
+      baseUrl = 'http://localhost:3000'
+    }
+    
+    if (process.env.NEXT_PUBLIC_APP_URL) {
+      baseUrl = process.env.NEXT_PUBLIC_APP_URL
+    }
     
     return NextResponse.redirect(new URL('/auth/login', baseUrl))
   }

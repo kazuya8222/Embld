@@ -5,10 +5,21 @@ export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url)
   const code = requestUrl.searchParams.get('code')
   
-  // 本番環境でのベースURLを動的に生成
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 
-                 process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 
-                 requestUrl.origin
+  // ベースURLを確実に設定
+  let baseUrl = 'https://www.em-bld.com'
+  
+  // 開発環境の場合はlocalhostを使用
+  if (process.env.NODE_ENV === 'development') {
+    baseUrl = 'http://localhost:3000'
+  }
+  
+  // 環境変数が設定されている場合はそれを使用
+  if (process.env.NEXT_PUBLIC_APP_URL) {
+    baseUrl = process.env.NEXT_PUBLIC_APP_URL
+  }
+
+  console.log('Callback baseUrl:', baseUrl)
+  console.log('Request URL:', requestUrl.toString())
 
   if (code) {
     const supabase = await createClient()
@@ -17,6 +28,8 @@ export async function GET(request: NextRequest) {
       const { data: { session }, error } = await supabase.auth.exchangeCodeForSession(code)
       
       if (!error && session) {
+        console.log('Session created successfully for user:', session.user.email)
+        
         // ユーザープロフィールを確認
         const { data: profile } = await supabase
           .from('users')
@@ -26,6 +39,8 @@ export async function GET(request: NextRequest) {
         
         // プロフィールが存在しないか、usernameが設定されていない場合は初回ログイン
         if (!profile || !profile.username) {
+          console.log('Creating new user profile for:', session.user.email)
+          
           // Google認証の場合、ユーザープロフィールを作成
           const { error: insertError } = await supabase
             .from('users')
@@ -37,11 +52,15 @@ export async function GET(request: NextRequest) {
             })
           
           if (!insertError) {
+            console.log('Redirecting to setup page')
             return NextResponse.redirect(new URL('/auth/setup', baseUrl))
+          } else {
+            console.error('Profile creation error:', insertError)
           }
         }
         
         // 既存ユーザーはホームへ
+        console.log('Redirecting to home page')
         return NextResponse.redirect(new URL('/home', baseUrl))
       } else {
         console.error('Session exchange error:', error)
@@ -54,5 +73,6 @@ export async function GET(request: NextRequest) {
   }
 
   // エラーまたはコードなし - ログインページへ
+  console.log('No code provided, redirecting to login')
   return NextResponse.redirect(new URL('/auth/login?error=認証に失敗しました', baseUrl))
 }
