@@ -29,12 +29,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // ログアウト処理
   const signOut = async () => {
     try {
+      // まずクライアントサイドでサインアウト
+      const { error } = await supabase.auth.signOut()
+      if (error) {
+        console.error('Client signout error:', error)
+      }
+      
       // サーバーサイドのログアウト処理を呼び出し
       const response = await fetch('/auth/logout', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include', // Cookieを含める
       })
       
       if (response.ok) {
@@ -46,12 +53,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (typeof window !== 'undefined') {
           localStorage.removeItem('supabase.auth.token')
           sessionStorage.clear()
+          
+          // Supabase関連のすべてのキーを削除
+          const keysToRemove = []
+          for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i)
+            if (key && key.includes('supabase')) {
+              keysToRemove.push(key)
+            }
+          }
+          keysToRemove.forEach(key => localStorage.removeItem(key))
         }
         
         // ログインページにリダイレクト
         router.push('/auth/login')
+        router.refresh()
       } else {
-        console.error('Logout failed')
+        console.error('Server logout failed')
+        // サーバーサイドが失敗してもクライアントサイドの状態はクリア
+        setUser(null)
+        setUserProfile(null)
+        router.push('/auth/login')
       }
     } catch (error) {
       console.error('Error during signout:', error)
