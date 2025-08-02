@@ -21,6 +21,8 @@ export function LoadingProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const searchParams = useSearchParams()
 
+  // ページ遷移時のローディングは無効化（Next.jsのloading.tsxに任せる）
+  /*
   useEffect(() => {
     // ページ遷移開始時にローディングを表示
     setIsLoading(true)
@@ -41,10 +43,10 @@ export function LoadingProvider({ children }: { children: React.ReactNode }) {
     }, 1000)
     return () => clearTimeout(timer)
   }, [])
+  */
 
   return (
     <LoadingContext.Provider value={{ isLoading, setIsLoading }}>
-      {isLoading && <LoadingScreen />}
       {children}
     </LoadingContext.Provider>
   )
