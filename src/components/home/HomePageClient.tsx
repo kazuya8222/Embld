@@ -64,7 +64,7 @@ export default function HomePageClient({ ideasWithCounts, searchParams }: HomePa
             アイデアを投稿して、実現されたアプリの収益の30%を受け取りましょう。<br />
             開発はEMBLDチームが担当。あなたはアイデアを考えるだけでOK！
           </p>
-          <PostIdeaButton className="inline-flex items-center gap-2 bg-white text-blue-600 px-6 py-3 rounded-full font-bold hover:bg-gray-100 transition-all transform hover:scale-105">
+          <PostIdeaButton className="inline-flex items-center gap-2 bg-white text-black px-6 py-3 rounded-full font-bold hover:bg-gray-100 transition-all transform hover:scale-105 border border-gray-200">
             <span>アイデアを投稿する</span>
             <ArrowRight className="w-5 h-5" />
           </PostIdeaButton>

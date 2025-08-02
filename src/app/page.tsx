@@ -40,35 +40,35 @@ export default async function LandingPage() {
         ></div>
       </div>
       {/* ヘッダー */}
-      <header className="fixed top-0 w-full bg-white/95 backdrop-blur-sm z-50 border-b border-gray-100">
+      <header className="fixed top-0 w-full bg-gray-900 backdrop-blur-sm z-50 border-b border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-3">
               <img 
                 src="/images/EnBld_logo_icon_monochrome.svg"
                 alt="EMBLD Icon"
-                className="h-10 w-10"
+                className="h-10 w-10 brightness-0 invert"
               />
-              <span className="text-2xl font-black text-gray-900">EMBLD</span>
+              <span className="text-2xl font-black text-white">EMBLD</span>
             </div>
             <nav className="hidden md:flex items-center space-x-8 mr-8">
-              <Link href="#service" className="text-gray-600 hover:text-gray-900 font-medium">サービス紹介</Link>
-              <Link href="#features" className="text-gray-600 hover:text-gray-900 font-medium">サービス特徴</Link>
-              <Link href="#how-it-works" className="text-gray-600 hover:text-gray-900 font-medium">利用手順</Link>
-              <Link href="#faq" className="text-gray-600 hover:text-gray-900 font-medium">FAQ</Link>
+              <Link href="#service" className="text-gray-300 hover:text-white font-medium">サービス紹介</Link>
+              <Link href="#features" className="text-gray-300 hover:text-white font-medium">サービス特徴</Link>
+              <Link href="#how-it-works" className="text-gray-300 hover:text-white font-medium">利用手順</Link>
+              <Link href="#faq" className="text-gray-300 hover:text-white font-medium">FAQ</Link>
             </nav>
             <div className="flex items-center space-x-4">
               {session ? (
                 <>
                   <Link
                     href="/profile"
-                    className="text-gray-600 hover:text-gray-900 px-4 py-2 text-sm font-medium transition-colors"
+                    className="text-gray-300 hover:text-white px-4 py-2 text-sm font-medium transition-colors"
                   >
                     プロフィール
                   </Link>
                   <Link
                     href="/home"
-                    className="bg-gradient-to-r from-blue-500 to-green-500 text-white px-6 py-2.5 rounded-full text-sm font-bold hover:shadow-lg transition-all"
+                    className="bg-white text-black px-6 py-2.5 rounded-full text-sm font-bold hover:shadow-lg transition-all border border-gray-200"
                   >
                     アイデアを見る
                   </Link>
@@ -77,13 +77,13 @@ export default async function LandingPage() {
                 <>
                   <Link
                     href="/auth/login"
-                    className="text-gray-600 hover:text-gray-900 px-4 py-2 text-sm font-medium transition-colors"
+                    className="text-gray-300 hover:text-white px-4 py-2 text-sm font-medium transition-colors"
                   >
                     ログイン
                   </Link>
                   <Link
                     href="/home"
-                    className="bg-gradient-to-r from-blue-500 to-green-500 text-white px-6 py-2.5 rounded-full text-sm font-bold hover:shadow-lg transition-all"
+                    className="bg-white text-black px-6 py-2.5 rounded-full text-sm font-bold hover:shadow-lg transition-all border border-gray-200"
                   >
                     無料で始める
                   </Link>
@@ -118,7 +118,7 @@ export default async function LandingPage() {
               
               <Link
                 href="/home"
-                className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-green-500 text-white px-10 py-4 rounded-full font-bold text-lg hover:shadow-lg transition-all transform hover:scale-105"
+                className="inline-flex items-center gap-2 bg-white text-black px-10 py-4 rounded-full font-bold text-lg hover:shadow-lg transition-all transform hover:scale-105 border border-gray-200"
               >
                 アイデアを見る
                 <ArrowRight className="w-5 h-5" />
@@ -271,10 +271,10 @@ export default async function LandingPage() {
             {/* 全体に渡る灰色の太い波 - 数を減らして超極太に */}
             <g opacity="0.3">
               {/* 超極太の波を5本だけ配置 */}
-              <path fill="none" stroke="#e5e7eb" stroke-width="300" d="M-100,100 Q200,50 500,100 T1100,100 Q1400,50 1700,100"/>
-              <path fill="none" stroke="#f3f4f6" stroke-width="280" d="M-100,300 Q200,250 500,300 T1100,300 Q1400,250 1700,300"/>
-              <path fill="none" stroke="#e5e7eb" stroke-width="300" d="M-100,500 Q200,450 500,500 T1100,500 Q1400,450 1700,500"/>
-              <path fill="none" stroke="#f3f4f6" stroke-width="280" d="M-100,700 Q200,650 500,700 T1100,700 Q1400,650 1700,700"/>
+              <path fill="none" stroke="#e5e7eb" strokeWidth="300" d="M-100,100 Q200,50 500,100 T1100,100 Q1400,50 1700,100"/>
+              <path fill="none" stroke="#f3f4f6" strokeWidth="280" d="M-100,300 Q200,250 500,300 T1100,300 Q1400,250 1700,300"/>
+              <path fill="none" stroke="#e5e7eb" strokeWidth="300" d="M-100,500 Q200,450 500,500 T1100,500 Q1400,450 1700,500"/>
+              <path fill="none" stroke="#f3f4f6" strokeWidth="280" d="M-100,700 Q200,650 500,700 T1100,700 Q1400,650 1700,700"/>
             </g>
           </svg>
         </div>
@@ -428,7 +428,7 @@ export default async function LandingPage() {
           
           <Link
             href="/home"
-            className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-green-500 text-white px-8 py-4 rounded-full font-bold text-lg hover:shadow-lg transition-all transform hover:scale-105"
+            className="inline-flex items-center gap-2 bg-white text-black px-8 py-4 rounded-full font-bold text-lg hover:shadow-lg transition-all transform hover:scale-105 border border-gray-200"
           >
             無料で始める
             <ArrowRight className="w-5 h-5" />
