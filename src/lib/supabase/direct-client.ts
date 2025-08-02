@@ -174,9 +174,24 @@ export class DirectSupabaseClient {
   // ログアウト
   async signOut() {
     try {
+      // Supabaseの認証トークンをクリア
       localStorage.removeItem('supabase.auth.token')
+      sessionStorage.clear()
+      
+      // その他の認証関連データもクリア
+      const keysToRemove = []
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i)
+        if (key && key.includes('supabase')) {
+          keysToRemove.push(key)
+        }
+      }
+      
+      keysToRemove.forEach(key => localStorage.removeItem(key))
+      
       return { error: null }
     } catch (error: any) {
+      console.error('Error during direct signOut:', error)
       return { error: { message: error.message } }
     }
   }

@@ -1,9 +1,9 @@
 'use client'
 
 import { createContext, useContext, useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
 import type { User } from '@supabase/supabase-js'
 import { createClient } from '@/utils/supabase/client'
+import { useRouter } from 'next/navigation'
 
 interface AuthContextType {
   user: User | null
@@ -26,49 +26,99 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const supabase = createClient()
   const router = useRouter()
 
-  // プロフィールを取得する関数
-  const fetchProfile = async (userId: string) => {
-    const { data: profile } = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', userId)
-      .single()
-    
-    setUserProfile(profile)
-    return profile
+  // ログアウト処理
+  const signOut = async () => {
+    try {
+      // サーバーサイドのログアウト処理を呼び出し
+      const response = await fetch('/auth/logout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+      
+      if (response.ok) {
+        // 状態を即座にクリア
+        setUser(null)
+        setUserProfile(null)
+        
+        // ローカルストレージもクリア
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('supabase.auth.token')
+          sessionStorage.clear()
+        }
+        
+        // ログインページにリダイレクト
+        router.push('/auth/login')
+      } else {
+        console.error('Logout failed')
+      }
+    } catch (error) {
+      console.error('Error during signout:', error)
+      // エラーが発生しても状態をクリアしてリダイレクト
+      setUser(null)
+      setUserProfile(null)
+      router.push('/auth/login')
+    }
   }
 
   useEffect(() => {
-    // 初期認証状態のチェック
-    const checkUser = async () => {
+    // 初期セッションの取得（getUser()を使用）
+    const getInitialSession = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession()
+        const { data: { user }, error } = await supabase.auth.getUser()
         
-        if (session?.user) {
-          setUser(session.user)
+        if (error) {
+          console.error('Error getting user:', error)
+          setUser(null)
+          setUserProfile(null)
+        } else if (user) {
+          setUser(user)
           
           // ユーザープロフィールを取得
-          await fetchProfile(session.user.id)
+          const { data: profile } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', user.id)
+            .single()
+          
+          setUserProfile(profile)
         }
       } catch (error) {
-        console.error('Error checking auth:', error)
+        console.error('Error fetching user:', error)
       } finally {
         setLoading(false)
       }
     }
 
-    checkUser()
+    getInitialSession()
 
     // 認証状態の変更を監視
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log('Auth state changed:', event)
         
-        if (session?.user) {
+        if (event === 'SIGNED_OUT') {
+          // ログアウト時は即座に状態をクリア
+          setUser(null)
+          setUserProfile(null)
+          
+          // ローカルストレージもクリア
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem('supabase.auth.token')
+            sessionStorage.clear()
+          }
+        } else if (session?.user) {
           setUser(session.user)
           
           // ユーザープロフィールを取得
-          await fetchProfile(session.user.id)
+          const { data: profile } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', session.user.id)
+            .single()
+          
+          setUserProfile(profile)
         } else {
           setUser(null)
           setUserProfile(null)
@@ -82,29 +132,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       subscription.unsubscribe()
     }
   }, [supabase])
-
-  const signOut = async () => {
-    try {
-      console.log('Starting sign out...')
-      const { error } = await supabase.auth.signOut()
-      
-      if (error) {
-        console.error('Supabase sign out error:', error)
-        throw error
-      }
-      
-      console.log('Sign out successful')
-      setUser(null)
-      setUserProfile(null)
-      
-      // ページ全体をリロードして認証状態をクリア
-      window.location.href = '/auth/login'
-    } catch (error) {
-      console.error('Sign out error:', error)
-      // エラーがあってもログインページにリダイレクト
-      window.location.href = '/auth/login'
-    }
-  }
 
   return (
     <AuthContext.Provider value={{ user, userProfile, loading, signOut }}>

@@ -1,35 +1,51 @@
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
+import { type NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/utils/supabase/middleware'
 
 export async function middleware(request: NextRequest) {
-  const { supabase, response } = createClient(request)
-  
-  const {
-    data: { session },
-  } = await supabase.auth.getSession()
+  try {
+    const { supabase, response } = createClient(request)
 
-  // 保護されたルート
-  const protectedRoutes = ['/profile', '/ideas/new']
-  const isProtectedRoute = protectedRoutes.some(route => 
-    request.nextUrl.pathname.startsWith(route)
-  )
+    // Refresh session if expired - required for Server Components
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
 
-  // 認証が必要なページにアクセスしようとした場合
-  if (isProtectedRoute && !session) {
-    return NextResponse.redirect(new URL('/auth/login', request.url))
+    // Protected routes
+    const protectedRoutes = ['/profile', '/ideas/new', '/auth/setup']
+    const isProtectedRoute = protectedRoutes.some(route => 
+      request.nextUrl.pathname.startsWith(route)
+    )
+
+    // If accessing protected route without auth, redirect to login
+    if (isProtectedRoute && !user) {
+      const redirectUrl = new URL('/auth/login', request.url)
+      return NextResponse.redirect(redirectUrl)
+    }
+
+    // If authenticated user tries to access auth pages, redirect to home
+    if (user && (request.nextUrl.pathname.startsWith('/auth/login') || 
+                 request.nextUrl.pathname.startsWith('/auth/register'))) {
+      const redirectUrl = new URL('/home', request.url)
+      return NextResponse.redirect(redirectUrl)
+    }
+
+    return response
+  } catch (error) {
+    console.error('Middleware error:', error)
+    return NextResponse.next()
   }
-
-  // /auth/setupページは認証が必要
-  if (request.nextUrl.pathname === '/auth/setup' && !session) {
-    return NextResponse.redirect(new URL('/auth/login', request.url))
-  }
-
-  return response
 }
 
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico).*)',
+    /*
+     * Match all request paths except for the ones starting with:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - public folder
+     * - images
+     */
+    '/((?!_next/static|_next/image|favicon.ico|images|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }

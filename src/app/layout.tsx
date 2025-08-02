@@ -23,6 +23,16 @@ const notoSansJP = Noto_Sans_JP({
 export const metadata: Metadata = {
   title: 'EmBld - アイデアを実現する開発パートナー',
   description: 'あなたのアプリアイデアをEmBldチームが開発。収益の20%をアイデア投稿者に還元するプラットフォーム',
+  icons: {
+    icon: [
+      { url: '/images/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/images/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/images/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+    ],
+    apple: [
+      { url: '/images/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+    ],
+  },
 }
 
 export default function RootLayout({
@@ -32,6 +42,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ja" className={`${inter.variable} ${notoSansJP.variable}`}>
+      <head>
+        <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon_16x16.png" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon_32x32.png" />
+        <link rel="icon" type="image/png" sizes="180x180" href="/images/favicon_180x180.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon_180x180.png" />
+      </head>
       <body className="font-sans bg-white">
         <AuthProvider>
           <LoadingProvider>

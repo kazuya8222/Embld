@@ -16,7 +16,6 @@ export function SetupForm() {
   const { user } = useAuth()
 
   useEffect(() => {
-    // ユーザーがログインしているか確認
     const checkUser = async () => {
       if (!user) {
         router.push('/auth/login')
@@ -58,6 +57,7 @@ export function SetupForm() {
         .from('users')
         .select('id')
         .eq('username', username)
+        .neq('id', user.id)
         .single()
 
       if (existingUser) {
@@ -66,16 +66,14 @@ export function SetupForm() {
         return
       }
 
-      // ユーザープロフィールを作成/更新
+      // ユーザープロフィールを更新
       const { error } = await supabase
         .from('users')
-        .upsert({
-          id: user.id,
-          email: user.email!,
+        .update({
           username,
-          auth_provider: 'google',
           updated_at: new Date().toISOString()
         })
+        .eq('id', user.id)
 
       if (error) {
         console.error('Profile update error:', error)
