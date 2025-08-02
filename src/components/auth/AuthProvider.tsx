@@ -26,6 +26,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const supabase = createClient()
   const router = useRouter()
 
+  // プロフィールを取得する関数
+  const fetchProfile = async (userId: string) => {
+    const { data: profile } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', userId)
+      .single()
+    
+    setUserProfile(profile)
+    return profile
+  }
+
   useEffect(() => {
     // 初期認証状態のチェック
     const checkUser = async () => {
@@ -36,13 +48,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUser(session.user)
           
           // ユーザープロフィールを取得
-          const { data: profile } = await supabase
-            .from('users')
-            .select('*')
-            .eq('id', session.user.id)
-            .single()
-          
-          setUserProfile(profile)
+          await fetchProfile(session.user.id)
         }
       } catch (error) {
         console.error('Error checking auth:', error)
@@ -62,13 +68,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUser(session.user)
           
           // ユーザープロフィールを取得
-          const { data: profile } = await supabase
-            .from('users')
-            .select('*')
-            .eq('id', session.user.id)
-            .single()
-          
-          setUserProfile(profile)
+          await fetchProfile(session.user.id)
         } else {
           setUser(null)
           setUserProfile(null)
