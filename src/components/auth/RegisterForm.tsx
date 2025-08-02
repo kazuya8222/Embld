@@ -3,6 +3,7 @@
 import { signup, loginWithGoogle } from '@/app/auth/actions'
 import { cn } from '@/lib/utils/cn'
 import { useSearchParams } from 'next/navigation'
+import { getAppUrl } from '@/utils/env'
 
 export function RegisterForm() {
   const searchParams = useSearchParams()

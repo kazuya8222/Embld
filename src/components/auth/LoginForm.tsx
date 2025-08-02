@@ -11,6 +11,14 @@ export function LoginForm() {
   const message = searchParams.get('message')
   const [isPending, startTransition] = useTransition()
 
+  // クライアントサイドで環境に応じたURLを取得
+  const getRedirectUrl = () => {
+    if (typeof window !== 'undefined') {
+      return `${window.location.origin}/auth/callback`
+    }
+    return `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/auth/callback`
+  }
+
   return (
     <div className="max-w-md mx-auto space-y-6">
       <div className="text-center">
@@ -116,6 +124,11 @@ export function LoginForm() {
           {decodeURIComponent(message)}
         </div>
       )}
+
+      <div className="text-center text-sm text-gray-500">
+        <p>現在の環境: {process.env.NODE_ENV}</p>
+        <p>リダイレクト先: {getRedirectUrl()}</p>
+      </div>
 
       <div className="text-center text-sm">
         <span className="text-gray-600">アカウントをお持ちでない方は </span>

@@ -3,6 +3,15 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/utils/supabase/server'
+import { headers } from 'next/headers'
+
+// 動的にオリジンを取得する関数
+async function getOrigin() {
+  const headersList = await headers()
+  const host = headersList.get('host') || ''
+  const protocol = process.env.NODE_ENV === 'development' ? 'http' : 'https'
+  return `${protocol}://${host}`
+}
 
 export async function login(formData: FormData) {
   const supabase = await createClient()
@@ -64,37 +73,30 @@ export async function signup(formData: FormData) {
 export async function signout() {
   const supabase = await createClient()
   
-  try {
-    // サインアウト実行
-    const { error } = await supabase.auth.signOut()
-    
-    if (error) {
-      console.error('Signout error:', error)
-    }
-    
-    // 強制的にキャッシュをクリア
-    revalidatePath('/', 'layout')
-    revalidatePath('/auth/login', 'page')
-    revalidatePath('/home', 'page')
-    
-    // リダイレクト
-    redirect('/auth/login')
-  } catch (error) {
-    console.error('Unexpected error during signout:', error)
-    redirect('/auth/login')
-  }
+  // サインアウト実行
+  await supabase.auth.signOut()
+
+  // 強制的にキャッシュをクリア
+  revalidatePath('/', 'layout')
+  
+  // リダイレクト
+  redirect('/auth/login')
 }
 
 export async function loginWithGoogle() {
   const supabase = await createClient()
   
-  // リダイレクトURLを動的に生成
-  const origin = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+  // 動的にオリジンを取得
+  const origin = await getOrigin()
   
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
       redirectTo: `${origin}/auth/callback`,
+      queryParams: {
+        access_type: 'offline',
+        prompt: 'consent',
+      }
     },
   })
 
