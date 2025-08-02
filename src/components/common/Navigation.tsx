@@ -34,10 +34,14 @@ export function Navigation() {
 
   const handleSignOut = async () => {
     try {
+      console.log('Signing out...')
       await signOut()
       setIsMenuOpen(false)
+      setIsUserMenuOpen(false)
     } catch (error) {
+      console.error('Sign out error:', error)
       setIsMenuOpen(false)
+      setIsUserMenuOpen(false)
     }
   }
 

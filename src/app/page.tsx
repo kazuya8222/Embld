@@ -1,5 +1,3 @@
-import { createClient } from '@/utils/supabase/server'
-import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { 
   ArrowRight, 
@@ -22,10 +20,6 @@ import { ScrollFadeIn } from '@/components/ScrollFadeIn'
 import { Footer } from '@/components/common/Footer'
 
 export default async function LandingPage() {
-  // サーバーサイドで認証状態をチェック
-  const supabase = await createClient()
-  const { data: { session } } = await supabase.auth.getSession()
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       {/* 背景の装飾パターン */}
@@ -86,37 +80,12 @@ export default async function LandingPage() {
               </Link>
             </nav>
             <div className="flex items-center space-x-4">
-              {session ? (
-                <>
-                  <Link
-                    href="/profile"
-                    className="text-gray-300 hover:text-white px-4 py-2 text-sm font-medium transition-colors"
-                  >
-                    プロフィール
-                  </Link>
-                  <Link
-                    href="/home"
-                    className="bg-white text-black px-6 py-2.5 rounded-full text-sm font-bold hover:shadow-lg transition-all border border-gray-200"
-                  >
-                    アイデアを見る
-                  </Link>
-                </>
-              ) : (
-                <>
-                  <Link
-                    href="/auth/login"
-                    className="text-gray-300 hover:text-white px-4 py-2 text-sm font-medium transition-colors"
-                  >
-                    ログイン
-                  </Link>
-                  <Link
-                    href="/home"
-                    className="bg-white text-black px-6 py-2.5 rounded-full text-sm font-bold hover:shadow-lg transition-all border border-gray-200"
-                  >
-                    無料で始める
-                  </Link>
-                </>
-              )}
+              <Link
+                href="/home"
+                className="bg-white text-black px-6 py-2.5 rounded-full text-sm font-bold hover:shadow-lg transition-all border border-gray-200"
+              >
+                無料で始める
+              </Link>
             </div>
           </div>
         </div>
@@ -148,7 +117,7 @@ export default async function LandingPage() {
                 href="/home"
                 className="inline-flex items-center gap-2 bg-white text-black px-10 py-4 rounded-full font-bold text-lg hover:shadow-lg transition-all transform hover:scale-105 border border-gray-200"
               >
-                アイデアを見る
+                無料で始める
                 <ArrowRight className="w-5 h-5" />
               </Link>
             </div>

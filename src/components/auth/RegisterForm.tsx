@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from '@/utils/supabase/client'
 import { createBrowserClient } from '@supabase/ssr'
 import { cn } from '@/lib/utils/cn'
 

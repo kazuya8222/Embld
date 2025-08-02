@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import type { User } from '@supabase/supabase-js'
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from '@/utils/supabase/client'
 
 interface AuthContextType {
   user: User | null
@@ -85,12 +85,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     try {
-      await supabase.auth.signOut()
+      console.log('Starting sign out...')
+      const { error } = await supabase.auth.signOut()
+      
+      if (error) {
+        console.error('Supabase sign out error:', error)
+        throw error
+      }
+      
+      console.log('Sign out successful')
       setUser(null)
       setUserProfile(null)
-      router.push('/auth/login')
+      
+      // ページ全体をリロードして認証状態をクリア
+      window.location.href = '/auth/login'
     } catch (error) {
       console.error('Sign out error:', error)
+      // エラーがあってもログインページにリダイレクト
+      window.location.href = '/auth/login'
     }
   }
 
