@@ -29,52 +29,53 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // ログアウト処理
   const signOut = async () => {
     try {
-      // まずクライアントサイドでサインアウト
+      console.log('Starting logout process...')
+      
+      // クライアントサイドでサインアウト
       const { error } = await supabase.auth.signOut()
       if (error) {
         console.error('Client signout error:', error)
+      } else {
+        console.log('Client signout successful')
       }
       
-      // サーバーサイドのログアウト処理を呼び出し
-      const response = await fetch('/auth/logout', {
+      // 状態を即座にクリア
+      setUser(null)
+      setUserProfile(null)
+      
+      // ローカルストレージもクリア
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('supabase.auth.token')
+        sessionStorage.clear()
+        
+        // Supabase関連のすべてのキーを削除
+        const keysToRemove = []
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i)
+          if (key && key.includes('supabase')) {
+            keysToRemove.push(key)
+          }
+        }
+        keysToRemove.forEach(key => localStorage.removeItem(key))
+        console.log('Local storage cleared')
+      }
+      
+      // サーバーサイドのログアウト処理を呼び出し（非同期で実行）
+      fetch('/auth/logout', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include', // Cookieを含める
+        credentials: 'include',
+      }).catch(error => {
+        console.error('Server logout error:', error)
       })
       
-      if (response.ok) {
-        // 状態を即座にクリア
-        setUser(null)
-        setUserProfile(null)
-        
-        // ローカルストレージもクリア
-        if (typeof window !== 'undefined') {
-          localStorage.removeItem('supabase.auth.token')
-          sessionStorage.clear()
-          
-          // Supabase関連のすべてのキーを削除
-          const keysToRemove = []
-          for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i)
-            if (key && key.includes('supabase')) {
-              keysToRemove.push(key)
-            }
-          }
-          keysToRemove.forEach(key => localStorage.removeItem(key))
-        }
-        
-        // ログインページにリダイレクト
-        router.push('/auth/login')
-        router.refresh()
-      } else {
-        console.error('Server logout failed')
-        // サーバーサイドが失敗してもクライアントサイドの状態はクリア
-        setUser(null)
-        setUserProfile(null)
-        router.push('/auth/login')
-      }
+      // ログインページにリダイレクト
+      console.log('Redirecting to login page...')
+      router.push('/auth/login')
+      router.refresh()
+      
     } catch (error) {
       console.error('Error during signout:', error)
       // エラーが発生しても状態をクリアしてリダイレクト

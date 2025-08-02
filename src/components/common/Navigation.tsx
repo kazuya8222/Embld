@@ -29,13 +29,17 @@ export function Navigation() {
   const router = useRouter()
 
   const handleSignOut = async () => {
+    console.log('Navigation: Starting logout...')
     setIsUserMenuOpen(false)
     setIsMenuOpen(false)
     
     try {
       await signOut()
+      console.log('Navigation: Logout completed')
     } catch (error) {
-      console.error('Logout error:', error)
+      console.error('Navigation: Logout error:', error)
+      // エラーが発生してもリダイレクトを試行
+      router.push('/auth/login')
     }
   }
 
