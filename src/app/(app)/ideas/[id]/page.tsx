@@ -26,7 +26,8 @@ import {
   Zap,
   FileText,
   Palette,
-  Link as LinkIcon
+  Link as LinkIcon,
+  MessageCircle
 } from 'lucide-react'
 import { CoreFeature } from '@/types'
 
@@ -81,7 +82,7 @@ export default async function IdeaDetailPage({
     idea.core_features?.length > 0
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
+    <div className="max-w-6xl mx-auto space-y-8">
       <div className="flex items-center gap-4">
         <Link
           href="/home"
@@ -102,62 +103,149 @@ export default async function IdeaDetailPage({
         )}
       </div>
 
-      {/* ヘッダー情報 */}
-      <div className="bg-white rounded-lg shadow-sm p-8 space-y-6">
-        <div className="space-y-4">
-          <div className="flex items-start justify-between">
-            <div className="flex items-center gap-3">
-              <span className="inline-block px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full">
-                {idea.category}
-              </span>
-              <span className={`inline-block px-3 py-1 text-sm rounded-full ${
-                idea.status === 'open' ? 'bg-green-100 text-green-700' :
-                idea.status === 'in_development' ? 'bg-yellow-100 text-yellow-700' :
-                'bg-blue-100 text-blue-700'
-              }`}>
-                {idea.status === 'open' ? '募集中' :
-                 idea.status === 'in_development' ? '開発中' : '完成'}
-              </span>
+      {/* プロジェクト名（上部） */}
+      <div className="bg-white rounded-lg shadow-sm p-8">
+        <div className="flex items-center gap-3 mb-4">
+          <span className="inline-block px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full">
+            {idea.category}
+          </span>
+          <span className={`inline-block px-3 py-1 text-sm rounded-full ${
+            idea.status === 'open' ? 'bg-green-100 text-green-700' :
+            idea.status === 'in_development' ? 'bg-yellow-100 text-yellow-700' :
+            'bg-blue-100 text-blue-700'
+          }`}>
+            {idea.status === 'open' ? '募集中' :
+             idea.status === 'in_development' ? '開発中' : '完成'}
+          </span>
+        </div>
+
+        <h1 className="text-4xl font-bold text-gray-900 mb-4">
+          {idea.service_name || idea.title}
+        </h1>
+
+        {idea.catch_copy && (
+          <p className="text-xl text-gray-600 italic mb-6">
+            &ldquo;{idea.catch_copy}&rdquo;
+          </p>
+        )}
+
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-6 text-sm text-gray-600">
+            <div className="flex items-center gap-2">
+              <User className="w-4 h-4" />
+              <span>{idea.user.username}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Calendar className="w-4 h-4" />
+              <span>{formatDate(idea.created_at)}</span>
             </div>
           </div>
 
-          <h1 className="text-3xl font-bold text-gray-900">
-            {idea.service_name || idea.title}
-          </h1>
+          <WantButton
+            ideaId={idea.id}
+            initialWanted={userHasWanted}
+            initialCount={wantsCount}
+            className="text-base px-6 py-3"
+          />
+        </div>
+      </div>
 
-          {idea.catch_copy && (
-            <p className="text-xl text-gray-600 italic">
-              &ldquo;{idea.catch_copy}&rdquo;
-            </p>
-          )}
-
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-6 text-sm text-gray-600">
-              <div className="flex items-center gap-2">
-                <User className="w-4 h-4" />
-                <span>{idea.user.username}</span>
+      {/* 収益性と参加メンバー */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* 左側：収益性について */}
+        <div className="bg-white rounded-lg shadow-sm p-6">
+          <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+            <DollarSign className="w-5 h-5 text-green-600" />
+            収益性
+          </h2>
+          <div className="space-y-4">
+            <div className="bg-green-50 rounded-lg p-4">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-sm text-gray-600">想定収益</span>
+                <span className="text-lg font-bold text-green-600">{wantsCount * 10000}円/月</span>
               </div>
-              <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4" />
-                <span>{formatDate(idea.created_at)}</span>
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className="bg-green-600 h-2 rounded-full" style={{width: `${Math.min(wantsCount * 5, 100)}%`}}></div>
               </div>
             </div>
-
-            <div className="flex items-center gap-3">
-              <WantButton
-                ideaId={idea.id}
-                initialWanted={userHasWanted}
-                initialCount={wantsCount}
-                className="text-base px-6 py-3"
-              />
+            
+            {idea.monetization_method && (
+              <div>
+                <h3 className="font-semibold text-gray-700 mb-2">マネタイズ方法</h3>
+                <p className="text-gray-600 text-sm">{idea.monetization_method}</p>
+              </div>
+            )}
+            
+            {idea.price_range && (
+              <div>
+                <h3 className="font-semibold text-gray-700 mb-2">想定価格帯</h3>
+                <p className="text-gray-600 text-sm">{idea.price_range}</p>
+              </div>
+            )}
+            
+            <div className="bg-gray-50 rounded-lg p-4">
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-gray-600">「ほしい！」の数</span>
+                <span className="font-medium">{wantsCount}人</span>
+              </div>
+              <div className="flex justify-between items-center text-sm mt-2">
+                <span className="text-gray-600">コメント数</span>
+                <span className="font-medium">{comments.length}</span>
+              </div>
             </div>
+          </div>
+        </div>
+
+        {/* 右側：参加メンバー */}
+        <div className="bg-white rounded-lg shadow-sm p-6">
+          <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+            <Users className="w-5 h-5 text-blue-600" />
+            参加メンバー
+          </h2>
+          <div className="space-y-4">
+            {/* プロジェクトオーナー */}
+            <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
+              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                <User className="w-5 h-5 text-blue-600" />
+              </div>
+              <div>
+                <div className="font-medium text-gray-900">{idea.user.username}</div>
+                <div className="text-sm text-blue-600">プロジェクトオーナー</div>
+              </div>
+            </div>
+            
+            {/* 開発チーム */}
+            {idea.completed_apps && idea.completed_apps.length > 0 ? (
+              idea.completed_apps.map((app: any) => (
+                <div key={app.id} className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
+                  <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                    <Code className="w-5 h-5 text-green-600" />
+                  </div>
+                  <div>
+                    <div className="font-medium text-gray-900">EmBldチーム</div>
+                    <div className="text-sm text-green-600">開発担当</div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-6 text-gray-500">
+                <Users className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+                <p className="text-sm">開発メンバー募集中</p>
+                <p className="text-xs mt-1">このプロジェクトに参加しませんか？</p>
+              </div>
+            )}
           </div>
         </div>
       </div>
 
+      {/* 企画書セクション */}
       {hasProjectPlan ? (
-        // 企画書フォーマット表示
-        <div className="space-y-8">
+        <div className="bg-white rounded-lg shadow-sm p-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+            <FileText className="w-6 h-6 text-blue-600" />
+            企画書
+          </h2>
+          <div className="space-y-8">
           {/* 1. サービス概要 */}
           {(idea.service_description || idea.tags?.length > 0) && (
             <div className="bg-white rounded-lg shadow-sm p-8">
@@ -472,16 +560,20 @@ export default async function IdeaDetailPage({
               )}
             </div>
           )}
+          </div>
         </div>
       ) : (
-        // 従来のシンプルフォーマット表示
         <div className="bg-white rounded-lg shadow-sm p-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+            <FileText className="w-6 h-6 text-blue-600" />
+            企画書
+          </h2>
           <div className="grid md:grid-cols-2 gap-8">
             <div className="space-y-6">
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
                   <AlertCircle className="w-5 h-5 text-red-600" />
-                  <h2 className="text-lg font-semibold text-gray-900">解決したい問題</h2>
+                  <h3 className="text-lg font-semibold text-gray-900">解決したい問題</h3>
                 </div>
                 <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
                   {idea.problem}
@@ -491,7 +583,7 @@ export default async function IdeaDetailPage({
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
                   <Lightbulb className="w-5 h-5 text-yellow-600" />
-                  <h2 className="text-lg font-semibold text-gray-900">解決策・アイデア</h2>
+                  <h3 className="text-lg font-semibold text-gray-900">解決策・アイデア</h3>
                 </div>
                 <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
                   {idea.solution}
@@ -502,7 +594,7 @@ export default async function IdeaDetailPage({
                 <div className="space-y-3">
                   <div className="flex items-center gap-2">
                     <Target className="w-5 h-5 text-blue-600" />
-                    <h2 className="text-lg font-semibold text-gray-900">ターゲットユーザー</h2>
+                    <h3 className="text-lg font-semibold text-gray-900">ターゲットユーザー</h3>
                   </div>
                   <p className="text-gray-700 leading-relaxed">
                     {idea.target_users}
@@ -516,7 +608,7 @@ export default async function IdeaDetailPage({
                 <div className="space-y-3">
                   <div className="flex items-center gap-2">
                     <Tag className="w-5 h-5 text-purple-600" />
-                    <h2 className="text-lg font-semibold text-gray-900">タグ</h2>
+                    <h3 className="text-lg font-semibold text-gray-900">タグ</h3>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {idea.tags.map((tag: string, index: number) => (
@@ -530,34 +622,11 @@ export default async function IdeaDetailPage({
                   </div>
                 </div>
               )}
-
-              <div className="bg-gray-50 rounded-lg p-6 space-y-4">
-                <h3 className="font-semibold text-gray-900">このアイデアの統計</h3>
-                <div className="space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">「ほしい！」の数</span>
-                    <span className="font-medium">{wantsCount}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">コメント数</span>
-                    <span className="font-medium">{comments.length}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">投稿日</span>
-                    <span className="font-medium">{formatDate(idea.created_at)}</span>
-                  </div>
-                  {idea.updated_at !== idea.created_at && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">最終更新</span>
-                      <span className="font-medium">{formatDate(idea.updated_at)}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
             </div>
           </div>
         </div>
       )}
+
 
       {/* 完成アプリ情報 */}
       {idea.completed_apps && idea.completed_apps.length > 0 && (
@@ -644,6 +713,10 @@ export default async function IdeaDetailPage({
 
       {/* コメントセクション */}
       <div className="bg-white rounded-lg shadow-sm p-8">
+        <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+          <MessageCircle className="w-6 h-6 text-purple-600" />
+          コメント
+        </h2>
         <CommentSection
           ideaId={idea.id}
           initialComments={comments}
