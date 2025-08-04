@@ -168,11 +168,11 @@ export default async function IdeaDetailPage({
           <div className="space-y-4">
             <div className="bg-green-50 rounded-lg p-4">
               <div className="flex justify-between items-center mb-2">
-                <span className="text-sm text-gray-600">想定収益</span>
-                <span className="text-lg font-bold text-green-600">{wantsCount * 10000}円/月</span>
+                <span className="text-sm text-gray-600">累計収益</span>
+                <span className="text-lg font-bold text-green-600">{formatRevenue(idea.revenue)}</span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2">
-                <div className="bg-green-600 h-2 rounded-full" style={{width: `${Math.min(wantsCount * 5, 100)}%`}}></div>
+                <div className="bg-green-600 h-2 rounded-full" style={{width: `${Math.min((idea.revenue || 0) / 100000000 * 100, 100)}%`}}></div>
               </div>
             </div>
             
