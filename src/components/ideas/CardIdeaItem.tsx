@@ -14,6 +14,7 @@ interface CardIdeaItemProps {
     created_at: string
     revenue?: number
     tags?: string[]
+    sketch_urls?: string[]
     user: {
       username: string
       avatar_url?: string
@@ -53,13 +54,25 @@ export function CardIdeaItem({ idea }: CardIdeaItemProps) {
   return (
     <Link href={`/ideas/${idea.id}`} className="block group">
       <div className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-        {/* サムネイル画像の代わりに色付きのプレースホルダー */}
-        <div className="aspect-[16/9] bg-gradient-to-br from-blue-100 to-green-100 relative overflow-hidden">
-          <div className="absolute inset-0 flex items-center justify-center">
+        {/* サムネイル画像 */}
+        <div className="aspect-[16/9] relative overflow-hidden">
+          {idea.sketch_urls && idea.sketch_urls.length > 0 ? (
+            <img
+              src={idea.sketch_urls[0]}
+              alt={idea.title}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+                e.currentTarget.nextElementSibling?.classList.remove('hidden');
+              }}
+            />
+          ) : null}
+          {/* フォールバック用のプレースホルダー */}
+          <div className={`w-full h-full bg-gradient-to-br from-blue-100 to-green-100 absolute inset-0 flex items-center justify-center ${idea.sketch_urls && idea.sketch_urls.length > 0 ? 'hidden' : ''}`}>
             <span className="text-6xl opacity-20">💡</span>
           </div>
           {/* カテゴリバッジ */}
-          <div className="absolute top-3 left-3">
+          <div className="absolute top-3 left-3 z-10">
             <span className="inline-block px-3 py-1 bg-white/90 backdrop-blur-sm rounded-full text-xs font-medium text-gray-700">
               {idea.category}
             </span>

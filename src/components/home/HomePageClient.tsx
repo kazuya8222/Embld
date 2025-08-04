@@ -14,6 +14,7 @@ interface HomePageIdea {
   status: string
   created_at: string
   tags?: string[]
+  sketch_urls?: string[]
   revenue?: number
   user: {
     username: string
@@ -63,9 +64,21 @@ export default function HomePageClient({ ideasWithCounts, searchParams }: HomePa
               topRevenueIdeas.slice(0, 4).map((idea) => (
                 <Link key={idea.id} href={`/ideas/${idea.id}`} className="group block">
                   <div className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow overflow-hidden">
-                    {/* サムネイル画像の代わりに色付きプレースホルダー */}
-                    <div className="w-full h-48 bg-gradient-to-br from-blue-400 to-purple-600 relative">
-                      <div className="absolute inset-0 flex items-center justify-center">
+                    {/* サムネイル画像 */}
+                    <div className="w-full h-48 relative">
+                      {idea.sketch_urls && idea.sketch_urls.length > 0 ? (
+                        <img
+                          src={idea.sketch_urls[0]}
+                          alt={idea.title}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                            e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                          }}
+                        />
+                      ) : null}
+                      {/* フォールバック用のプレースホルダー */}
+                      <div className={`w-full h-full bg-gradient-to-br from-blue-400 to-purple-600 absolute inset-0 flex items-center justify-center ${idea.sketch_urls && idea.sketch_urls.length > 0 ? 'hidden' : ''}`}>
                         <Lightbulb className="w-16 h-16 text-white opacity-50" />
                       </div>
                     </div>
@@ -107,12 +120,15 @@ export default function HomePageClient({ ideasWithCounts, searchParams }: HomePa
       {/* アイデア投稿を促すCTAセクション */}
       <section className="py-8">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="relative h-40 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg overflow-hidden">
-            <div className="absolute inset-0 bg-black/20" />
-            <div className="relative h-full flex items-center justify-center text-center">
-              <div className="text-white">
-                <h2 className="text-2xl font-bold mb-3">あなたもアイデアで収益化しよう</h2>
-                <PostIdeaButton className="px-6 py-3 text-base font-bold bg-orange-600 text-white hover:bg-orange-700">
+          <div className="bg-gradient-to-r from-gray-50 to-blue-50 border border-gray-200 rounded-lg p-8">
+            <div className="flex items-center justify-between">
+              {/* 左側：テキスト */}
+              <div className="flex-1">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">あなたもアイデアで収益化しよう</h2>
+              </div>
+              {/* 右側：ボタン */}
+              <div>
+                <PostIdeaButton className="px-6 py-3 text-base font-bold bg-orange-600 text-white hover:bg-orange-700 rounded-lg shadow-sm">
                   アイデアを投稿する
                 </PostIdeaButton>
               </div>
@@ -133,13 +149,25 @@ export default function HomePageClient({ ideasWithCounts, searchParams }: HomePa
                   latestIdeas.map((idea) => (
                     <Link key={idea.id} href={`/ideas/${idea.id}`} className="group block">
                       <div className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow overflow-hidden">
-                        {/* サムネイル画像の代わりに色付きプレースホルダー */}
-                        <div className="w-full h-40 bg-gradient-to-br from-green-400 to-blue-500 relative">
-                          <div className="absolute inset-0 flex items-center justify-center">
+                        {/* サムネイル画像 */}
+                        <div className="w-full h-40 relative">
+                          {idea.sketch_urls && idea.sketch_urls.length > 0 ? (
+                            <img
+                              src={idea.sketch_urls[0]}
+                              alt={idea.title}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                                e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                              }}
+                            />
+                          ) : null}
+                          {/* フォールバック用のプレースホルダー */}
+                          <div className={`w-full h-full bg-gradient-to-br from-green-400 to-blue-500 absolute inset-0 flex items-center justify-center ${idea.sketch_urls && idea.sketch_urls.length > 0 ? 'hidden' : ''}`}>
                             <Lightbulb className="w-12 h-12 text-white opacity-50" />
                           </div>
                           {/* カテゴリラベル */}
-                          <span className="absolute top-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
+                          <span className="absolute top-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded z-10">
                             {idea.category}
                           </span>
                         </div>
