@@ -31,14 +31,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       console.log('Starting logout process...')
       
-      // クライアントサイドでサインアウト
-      const { error } = await supabase.auth.signOut()
-      if (error) {
-        console.error('Client signout error:', error)
-      } else {
-        console.log('Client signout successful')
-      }
-      
       // 状態を即座にクリア
       setUser(null)
       setUserProfile(null)
@@ -60,21 +52,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.log('Local storage cleared')
       }
       
-      // サーバーサイドのログアウト処理を呼び出し（非同期で実行）
-      fetch('/auth/logout', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-      }).catch(error => {
-        console.error('Server logout error:', error)
-      })
-      
-      // ログインページにリダイレクト
-      console.log('Redirecting to login page...')
-      router.push('/auth/login')
-      router.refresh()
+      // サーバーアクションを使用してログアウト
+      const { signout } = await import('@/app/auth/actions')
+      await signout()
       
     } catch (error) {
       console.error('Error during signout:', error)

@@ -62,25 +62,31 @@ export async function signup(formData: FormData) {
 }
 
 export async function signout() {
+  console.log('Server action: Starting signout...')
   const supabase = await createClient()
   
   try {
+    console.log('Server action: Calling Supabase signOut...')
     // サインアウト実行
     const { error } = await supabase.auth.signOut()
     
     if (error) {
-      console.error('Signout error:', error)
+      console.error('Server action: Signout error:', error)
+    } else {
+      console.log('Server action: Signout successful')
     }
     
+    console.log('Server action: Clearing cache...')
     // 強制的にキャッシュをクリア
     revalidatePath('/', 'layout')
     revalidatePath('/auth/login', 'page')
     revalidatePath('/home', 'page')
     
+    console.log('Server action: Redirecting to login...')
     // リダイレクト
     redirect('/auth/login')
   } catch (error) {
-    console.error('Unexpected error during signout:', error)
+    console.error('Server action: Unexpected error during signout:', error)
     redirect('/auth/login')
   }
 }
