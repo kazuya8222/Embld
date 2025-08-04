@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Heart } from 'lucide-react'
 import { useAuth } from '@/components/auth/AuthProvider'
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from '@/utils/supabase/client'
 import { cn } from '@/lib/utils/cn'
 
 interface WantButtonProps {
@@ -55,6 +55,7 @@ export function WantButton({ ideaId, initialWanted, initialCount, className, siz
       }
     } catch (error) {
       console.error('Error toggling want:', error)
+      alert('エラーが発生しました。もう一度お試しください。')
     }
     setLoading(false)
   }

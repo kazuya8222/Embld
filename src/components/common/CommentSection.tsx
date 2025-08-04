@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useAuth } from '@/components/auth/AuthProvider'
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from '@/utils/supabase/client'
 import { Comment } from '@/types'
 import { cn } from '@/lib/utils/cn'
 import { MessageCircle, Send, User } from 'lucide-react'
@@ -44,6 +44,7 @@ export function CommentSection({ ideaId, initialComments }: CommentSectionProps)
       }
     } catch (error) {
       console.error('Error posting comment:', error)
+      alert('コメントの投稿に失敗しました。もう一度お試しください。')
     }
     setLoading(false)
   }
