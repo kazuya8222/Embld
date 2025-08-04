@@ -248,7 +248,7 @@ export default async function ProfilePage() {
                 ))}
                 {myIdeasWithStats.length > 3 && (
                   <Link
-                    href="/ideas?author=me"
+                    href="/profile/ideas"
                     className="block text-center text-primary-600 hover:text-primary-700 text-sm py-2"
                   >
                     すべて見る ({myIdeasWithStats.length - 3}件)
@@ -294,9 +294,12 @@ export default async function ProfilePage() {
                   </div>
                 ))}
                 {myWants.length > 3 && (
-                  <div className="text-center text-primary-600 hover:text-primary-700 text-sm py-2">
+                  <Link
+                    href="/profile/wants"
+                    className="block text-center text-primary-600 hover:text-primary-700 text-sm py-2"
+                  >
                     すべて見る ({myWants.length - 3}件)
-                  </div>
+                  </Link>
                 )}
               </div>
             )}
