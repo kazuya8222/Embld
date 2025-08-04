@@ -30,6 +30,7 @@ import {
   MessageCircle
 } from 'lucide-react'
 import { CoreFeature } from '@/types'
+import { formatRevenue } from '@/data/revenue'
 
 export default async function IdeaDetailPage({
   params,
@@ -139,6 +140,12 @@ export default async function IdeaDetailPage({
               <Calendar className="w-4 h-4" />
               <span>{formatDate(idea.created_at)}</span>
             </div>
+            {idea.revenue && idea.revenue > 0 && (
+              <div className="flex items-center gap-2 text-green-600 font-semibold">
+                <DollarSign className="w-4 h-4" />
+                <span>{formatRevenue(idea.revenue)}</span>
+              </div>
+            )}
           </div>
 
           <WantButton

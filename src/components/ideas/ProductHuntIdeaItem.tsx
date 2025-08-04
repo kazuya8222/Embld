@@ -2,9 +2,10 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { ChevronUp, MessageCircle } from 'lucide-react'
+import { ChevronUp, MessageCircle, DollarSign } from 'lucide-react'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { createClient } from '@/lib/supabase/client'
+import { formatRevenue } from '@/data/revenue'
 
 interface ProductHuntIdeaItemProps {
   idea: {
@@ -14,6 +15,7 @@ interface ProductHuntIdeaItemProps {
     category: string
     status: string
     created_at: string
+    revenue?: number
     tags?: string[]
     user: {
       username: string
@@ -136,6 +138,12 @@ export function ProductHuntIdeaItem({ idea, onVoteToggle }: ProductHuntIdeaItemP
                 <span>{idea.category}</span>
                 <span>@{idea.user.username}</span>
                 <span>{formatDate(idea.created_at)}</span>
+                {idea.revenue && idea.revenue > 0 && (
+                  <span className="flex items-center text-green-600 font-bold">
+                    <DollarSign className="w-3 h-3 mr-1" />
+                    {formatRevenue(idea.revenue)}
+                  </span>
+                )}
               </div>
             </div>
 

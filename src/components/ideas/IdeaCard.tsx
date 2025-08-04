@@ -3,9 +3,10 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { Idea } from '@/types'
-import { MessageCircle, User, Calendar, Heart, Tag } from 'lucide-react'
+import { MessageCircle, User, Calendar, Heart, Tag, DollarSign } from 'lucide-react'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { createClient } from '@/lib/supabase/client'
+import { formatRevenue } from '@/data/revenue'
 
 interface IdeaCardProps {
   idea: Idea & {
@@ -173,6 +174,13 @@ export function IdeaCard({ idea }: IdeaCardProps) {
                 <MessageCircle className="w-4 h-4" />
                 <span className="font-medium">{idea.comments_count}</span>
               </div>
+
+              {idea.revenue && idea.revenue > 0 && (
+                <div className="flex items-center gap-1 text-green-600 bg-green-50 px-2 py-1 rounded-full">
+                  <DollarSign className="w-4 h-4" />
+                  <span className="font-bold">{formatRevenue(idea.revenue)}</span>
+                </div>
+              )}
             </div>
           </div>
 

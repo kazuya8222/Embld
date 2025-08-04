@@ -1,7 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { MessageCircle, Users, Clock } from 'lucide-react'
+import { MessageCircle, Users, Clock, DollarSign } from 'lucide-react'
+import { formatRevenue } from '@/data/revenue'
 
 interface CardIdeaItemProps {
   idea: {
@@ -11,6 +12,7 @@ interface CardIdeaItemProps {
     category: string
     status: string
     created_at: string
+    revenue?: number
     tags?: string[]
     user: {
       username: string
@@ -93,6 +95,12 @@ export function CardIdeaItem({ idea }: CardIdeaItemProps) {
                 <MessageCircle className="w-4 h-4" />
                 {idea.comments_count}
               </span>
+              {idea.revenue && idea.revenue > 0 && (
+                <span className="flex items-center gap-1 text-green-600 font-bold">
+                  <DollarSign className="w-4 h-4" />
+                  {formatRevenue(idea.revenue)}
+                </span>
+              )}
             </div>
             <span className="text-gray-400 flex items-center gap-1">
               <Clock className="w-3 h-3" />

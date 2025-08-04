@@ -56,6 +56,7 @@ export interface Database {
           tags: string[]
           sketch_urls: string[]
           status: string
+          revenue: number
           created_at: string
           updated_at: string
         }
@@ -70,6 +71,7 @@ export interface Database {
           tags?: string[]
           sketch_urls?: string[]
           status?: string
+          revenue?: number
           created_at?: string
           updated_at?: string
         }
@@ -84,6 +86,7 @@ export interface Database {
           tags?: string[]
           sketch_urls?: string[]
           status?: string
+          revenue?: number
           created_at?: string
           updated_at?: string
         }

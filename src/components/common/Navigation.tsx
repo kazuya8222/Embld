@@ -156,19 +156,38 @@ export function Navigation() {
                 </>
               ) : (
                 <>
+                  {/* 通知アイコン（未ログイン時は非表示） */}
+                  <button className="p-2 text-gray-400 opacity-50 cursor-not-allowed rounded-full">
+                    <Bell className="h-5 w-5" />
+                  </button>
+                  
+                  {/* メッセージアイコン（未ログイン時は非表示） */}
+                  <button className="p-2 text-gray-400 opacity-50 cursor-not-allowed rounded-full">
+                    <MessageSquare className="h-5 w-5" />
+                  </button>
+
+                  {/* アイデア投稿ボタン（未ログイン時はログイン画面に遷移） */}
                   <Link
                     href="/auth/login"
-                    className="inline-flex items-center gap-2 text-gray-400 hover:text-white font-medium transition-colors"
-                  >
-                    <LogIn className="h-4 w-4" />
-                    ログイン
-                  </Link>
-                  <Link
-                    href="/auth/register"
                     className="inline-flex items-center gap-2 bg-white text-black px-6 py-2.5 rounded-full font-bold hover:shadow-lg transition-all transform hover:scale-105 border border-gray-200"
                   >
-                    無料で始める
+                    <Plus className="h-4 w-4" />
+                    アイデア投稿
                   </Link>
+
+                  {/* ログインボタン（アカウント名の場所） */}
+                  <div className="relative">
+                    <Link
+                      href="/auth/login"
+                      className="flex items-center space-x-2 text-sm font-medium text-gray-400 hover:text-white transition-colors"
+                    >
+                      <div className="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center">
+                        <LogIn className="h-5 w-5" />
+                      </div>
+                      <span className="hidden lg:block">ログイン</span>
+                      <ChevronDown className="h-4 w-4" />
+                    </Link>
+                  </div>
                 </>
               )}
             </div>
@@ -238,15 +257,24 @@ export function Navigation() {
                     className="block px-3 py-2 text-base font-medium text-gray-400 hover:text-white hover:bg-gray-800 rounded-md"
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    <LogIn className="inline h-4 w-4 mr-2" />
-                    ログイン
+                    <Plus className="inline h-4 w-4 mr-2" />
+                    アイデア投稿
                   </Link>
                   <Link
-                    href="/auth/register"
+                    href="/auth/login"
                     className="block px-3 py-2 text-base font-medium text-gray-400 hover:text-white hover:bg-gray-800 rounded-md"
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    新規登録
+                    <User className="inline h-4 w-4 mr-2" />
+                    マイページ
+                  </Link>
+                  <Link
+                    href="/auth/login"
+                    className="block px-3 py-2 text-base font-medium text-gray-400 hover:text-white hover:bg-gray-800 rounded-md"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <LogIn className="inline h-4 w-4 mr-2" />
+                    ログイン
                   </Link>
                 </>
               )}

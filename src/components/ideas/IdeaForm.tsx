@@ -2,14 +2,12 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
 import { directSupabase } from '@/lib/supabase/direct-client'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { CATEGORIES, CoreFeature } from '@/types'
 import { cn } from '@/lib/utils/cn'
 import { 
   X, 
-  Upload, 
   ChevronRight, 
   ChevronLeft,
   FileText,
@@ -34,7 +32,6 @@ interface IdeaFormProps {
 export function IdeaForm({ initialData, ideaId }: IdeaFormProps) {
   const { user } = useAuth()
   const router = useRouter()
-  const supabase = createClient()
   
   const [currentStep, setCurrentStep] = useState(0)
   
@@ -90,6 +87,9 @@ export function IdeaForm({ initialData, ideaId }: IdeaFormProps) {
   const [tagInput, setTagInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [showFinalConfirmation, setShowFinalConfirmation] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [saveMessage, setSaveMessage] = useState('')
 
   // コンポーネントの初期化とクリーンアップ
   useEffect(() => {
@@ -116,6 +116,7 @@ export function IdeaForm({ initialData, ideaId }: IdeaFormProps) {
     { id: 'other', title: 'その他', icon: CheckCircle },
     { id: 'tech', title: '技術的な希望', icon: Smartphone },
     { id: 'success', title: '成功イメージ', icon: TrendingUp },
+    { id: 'confirm', title: '内容確認', icon: CheckCircle },
   ]
 
   const handleInputChange = (
@@ -305,6 +306,87 @@ export function IdeaForm({ initialData, ideaId }: IdeaFormProps) {
       setError(errorMessage)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleTempSave = async () => {
+    if (!user) {
+      setError('一時保存するにはログインが必要です')
+      return
+    }
+
+    setSaving(true)
+    setSaveMessage('')
+    setError('')
+
+    try {
+      const dataToSave = formType === 'simple' 
+        ? {
+            user_id: user.id,
+            title: formData.title || 'Untitled',
+            problem: formData.problem,
+            solution: formData.solution,
+            target_users: formData.target_users || null,
+            category: formData.category,
+            tags: formData.tags,
+            sketch_urls: [],
+            status: 'draft', // 一時保存フラグ
+          }
+        : {
+            user_id: user.id,
+            title: formData.service_name || formData.title || 'Untitled',
+            problem: formData.background_problem || formData.problem,
+            solution: formData.value_proposition || formData.solution,
+            target_users: formData.main_target || formData.target_users || null,
+            category: formData.category,
+            tags: formData.tags,
+            sketch_urls: [],
+            status: 'draft', // 一時保存フラグ
+            // 企画書フィールド
+            service_name: formData.service_name,
+            catch_copy: formData.catch_copy,
+            service_description: formData.service_description,
+            background_problem: formData.background_problem,
+            current_solution_problems: formData.current_solution_problems,
+            main_target: formData.main_target,
+            usage_scene: formData.usage_scene,
+            value_proposition: formData.value_proposition,
+            differentiators: formData.differentiators,
+            core_features: formData.core_features.filter((f: CoreFeature) => f.title && f.description),
+            nice_to_have_features: formData.nice_to_have_features,
+            initial_flow: formData.initial_flow,
+            important_operations: formData.important_operations,
+            monetization_method: formData.monetization_method,
+            price_range: formData.price_range,
+            free_paid_boundary: formData.free_paid_boundary,
+            similar_services: formData.similar_services,
+            design_atmosphere: formData.design_atmosphere,
+            reference_urls: formData.reference_urls,
+            expected_release: formData.expected_release,
+            priority_points: formData.priority_points,
+            device_type: formData.device_type,
+            external_services: formData.external_services,
+            one_month_goal: formData.one_month_goal,
+            success_metrics: formData.success_metrics,
+          }
+
+      let result
+      if (ideaId) {
+        result = await directSupabase.update('ideas', dataToSave, { id: ideaId })
+      } else {
+        result = await directSupabase.insert('ideas', dataToSave)
+      }
+
+      if (result.error) {
+        setError(`一時保存エラー: ${result.error.message}`)
+      } else {
+        setSaveMessage('一時保存しました')
+        setTimeout(() => setSaveMessage(''), 3000) // 3秒後にメッセージを消す
+      }
+    } catch (err: any) {
+      setError(`一時保存失敗: ${err.message}`)
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -512,7 +594,7 @@ export function IdeaForm({ initialData, ideaId }: IdeaFormProps) {
                     type="text"
                     value={tagInput}
                     onChange={(e) => setTagInput(e.target.value)}
-                    onKeyPress={(e) => {
+                    onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         e.preventDefault()
                         handleAddTag()
@@ -560,19 +642,38 @@ export function IdeaForm({ initialData, ideaId }: IdeaFormProps) {
               </div>
             )}
 
+            {saveMessage && (
+              <div className="p-3 bg-green-50 border border-green-200 rounded-md text-green-600 text-sm">
+                {saveMessage}
+              </div>
+            )}
+
             <div className="flex gap-4 pt-4">
               <button
                 type="button"
                 onClick={() => router.back()}
-                className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+                className="px-6 py-3 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
               >
                 キャンセル
               </button>
+              {user && (
+                <button
+                  type="button"
+                  onClick={handleTempSave}
+                  disabled={saving}
+                  className={cn(
+                    "px-6 py-3 border border-primary-600 text-primary-600 rounded-md hover:bg-primary-50 transition-colors",
+                    saving && "opacity-50 cursor-not-allowed"
+                  )}
+                >
+                  {saving ? '保存中...' : '一時保存'}
+                </button>
+              )}
               <button
                 type="submit"
                 disabled={loading || !formData.title || !formData.problem || !formData.solution || !formData.category}
                 className={cn(
-                  "flex-1 px-6 py-3 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors",
+                  "px-6 py-3 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors",
                   loading && "opacity-50 cursor-not-allowed"
                 )}
               >
@@ -1085,7 +1186,7 @@ export function IdeaForm({ initialData, ideaId }: IdeaFormProps) {
                     type="text"
                     value={tagInput}
                     onChange={(e) => setTagInput(e.target.value)}
-                    onKeyPress={(e) => {
+                    onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         e.preventDefault()
                         handleAddTag()
@@ -1126,6 +1227,70 @@ export function IdeaForm({ initialData, ideaId }: IdeaFormProps) {
                 )}
               </div>
             </div>
+          </div>
+        )
+
+      case 11: // 内容確認
+        return (
+          <div className="space-y-6">
+            {!showFinalConfirmation ? (
+              <>
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <CheckCircle className="w-6 h-6 text-blue-600" />
+                    <h3 className="text-lg font-semibold text-blue-900">投稿前の内容確認</h3>
+                  </div>
+                  <p className="text-blue-800 mb-4">
+                    入力された内容を確認してください。問題がなければ「確認完了」ボタンを押してください。
+                  </p>
+                  <div className="text-sm text-blue-700">
+                    <p>• 必須項目が正しく入力されているか確認してください</p>
+                    <p>• 投稿後も編集は可能です</p>
+                    <p>• 投稿すると他のユーザーが閲覧できるようになります</p>
+                  </div>
+                </div>
+
+                <div className="bg-gray-50 rounded-lg p-6">
+                  <h4 className="font-semibold text-gray-900 mb-4">入力内容の概要</h4>
+                  <div className="space-y-3 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">サービス名:</span>
+                      <span className="text-gray-900">{formData.service_name || 'Untitled'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">カテゴリ:</span>
+                      <span className="text-gray-900">{formData.category || '未選択'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">キャッチコピー:</span>
+                      <span className="text-gray-900">{formData.catch_copy || '未入力'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">主要機能数:</span>
+                      <span className="text-gray-900">{formData.core_features.length}個</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">タグ数:</span>
+                      <span className="text-gray-900">{formData.tags.length}個</span>
+                    </div>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="bg-green-50 border border-green-200 rounded-lg p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <CheckCircle className="w-6 h-6 text-green-600" />
+                  <h3 className="text-lg font-semibold text-green-900">投稿の最終確認</h3>
+                </div>
+                <p className="text-green-800 mb-4">
+                  本当にアイデアを投稿しますか？投稿するとすぐに他のユーザーが閲覧できるようになります。
+                </p>
+                <div className="text-sm text-green-700">
+                  <p>• 投稿後も内容の編集は可能です</p>
+                  <p>• 投稿をキャンセルしたい場合は「戻る」ボタンを押してください</p>
+                </div>
+              </div>
+            )}
           </div>
         )
 
@@ -1198,7 +1363,15 @@ export function IdeaForm({ initialData, ideaId }: IdeaFormProps) {
         </div>
 
         {/* フォームコンテンツ */}
-        <form onSubmit={handleSubmit}>
+        <form 
+          onSubmit={handleSubmit}
+          onKeyDown={(e) => {
+            // 確認ページ以外でのEnterキー送信を防ぐ
+            if (e.key === 'Enter' && currentStep !== steps.length - 1) {
+              e.preventDefault()
+            }
+          }}
+        >
           <div className="px-8 py-6 min-h-[400px]">
             {renderStepContent()}
           </div>
@@ -1209,11 +1382,25 @@ export function IdeaForm({ initialData, ideaId }: IdeaFormProps) {
             </div>
           )}
 
+          {saveMessage && (
+            <div className="mx-8 mb-6 p-3 bg-green-50 border border-green-200 rounded-md text-green-600 text-sm">
+              {saveMessage}
+            </div>
+          )}
+
           {/* ナビゲーションボタン */}
           <div className="px-8 py-6 border-t bg-gray-50 flex items-center justify-between">
             <button
               type="button"
-              onClick={() => currentStep > 0 ? setCurrentStep(currentStep - 1) : router.back()}
+              onClick={() => {
+                if (currentStep === steps.length - 1 && showFinalConfirmation) {
+                  setShowFinalConfirmation(false)
+                } else if (currentStep > 0) {
+                  setCurrentStep(currentStep - 1)
+                } else {
+                  router.back()
+                }
+              }}
               className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-900 transition-colors"
             >
               <ChevronLeft className="w-4 h-4" />
@@ -1221,6 +1408,20 @@ export function IdeaForm({ initialData, ideaId }: IdeaFormProps) {
             </button>
 
             <div className="flex items-center gap-4">
+              {user && (
+                <button
+                  type="button"
+                  onClick={handleTempSave}
+                  disabled={saving}
+                  className={cn(
+                    "px-4 py-2 border border-primary-600 text-primary-600 rounded-md hover:bg-primary-50 transition-colors text-sm",
+                    saving && "opacity-50 cursor-not-allowed"
+                  )}
+                >
+                  {saving ? '保存中...' : '一時保存'}
+                </button>
+              )}
+              
               {currentStep < steps.length - 1 ? (
                 <button
                   type="button"
@@ -1231,20 +1432,45 @@ export function IdeaForm({ initialData, ideaId }: IdeaFormProps) {
                     !isCurrentStepValid() && "opacity-50 cursor-not-allowed"
                   )}
                 >
-                  次へ
+                  {currentStep === steps.length - 2 ? '内容確認へ' : '次へ'}
                   <ChevronRight className="w-4 h-4" />
                 </button>
               ) : (
-                <button
-                  type="submit"
-                  disabled={loading || !isCurrentStepValid()}
-                  className={cn(
-                    "px-6 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors",
-                    (loading || !isCurrentStepValid()) && "opacity-50 cursor-not-allowed"
+                <>
+                  {!showFinalConfirmation ? (
+                    <button
+                      type="button"
+                      onClick={() => setShowFinalConfirmation(true)}
+                      disabled={!isCurrentStepValid()}
+                      className={cn(
+                        "px-6 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors font-semibold",
+                        !isCurrentStepValid() && "opacity-50 cursor-not-allowed"
+                      )}
+                    >
+                      確認完了
+                    </button>
+                  ) : (
+                    <div className="flex items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setShowFinalConfirmation(false)}
+                        className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+                      >
+                        戻る
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={loading}
+                        className={cn(
+                          "px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors font-semibold",
+                          loading && "opacity-50 cursor-not-allowed"
+                        )}
+                      >
+                        {loading ? '投稿中...' : user ? (ideaId ? 'アイデアを更新' : 'アイデアを投稿') : 'ログインして投稿'}
+                      </button>
+                    </div>
                   )}
-                >
-                  {loading ? '投稿中...' : user ? (ideaId ? '更新する' : '投稿する') : 'ログインして投稿'}
-                </button>
+                </>
               )}
             </div>
           </div>

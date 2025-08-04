@@ -1,7 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { MessageCircle, Search, Lightbulb, Users, ChevronRight } from 'lucide-react'
+import { MessageCircle, Search, Lightbulb, Users, ChevronRight, DollarSign } from 'lucide-react'
+import { formatRevenue } from '@/data/revenue'
 import { PostIdeaButton } from '@/components/common/PostIdeaButton'
 import { CATEGORIES } from '@/types'
 
@@ -13,6 +14,7 @@ interface HomePageIdea {
   status: string
   created_at: string
   tags?: string[]
+  revenue?: number
   user: {
     username: string
     avatar_url?: string
@@ -31,9 +33,9 @@ interface HomePageClientProps {
 }
 
 export default function HomePageClient({ ideasWithCounts, searchParams }: HomePageClientProps) {
-  // トップ収益のアイデア（仮のロジック - 実際は収益データが必要）
+  // トップ収益のアイデア
   const topRevenueIdeas = [...ideasWithCounts]
-    .sort((a, b) => b.wants_count - a.wants_count)
+    .sort((a, b) => (b.revenue || 0) - (a.revenue || 0))
     .slice(0, 3)
 
   // 注目のアイデア（Wants数とコメント数の合計でソート）
@@ -85,8 +87,8 @@ export default function HomePageClient({ ideasWithCounts, searchParams }: HomePa
                             {idea.comments_count}
                           </span>
                         </div>
-                        <span className="text-lg font-bold text-gray-900">
-                          {idea.wants_count * 1000}円
+                        <span className="text-lg font-bold text-green-600">
+                          {formatRevenue(idea.revenue)}
                         </span>
                       </div>
                     </div>
@@ -153,8 +155,8 @@ export default function HomePageClient({ ideasWithCounts, searchParams }: HomePa
                               <span>{idea.wants_count}%</span>
                               <span>{idea.wants_count}人</span>
                             </div>
-                            <span className="text-lg font-bold text-gray-900">
-                              {idea.wants_count * 1000}円
+                            <span className="text-lg font-bold text-green-600">
+                              {formatRevenue(idea.revenue)}
                             </span>
                           </div>
                           <div className="w-full bg-gray-200 rounded-full h-2 mt-2">

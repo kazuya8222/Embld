@@ -14,6 +14,7 @@ interface HomePageIdea {
   status: string
   created_at: string
   tags?: string[]
+  revenue?: number
   user: {
     username: string
     avatar_url?: string
@@ -41,6 +42,7 @@ export default async function HomePage({
       status,
       created_at,
       tags,
+      revenue,
       user:users(username, avatar_url)
     `)
     .limit(50)

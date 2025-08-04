@@ -23,6 +23,7 @@ CREATE TABLE ideas (
   tags TEXT[],
   sketch_urls TEXT[],
   status TEXT DEFAULT 'open' CHECK (status IN ('open', 'in_development', 'completed')),
+  revenue BIGINT DEFAULT 0,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );

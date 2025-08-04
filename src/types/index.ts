@@ -26,6 +26,7 @@ export interface Idea {
   tags: string[]
   sketch_urls: string[]
   status: 'open' | 'in_development' | 'completed'
+  revenue?: number
   created_at: string
   updated_at: string
   // 企画書フィールド
