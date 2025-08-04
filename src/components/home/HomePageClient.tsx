@@ -110,7 +110,7 @@ export default function HomePageClient({ ideasWithCounts, searchParams }: HomePa
             <div className="relative h-full flex items-center justify-center text-center">
               <div className="text-white">
                 <h2 className="text-2xl font-bold mb-3">あなたもアイデアで収益化しよう</h2>
-                <PostIdeaButton className="px-6 py-3 text-base font-bold bg-white text-gray-900 hover:bg-gray-100">
+                <PostIdeaButton className="px-6 py-3 text-base font-bold bg-orange-600 text-white hover:bg-orange-700">
                   アイデアを投稿する
                 </PostIdeaButton>
               </div>
@@ -122,56 +122,8 @@ export default function HomePageClient({ ideasWithCounts, searchParams }: HomePa
       {/* アイデア掲示板セクション */}
       <section className="py-12">
         <div className="max-w-7xl mx-auto px-4">
-          <h2 className="text-2xl font-bold text-gray-900 mb-8">あなたにおすすめ</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-8">アイデア掲示板</h2>
           <div className="flex gap-8">
-            {/* 左サイドバー */}
-            <aside className="w-64 flex-shrink-0">
-
-              <nav className="space-y-1">
-                <Link
-                  href="/home"
-                  className={`flex items-center justify-between px-4 py-2 text-sm rounded-md transition-colors ${
-                    !searchParams.category
-                      ? 'bg-gray-100 text-gray-900 font-medium'
-                      : 'text-gray-600 hover:bg-gray-50'
-                  }`}
-                >
-                  すべて
-                  <ChevronRight className="w-4 h-4" />
-                </Link>
-                {CATEGORIES.map((category) => (
-                  <Link
-                    key={category}
-                    href={`/home?category=${encodeURIComponent(category)}`}
-                    className={`flex items-center justify-between px-4 py-2 text-sm rounded-md transition-colors ${
-                      searchParams.category === category
-                        ? 'bg-gray-100 text-gray-900 font-medium'
-                        : 'text-gray-600 hover:bg-gray-50'
-                    }`}
-                  >
-                    {category}
-                    <ChevronRight className="w-4 h-4" />
-                  </Link>
-                ))}
-              </nav>
-
-              {/* 検索フォーム */}
-              <div className="mt-8">
-                <form method="GET">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                    <input
-                      type="text"
-                      name="search"
-                      defaultValue={searchParams.search}
-                      className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
-                      placeholder="キーワードで検索"
-                    />
-                  </div>
-                </form>
-              </div>
-            </aside>
-
             {/* メインコンテンツ */}
             <div className="flex-1">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -231,6 +183,53 @@ export default function HomePageClient({ ideasWithCounts, searchParams }: HomePa
                 </div>
               )}
             </div>
+
+            {/* 右サイドバー */}
+            <aside className="w-64 flex-shrink-0">
+              {/* 検索バー */}
+              <div className="mb-6">
+                <form method="GET">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                    <input
+                      type="text"
+                      name="search"
+                      defaultValue={searchParams.search}
+                      className="w-full pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm"
+                      placeholder="キーワードで検索"
+                    />
+                  </div>
+                </form>
+              </div>
+
+              <nav className="space-y-1">
+                <Link
+                  href="/home"
+                  className={`flex items-center justify-between px-4 py-2 text-sm rounded-md transition-colors ${
+                    !searchParams.category
+                      ? 'bg-gray-100 text-gray-900 font-medium'
+                      : 'text-gray-600 hover:bg-gray-50'
+                  }`}
+                >
+                  すべて
+                  <ChevronRight className="w-4 h-4" />
+                </Link>
+                {CATEGORIES.map((category) => (
+                  <Link
+                    key={category}
+                    href={`/home?category=${encodeURIComponent(category)}`}
+                    className={`flex items-center justify-between px-4 py-2 text-sm rounded-md transition-colors ${
+                      searchParams.category === category
+                        ? 'bg-gray-100 text-gray-900 font-medium'
+                        : 'text-gray-600 hover:bg-gray-50'
+                    }`}
+                  >
+                    {category}
+                    <ChevronRight className="w-4 h-4" />
+                  </Link>
+                ))}
+              </nav>
+            </aside>
           </div>
         </div>
       </section>
