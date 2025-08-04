@@ -29,7 +29,7 @@ export function PostIdeaButton({ className, children }: { className?: string, ch
     <Link
       href="/ideas/new"
       onClick={handleClick}
-      className={className}
+      className={`inline-flex items-center justify-center bg-orange-600 text-white rounded-md hover:bg-orange-700 transition-colors ${className || 'px-4 py-2'}`}
     >
       {children || 'アイデアを投稿'}
     </Link>

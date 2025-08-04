@@ -1,8 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { ChevronUp, MessageCircle, Search, Filter, TrendingUp, Clock, Sparkles, DollarSign, Flame, Star, Lightbulb, ArrowRight } from 'lucide-react'
-import { ProductHuntIdeaItem } from '@/components/ideas/ProductHuntIdeaItem'
+import { MessageCircle, Search, Lightbulb, Users, ChevronRight } from 'lucide-react'
 import { PostIdeaButton } from '@/components/common/PostIdeaButton'
 import { CATEGORIES } from '@/types'
 
@@ -52,158 +51,189 @@ export default function HomePageClient({ ideasWithCounts, searchParams }: HomePa
     .slice(0, 5)
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-6xl mx-auto px-4 py-6">
-        <div className="flex gap-6">
-          {/* メインコンテンツ */}
-          <div className="flex-1 space-y-8">
-            {/* トップ収益 */}
-            <section>
-              <div className="flex items-center gap-2 mb-4">
-                <DollarSign className="w-5 h-5 text-green-600" />
-                <h2 className="text-xl font-bold text-gray-900">トップ収益</h2>
-              </div>
-              <div className="space-y-2">
-                {topRevenueIdeas.map((idea) => (
-                  <ProductHuntIdeaItem key={idea.id} idea={idea} />
-                ))}
-              </div>
-            </section>
-
-            {/* 注目のアイデア */}
-            <section>
-              <div className="flex items-center gap-2 mb-4">
-                <Flame className="w-5 h-5 text-orange-600" />
-                <h2 className="text-xl font-bold text-gray-900">注目のアイデア</h2>
-              </div>
-              <div className="space-y-2">
-                {hotIdeas.length > 0 ? (
-                  hotIdeas.map((idea) => (
-                    <ProductHuntIdeaItem key={idea.id} idea={idea} />
-                  ))
-                ) : (
-                  <div className="text-center py-8 bg-gray-50 rounded-lg">
-                    <p className="text-gray-500">まだ注目のアイデアがありません</p>
-                  </div>
-                )}
-              </div>
-            </section>
-
-            {/* 最新のアイデア */}
-            <section>
-              <div className="flex items-center gap-2 mb-4">
-                <Sparkles className="w-5 h-5 text-blue-600" />
-                <h2 className="text-xl font-bold text-gray-900">最新のアイデア</h2>
-              </div>
-              <div className="space-y-2">
-                {latestIdeas.length > 0 ? (
-                  latestIdeas.map((idea) => (
-                    <ProductHuntIdeaItem key={idea.id} idea={idea} />
-                  ))
-                ) : (
-                  <div className="text-center py-12">
-                    <div className="text-gray-500">
-                      <Sparkles className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                      <p className="text-lg font-medium">アイデアが見つかりませんでした</p>
-                      <p className="text-sm mt-2">最初のアイデアを投稿してみましょう！</p>
+    <div className="bg-gray-50">
+      {/* プロジェクト開発事例 */}
+      <section className="bg-white py-12">
+        <div className="max-w-7xl mx-auto px-4">
+          <h2 className="text-2xl font-bold text-gray-900 mb-8">プロジェクト開発事例</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {topRevenueIdeas.length > 0 ? (
+              topRevenueIdeas.slice(0, 4).map((idea) => (
+                <Link key={idea.id} href={`/ideas/${idea.id}`} className="group block">
+                  <div className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow overflow-hidden">
+                    {/* サムネイル画像の代わりに色付きプレースホルダー */}
+                    <div className="w-full h-48 bg-gradient-to-br from-blue-400 to-purple-600 relative">
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <Lightbulb className="w-16 h-16 text-white opacity-50" />
+                      </div>
+                    </div>
+                    <div className="p-4">
+                      <h3 className="font-bold text-gray-900 line-clamp-2 group-hover:text-blue-600 transition-colors">
+                        {idea.title}
+                      </h3>
+                      <p className="text-gray-600 text-sm mt-2">
+                        {idea.category}
+                      </p>
+                      <div className="flex items-center justify-between mt-4">
+                        <div className="flex items-center gap-4 text-sm text-gray-500">
+                          <span className="flex items-center gap-1">
+                            <Users className="w-4 h-4" />
+                            {idea.wants_count}人
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <MessageCircle className="w-4 h-4" />
+                            {idea.comments_count}
+                          </span>
+                        </div>
+                        <span className="text-lg font-bold text-gray-900">
+                          {idea.wants_count * 1000}円
+                        </span>
+                      </div>
                     </div>
                   </div>
-                )}
-              </div>
-            </section>
-
-            {/* すべてのアイデアを見る */}
-            {ideasWithCounts.length > 13 && (
-              <div className="text-center py-6">
-                <Link
-                  href="/home/all"
-                  className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium"
-                >
-                  すべてのアイデアを見る
-                  <ChevronUp className="w-4 h-4 rotate-180" />
                 </Link>
+              ))
+            ) : (
+              <div className="col-span-full text-center py-12">
+                <p className="text-gray-500">まだ開発事例がありません</p>
               </div>
             )}
           </div>
+        </div>
+      </section>
 
-          {/* サイドバー */}
-          <div className="hidden lg:block w-80 space-y-6">
-            {/* 検索バー */}
-            <div className="bg-white rounded-lg border p-4">
-              <h3 className="font-semibold text-gray-900 mb-3">
-                <Search className="w-4 h-4 inline mr-1" />
-                アイデアを検索
-              </h3>
-              <form method="GET">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                  <input
-                    type="text"
-                    name="search"
-                    defaultValue={searchParams.search}
-                    className="w-full pl-9 pr-4 py-2 bg-gray-50 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:bg-white transition-all"
-                    placeholder="キーワードを入力..."
-                  />
-                </div>
-              </form>
+      {/* アイデア投稿を促すCTAセクション */}
+      <section className="py-8">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="relative h-40 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg overflow-hidden">
+            <div className="absolute inset-0 bg-black/20" />
+            <div className="relative h-full flex items-center justify-center text-center">
+              <div className="text-white">
+                <h2 className="text-2xl font-bold mb-3">あなたもアイデアで収益化しよう</h2>
+                <PostIdeaButton className="px-6 py-3 text-base font-bold bg-white text-gray-900 hover:bg-gray-100">
+                  アイデアを投稿する
+                </PostIdeaButton>
+              </div>
             </div>
+          </div>
+        </div>
+      </section>
 
-            {/* カテゴリフィルタ */}
-            <div className="bg-white rounded-lg border p-4">
-              <h3 className="font-semibold text-gray-900 mb-3">
-                <Filter className="w-4 h-4 inline mr-1" />
-                カテゴリ
-              </h3>
-              <div className="space-y-2">
+      {/* アイデア掲示板セクション */}
+      <section className="py-12">
+        <div className="max-w-7xl mx-auto px-4">
+          <h2 className="text-2xl font-bold text-gray-900 mb-8">あなたにおすすめ</h2>
+          <div className="flex gap-8">
+            {/* 左サイドバー */}
+            <aside className="w-64 flex-shrink-0">
+
+              <nav className="space-y-1">
                 <Link
                   href="/home"
-                  className={`block px-3 py-2 rounded-md text-sm transition-colors ${
+                  className={`flex items-center justify-between px-4 py-2 text-sm rounded-md transition-colors ${
                     !searchParams.category
-                      ? 'bg-orange-100 text-orange-700 font-medium'
+                      ? 'bg-gray-100 text-gray-900 font-medium'
                       : 'text-gray-600 hover:bg-gray-50'
                   }`}
                 >
-                  すべてのカテゴリ
+                  すべて
+                  <ChevronRight className="w-4 h-4" />
                 </Link>
                 {CATEGORIES.map((category) => (
                   <Link
                     key={category}
                     href={`/home?category=${encodeURIComponent(category)}`}
-                    className={`block px-3 py-2 rounded-md text-sm transition-colors ${
+                    className={`flex items-center justify-between px-4 py-2 text-sm rounded-md transition-colors ${
                       searchParams.category === category
-                        ? 'bg-orange-100 text-orange-700 font-medium'
+                        ? 'bg-gray-100 text-gray-900 font-medium'
                         : 'text-gray-600 hover:bg-gray-50'
                     }`}
                   >
                     {category}
+                    <ChevronRight className="w-4 h-4" />
                   </Link>
                 ))}
-              </div>
-            </div>
+              </nav>
 
-            {/* ガイドライン */}
-            <div className="bg-white rounded-lg border p-4">
-              <h3 className="font-semibold text-gray-900 mb-3">
-                📝 投稿のヒント
-              </h3>
-              <ul className="space-y-2 text-sm text-gray-600">
-                <li className="flex items-start">
-                  <span className="mr-2">•</span>
-                  <span>具体的な問題を解決するアイデアが人気</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="mr-2">•</span>
-                  <span>ターゲットユーザーを明確に</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="mr-2">•</span>
-                  <span>実現可能性を考慮しよう</span>
-                </li>
-              </ul>
+              {/* 検索フォーム */}
+              <div className="mt-8">
+                <form method="GET">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                    <input
+                      type="text"
+                      name="search"
+                      defaultValue={searchParams.search}
+                      className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
+                      placeholder="キーワードで検索"
+                    />
+                  </div>
+                </form>
+              </div>
+            </aside>
+
+            {/* メインコンテンツ */}
+            <div className="flex-1">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {latestIdeas.length > 0 ? (
+                  latestIdeas.map((idea) => (
+                    <Link key={idea.id} href={`/ideas/${idea.id}`} className="group block">
+                      <div className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow overflow-hidden">
+                        {/* サムネイル画像の代わりに色付きプレースホルダー */}
+                        <div className="w-full h-40 bg-gradient-to-br from-green-400 to-blue-500 relative">
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <Lightbulb className="w-12 h-12 text-white opacity-50" />
+                          </div>
+                          {/* カテゴリラベル */}
+                          <span className="absolute top-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
+                            {idea.category}
+                          </span>
+                        </div>
+                        <div className="p-4">
+                          <h3 className="font-bold text-gray-900 line-clamp-2 group-hover:text-blue-600 transition-colors">
+                            {idea.title}
+                          </h3>
+                          <p className="text-gray-600 text-sm mt-2 line-clamp-2">
+                            {idea.problem}
+                          </p>
+                          <div className="flex items-center justify-between mt-4">
+                            <div className="flex items-center gap-4 text-sm text-gray-500">
+                              <span>{idea.wants_count}%</span>
+                              <span>{idea.wants_count}人</span>
+                            </div>
+                            <span className="text-lg font-bold text-gray-900">
+                              {idea.wants_count * 1000}円
+                            </span>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                            <div className="bg-blue-600 h-2 rounded-full" style={{width: `${Math.min(idea.wants_count * 10, 100)}%`}} />
+                          </div>
+                        </div>
+                      </div>
+                    </Link>
+                  ))
+                ) : (
+                  <div className="col-span-full text-center py-12">
+                    <p className="text-gray-500">まだアイデアがありません</p>
+                  </div>
+                )}
+              </div>
+              
+              {ideasWithCounts.length > 6 && (
+                <div className="text-center mt-8">
+                  <Link
+                    href="/home/all"
+                    className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium"
+                  >
+                    もっと見る
+                    <ChevronRight className="w-4 h-4" />
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
         </div>
-      </div>
+      </section>
     </div>
   )
 }

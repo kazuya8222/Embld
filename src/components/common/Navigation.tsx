@@ -45,10 +45,7 @@ export function Navigation() {
 
   return (
     <>
-      {/* ヘッダーの背景を拡張するための要素 */}
-      <div className="fixed top-0 left-0 right-0 h-32 bg-gray-900 -translate-y-16 z-40" />
-      
-      <header className="bg-gray-900 border-b border-gray-800 sticky top-0 z-50 shadow-sm">
+      <header className="bg-gray-900 border-b border-gray-800 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* ロゴ */}
