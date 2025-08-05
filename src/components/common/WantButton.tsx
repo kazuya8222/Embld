@@ -9,16 +9,6 @@ import { cn } from '@/lib/utils/cn'
 // コンポーネントの外で一度だけクライアントを作成
 const supabase = createClient()
 
-// 接続プールを最適化
-if (typeof window !== 'undefined') {
-  // クライアントサイドでのみ実行
-  supabase.auth.onAuthStateChange((event, session) => {
-    if (event === 'TOKEN_REFRESHED') {
-      console.log('Token refreshed')
-    }
-  })
-}
-
 interface WantButtonProps {
   ideaId: string
   initialWanted: boolean
@@ -43,16 +33,7 @@ export function WantButton({ ideaId, initialWanted, initialCount, className, siz
   const handleWantToggle = async () => {
     console.log('handleWantToggle called', { user, ideaId, isWanted })
     
-    // 認証トークンの状態を確認
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-    console.log('Current session:', { 
-      hasSession: !!session, 
-      expiresAt: session?.expires_at,
-      error: sessionError 
-    })
-    
-    if (!user || !session) {
-      console.log('No user or session, redirecting to login')
+    if (!user) {
       window.location.href = '/auth/login'
       return
     }
@@ -82,39 +63,21 @@ export function WantButton({ ideaId, initialWanted, initialCount, className, siz
         try {
           // 直接データベース操作を実行
           console.log('Starting insert operation...')
-          console.log('Environment:', {
-            url: process.env.NEXT_PUBLIC_SUPABASE_URL,
-            origin: window.location.origin,
-            hostname: window.location.hostname
-          })
           
-          const result = await supabase
+          // タイムアウトを設定してデバッグ
+          const insertPromise = supabase
             .from('wants')
             .insert({
               idea_id: ideaId,
               user_id: user.id,
             })
             .select()
-            .catch(error => {
-              console.error('Detailed error:', {
-                name: error.name,
-                message: error.message,
-                stack: error.stack,
-                cause: error.cause,
-                supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL
-              })
-              
-              // ネットワークエラーの詳細
-              if (error.name === 'TypeError' && error.message === 'Failed to fetch') {
-                console.error('Network error - possible causes:')
-                console.error('1. CORS policy blocking the request')
-                console.error('2. Ad blocker or browser extension')
-                console.error('3. Network connectivity issue')
-                console.error('4. Supabase URL misconfiguration')
-              }
-              
-              throw error
-            })
+          
+          const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Insert timeout after 5 seconds')), 5000)
+          )
+          
+          const result = await Promise.race([insertPromise, timeoutPromise])
           
           console.log('Insert completed:', result)
           const { data, error } = result as any
