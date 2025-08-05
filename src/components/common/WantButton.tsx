@@ -6,6 +6,9 @@ import { useAuth } from '@/components/auth/AuthProvider'
 import { createClient } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils/cn'
 
+// コンポーネントの外で一度だけクライアントを作成
+const supabase = createClient()
+
 interface WantButtonProps {
   ideaId: string
   initialWanted: boolean
@@ -19,9 +22,17 @@ export function WantButton({ ideaId, initialWanted, initialCount, className, siz
   const [isWanted, setIsWanted] = useState(initialWanted)
   const [wantsCount, setWantsCount] = useState(initialCount)
   const [loading, setLoading] = useState(false)
-  const supabase = createClient()
+  
+  // デバッグ用ログ
+  console.log('WantButton render - Environment check:', {
+    hasUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+    hasKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    user: user?.id
+  })
 
   const handleWantToggle = async () => {
+    console.log('handleWantToggle called', { user, ideaId, isWanted })
+    
     if (!user) {
       window.location.href = '/auth/login'
       return
@@ -30,27 +41,56 @@ export function WantButton({ ideaId, initialWanted, initialCount, className, siz
     setLoading(true)
     try {
       if (isWanted) {
+        console.log('Attempting to delete want...')
         const { error } = await supabase
           .from('wants')
           .delete()
           .eq('idea_id', ideaId)
           .eq('user_id', user.id)
         
+        console.log('Delete result:', { error })
         if (!error) {
           setIsWanted(false)
           setWantsCount(prev => prev - 1)
+        } else {
+          console.error('Delete error:', error)
         }
       } else {
-        const { error } = await supabase
-          .from('wants')
-          .insert({
-            idea_id: ideaId,
-            user_id: user.id,
-          })
+        console.log('Attempting to insert want...')
+        console.log('Supabase instance:', supabase)
+        console.log('About to call supabase.from...')
         
-        if (!error) {
-          setIsWanted(true)
-          setWantsCount(prev => prev + 1)
+        try {
+          // 直接データベース操作を実行
+          console.log('Starting insert operation...')
+          
+          // タイムアウトを設定してデバッグ
+          const insertPromise = supabase
+            .from('wants')
+            .insert({
+              idea_id: ideaId,
+              user_id: user.id,
+            })
+            .select()
+          
+          const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Insert timeout after 5 seconds')), 5000)
+          )
+          
+          const result = await Promise.race([insertPromise, timeoutPromise])
+          
+          console.log('Insert completed:', result)
+          const { data, error } = result as any
+          
+          console.log('Insert result:', { data, error })
+          if (!error) {
+            setIsWanted(true)
+            setWantsCount(prev => prev + 1)
+          } else {
+            console.error('Insert error:', error)
+          }
+        } catch (insertError) {
+          console.error('Insert catch error:', insertError)
         }
       }
     } catch (error) {

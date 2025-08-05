@@ -3,13 +3,16 @@ import { createBrowserClient } from "@supabase/ssr";
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-// 開発環境でのデバッグ用ログ
-if (process.env.NODE_ENV === 'development') {
-  console.log('Supabase client config:', {
-    url: supabaseUrl ? `${supabaseUrl.substring(0, 30)}...` : 'missing',
-    key: supabaseKey ? `${supabaseKey.substring(0, 30)}...` : 'missing'
-  })
-}
+// デバッグ用ログ（常に表示）
+console.log('Supabase client config check:', {
+  url: supabaseUrl ? `${supabaseUrl.substring(0, 30)}...` : 'missing',
+  key: supabaseKey ? `${supabaseKey.substring(0, 30)}...` : 'missing',
+  urlType: typeof supabaseUrl,
+  keyType: typeof supabaseKey
+})
+
+// シングルトンパターンでクライアントを保持
+let supabaseClient: ReturnType<typeof createBrowserClient> | null = null;
 
 export const createClient = () => {
   if (!supabaseUrl || !supabaseKey) {
@@ -20,23 +23,27 @@ export const createClient = () => {
     throw new Error('Missing Supabase environment variables')
   }
   
-  return createBrowserClient(
+  // 既存のクライアントがあればそれを返す
+  if (supabaseClient) {
+    console.log('Returning existing Supabase client')
+    return supabaseClient
+  }
+  
+  console.log('Creating new Supabase client with options...')
+  
+  supabaseClient = createBrowserClient(
     supabaseUrl,
     supabaseKey,
     {
-      db: {
-        schema: 'public'
-      },
       auth: {
         autoRefreshToken: true,
         persistSession: true,
         detectSessionInUrl: true
-      },
-      global: {
-        headers: {
-          'X-Client-Info': 'embld-app'
-        }
       }
     }
   );
+  
+  console.log('Supabase client created:', supabaseClient)
+  
+  return supabaseClient;
 };

@@ -7,6 +7,9 @@ import { Comment } from '@/types'
 import { cn } from '@/lib/utils/cn'
 import { MessageCircle, Send, User } from 'lucide-react'
 
+// コンポーネントの外で一度だけクライアントを作成
+const supabase = createClient()
+
 interface CommentSectionProps {
   ideaId: string
   initialComments: (Comment & { user: { username: string; avatar_url?: string } })[]
@@ -17,11 +20,12 @@ export function CommentSection({ ideaId, initialComments }: CommentSectionProps)
   const [comments, setComments] = useState(initialComments)
   const [newComment, setNewComment] = useState('')
   const [loading, setLoading] = useState(false)
-  const supabase = createClient()
 
   const handleSubmitComment = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!user || !newComment.trim()) return
+
+    console.log('Submitting comment:', { ideaId, userId: user.id, content: newComment.trim() })
 
     setLoading(true)
     try {
@@ -38,9 +42,14 @@ export function CommentSection({ ideaId, initialComments }: CommentSectionProps)
         `)
         .single()
 
+      console.log('Comment insert result:', { data, error })
+
       if (!error && data) {
         setComments(prev => [data, ...prev])
         setNewComment('')
+      } else if (error) {
+        console.error('Comment insert error:', error)
+        alert(`エラー: ${error.message}`)
       }
     } catch (error) {
       console.error('Error posting comment:', error)
