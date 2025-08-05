@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { ProfileSettingsForm } from '@/components/profile/ProfileSettingsForm'
 
 export default async function SettingsPage() {
   const supabase = await createClient()
@@ -10,13 +11,9 @@ export default async function SettingsPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">アカウント設定</h1>
-      
-      <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-lg font-semibold mb-4">プロフィール情報</h2>
-        <p className="text-gray-600">現在、プロフィール編集機能は開発中です。</p>
-      </div>
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-3xl font-bold mb-8">アカウント設定</h1>
+      <ProfileSettingsForm />
     </div>
   )
 }
