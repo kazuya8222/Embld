@@ -5,6 +5,9 @@ import type { User } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 
+// コンポーネントの外で一度だけクライアントを作成
+const supabase = createClient()
+
 interface AuthContextType {
   user: User | null
   userProfile: any | null
@@ -23,7 +26,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [userProfile, setUserProfile] = useState<any | null>(null)
   const [loading, setLoading] = useState(true)
-  const supabase = createClient()
   const router = useRouter()
 
   // ログアウト処理

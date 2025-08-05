@@ -3,14 +3,15 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
+// コンポーネントの外で一度だけクライアントを作成
+const supabase = createClient()
+
 export default function ClientDebugPage() {
   const [debugInfo, setDebugInfo] = useState<any>({})
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const checkAuth = async () => {
-      const supabase = createClient()
-      
       try {
         // 1. getSession を確認
         const { data: { session }, error: sessionError } = await supabase.auth.getSession()

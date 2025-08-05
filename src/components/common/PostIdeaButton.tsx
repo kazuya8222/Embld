@@ -5,13 +5,15 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
+// コンポーネントの外で一度だけクライアントを作成
+const supabase = createClient()
+
 export function PostIdeaButton({ className, children }: { className?: string, children?: React.ReactNode }) {
   const router = useRouter()
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
   
   useEffect(() => {
     const checkAuth = async () => {
-      const supabase = createClient()
       const { data: { session } } = await supabase.auth.getSession()
       setIsAuthenticated(!!session)
     }

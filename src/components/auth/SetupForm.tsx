@@ -6,12 +6,14 @@ import { createClient } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils/cn'
 import { useAuth } from '@/components/auth/AuthProvider'
 
+// コンポーネントの外で一度だけクライアントを作成
+const supabase = createClient()
+
 export function SetupForm() {
   const [username, setUsername] = useState('')
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
   const [checking, setChecking] = useState(true)
-  const supabase = createClient()
   const router = useRouter()
   const { user } = useAuth()
 
