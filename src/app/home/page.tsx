@@ -1,4 +1,4 @@
-import { createClient } from '@/utils/supabase/server'
+import { createClient } from '@/lib/supabase/server'
 import HomePageClient from '@/components/home/HomePageClient'
 
 interface SearchParams {

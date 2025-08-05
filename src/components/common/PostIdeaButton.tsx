@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { createClient } from '@/utils/supabase/client'
+import { createClient } from '@/lib/supabase/client'
 
 export function PostIdeaButton({ className, children }: { className?: string, children?: React.ReactNode }) {
   const router = useRouter()

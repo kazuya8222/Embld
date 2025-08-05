@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useAuth } from '@/components/auth/AuthProvider'
-import { createClient } from '@/utils/supabase/client'
+import { createClient } from '@/lib/supabase/client'
 import { Comment } from '@/types'
 import { cn } from '@/lib/utils/cn'
 import { MessageCircle, Send, User } from 'lucide-react'

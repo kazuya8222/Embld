@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Heart } from 'lucide-react'
 import { useAuth } from '@/components/auth/AuthProvider'
-import { createClient } from '@/utils/supabase/client'
+import { createClient } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils/cn'
 
 interface WantButtonProps {

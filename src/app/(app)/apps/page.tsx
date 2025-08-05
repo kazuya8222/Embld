@@ -1,4 +1,4 @@
-import { createClient } from '@/utils/supabase/server'
+import { createClient } from '@/lib/supabase/server'
 import { AppCard } from '@/components/apps/AppCard'
 import Link from 'next/link'
 import { Smartphone, Plus } from 'lucide-react'

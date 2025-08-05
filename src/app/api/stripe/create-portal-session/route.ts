@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/utils/supabase/server'
+import { createClient } from '@/lib/supabase/server'
 import { createPortalSession } from '@/lib/stripe/server'
 import { Database } from '@/lib/supabase/database.types'
 
