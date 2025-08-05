@@ -12,7 +12,7 @@ const supabase = createClient()
 // 接続プールを最適化
 if (typeof window !== 'undefined') {
   // クライアントサイドでのみ実行
-  supabase.auth.onAuthStateChange((event: any, session: any) => {
+  supabase.auth.onAuthStateChange((event, session) => {
     if (event === 'TOKEN_REFRESHED') {
       console.log('Token refreshed')
     }
@@ -117,7 +117,7 @@ export function WantButton({ ideaId, initialWanted, initialCount, className, siz
             })
           
           console.log('Insert completed:', result)
-          const { data, error } = result
+          const { data, error } = result as any
           
           console.log('Insert result:', { data, error })
           if (!error) {
