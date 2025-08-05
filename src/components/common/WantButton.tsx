@@ -101,7 +101,7 @@ export function WantButton({ ideaId, initialWanted, initialCount, className, siz
               user_id: user.id,
             })
             .select()
-            .catch((error: any) => {
+            .catch(error => {
               console.error('Detailed error:', {
                 name: error.name,
                 message: error.message,
@@ -132,11 +132,11 @@ export function WantButton({ ideaId, initialWanted, initialCount, className, siz
           } else {
             console.error('Insert error:', error)
           }
-        } catch (insertError: any) {
+        } catch (insertError) {
           console.error('Insert catch error:', insertError)
         }
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error toggling want:', error)
       alert('エラーが発生しました。もう一度お試しください。')
     }
