@@ -39,27 +39,6 @@ export const createClient = () => {
         autoRefreshToken: true,
         persistSession: true,
         detectSessionInUrl: true
-      },
-      // fetch関数をカスタマイズ
-      global: {
-        fetch: async (url, options = {}) => {
-          console.log('Supabase fetch:', url)
-          const controller = new AbortController()
-          const timeoutId = setTimeout(() => controller.abort(), 30000) // 30秒
-          
-          try {
-            const response = await fetch(url, {
-              ...options,
-              signal: controller.signal
-            })
-            clearTimeout(timeoutId)
-            return response
-          } catch (error) {
-            clearTimeout(timeoutId)
-            console.error('Fetch error:', error)
-            throw error
-          }
-        }
       }
     }
   );

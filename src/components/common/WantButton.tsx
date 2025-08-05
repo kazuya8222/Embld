@@ -6,6 +6,19 @@ import { useAuth } from '@/components/auth/AuthProvider'
 import { createClient } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils/cn'
 
+// コンポーネントの外で一度だけクライアントを作成
+const supabase = createClient()
+
+// 接続プールを最適化
+if (typeof window !== 'undefined') {
+  // クライアントサイドでのみ実行
+  supabase.auth.onAuthStateChange((event: any, session: any) => {
+    if (event === 'TOKEN_REFRESHED') {
+      console.log('Token refreshed')
+    }
+  })
+}
+
 interface WantButtonProps {
   ideaId: string
   initialWanted: boolean
@@ -20,15 +33,11 @@ export function WantButton({ ideaId, initialWanted, initialCount, className, siz
   const [wantsCount, setWantsCount] = useState(initialCount)
   const [loading, setLoading] = useState(false)
   
-  // クライアントをコンポーネント内で作成（一時的な対策）
-  const [supabase] = useState(() => createClient())
-  
   // デバッグ用ログ
   console.log('WantButton render - Environment check:', {
     hasUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
     hasKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    user: user?.id,
-    url: process.env.NEXT_PUBLIC_SUPABASE_URL?.substring(0, 30) + '...'
+    user: user?.id
   })
 
   const handleWantToggle = async () => {
@@ -78,21 +87,6 @@ export function WantButton({ ideaId, initialWanted, initialCount, className, siz
             origin: window.location.origin,
             hostname: window.location.hostname
           })
-          
-          // ブラウザ情報もログに追加
-          console.log('Browser info:', {
-            userAgent: navigator.userAgent,
-            online: navigator.onLine,
-            cookieEnabled: navigator.cookieEnabled,
-            protocol: window.location.protocol
-          })
-          
-          // Service Workerの確認
-          if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.getRegistrations().then(registrations => {
-              console.log('Service Workers:', registrations.length)
-            })
-          }
           
           const result = await supabase
             .from('wants')
