@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { Heart } from 'lucide-react'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { createClient } from '@/lib/supabase/client'
@@ -23,82 +23,118 @@ export function WantButton({ ideaId, initialWanted, initialCount, className, siz
   const [wantsCount, setWantsCount] = useState(initialCount)
   const [loading, setLoading] = useState(false)
   
-  // デバッグ用ログ
-  console.log('WantButton render - Environment check:', {
-    hasUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
-    hasKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    user: user?.id
-  })
-
-  const handleWantToggle = async () => {
-    console.log('handleWantToggle called', { user, ideaId, isWanted })
-    
+  const handleWantToggle = useCallback(async () => {
     if (!user) {
       window.location.href = '/auth/login'
       return
     }
 
+    // 二重クリック防止
+    if (loading) {
+      console.log('Already processing, ignoring click')
+      return
+    }
+
     setLoading(true)
+    
+    // 楽観的アップデート - UIをすぐに更新
+    const previousWanted = isWanted
+    const previousCount = wantsCount
+    
+    setIsWanted(!isWanted)
+    setWantsCount(isWanted ? wantsCount - 1 : wantsCount + 1)
+
     try {
-      if (isWanted) {
-        console.log('Attempting to delete want...')
-        const { error } = await supabase
+      if (previousWanted) {
+        // DELETE操作
+        console.log('Deleting want...')
+        
+        // タイムアウト付きで実行
+        const deletePromise = supabase
           .from('wants')
           .delete()
           .eq('idea_id', ideaId)
           .eq('user_id', user.id)
+          .single() // パフォーマンス向上のため
         
-        console.log('Delete result:', { error })
-        if (!error) {
-          setIsWanted(false)
-          setWantsCount(prev => prev - 1)
-        } else {
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Delete timeout')), 10000)
+        )
+        
+        const { error } = await Promise.race([deletePromise, timeoutPromise]) as any
+        
+        if (error) {
           console.error('Delete error:', error)
+          // エラー時は元に戻す
+          setIsWanted(previousWanted)
+          setWantsCount(previousCount)
+          
+          // タイムアウトエラーの場合
+          if (error.message === 'Delete timeout') {
+            alert('接続がタイムアウトしました。もう一度お試しください。')
+          } else {
+            alert('エラーが発生しました。もう一度お試しください。')
+          }
         }
       } else {
-        console.log('Attempting to insert want...')
-        console.log('Supabase instance:', supabase)
-        console.log('About to call supabase.from...')
+        // INSERT操作
+        console.log('Inserting want...')
         
-        try {
-          // 直接データベース操作を実行
-          console.log('Starting insert operation...')
+        // まず重複チェック（競合状態を防ぐ）
+        const { data: existing } = await supabase
+          .from('wants')
+          .select('id')
+          .eq('idea_id', ideaId)
+          .eq('user_id', user.id)
+          .maybeSingle()
+        
+        if (existing) {
+          console.log('Want already exists')
+          return
+        }
+        
+        // タイムアウト付きで実行
+        const insertPromise = supabase
+          .from('wants')
+          .insert({
+            idea_id: ideaId,
+            user_id: user.id,
+          })
+          .select()
+          .single()
+        
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Insert timeout')), 10000)
+        )
+        
+        const { error } = await Promise.race([insertPromise, timeoutPromise]) as any
+        
+        if (error) {
+          console.error('Insert error:', error)
+          // エラー時は元に戻す
+          setIsWanted(previousWanted)
+          setWantsCount(previousCount)
           
-          // タイムアウトを設定してデバッグ
-          const insertPromise = supabase
-            .from('wants')
-            .insert({
-              idea_id: ideaId,
-              user_id: user.id,
-            })
-            .select()
-          
-          const timeoutPromise = new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Insert timeout after 5 seconds')), 5000)
-          )
-          
-          const result = await Promise.race([insertPromise, timeoutPromise])
-          
-          console.log('Insert completed:', result)
-          const { data, error } = result as any
-          
-          console.log('Insert result:', { data, error })
-          if (!error) {
-            setIsWanted(true)
-            setWantsCount(prev => prev + 1)
+          // タイムアウトエラーの場合
+          if (error.message === 'Insert timeout') {
+            alert('接続がタイムアウトしました。もう一度お試しください。')
+          } else if (error.code === '23505') { // 重複エラー
+            console.log('Duplicate entry, already wanted')
           } else {
-            console.error('Insert error:', error)
+            alert('エラーが発生しました。もう一度お試しください。')
           }
-        } catch (insertError) {
-          console.error('Insert catch error:', insertError)
         }
       }
     } catch (error) {
-      console.error('Error toggling want:', error)
-      alert('エラーが発生しました。もう一度お試しください。')
+      console.error('Unexpected error:', error)
+      // エラー時は元に戻す
+      setIsWanted(previousWanted)
+      setWantsCount(previousCount)
+      alert('予期しないエラーが発生しました。')
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
-  }
+  }, [user, loading, ideaId, isWanted, wantsCount])
 
   const sizeClasses = {
     sm: 'px-3 py-1.5 text-sm',
