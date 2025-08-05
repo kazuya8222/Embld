@@ -65,8 +65,7 @@ export default function ClientDebugPage() {
     checkAuth()
     
     // 認証状態の変更を監視
-    const supabase = createClient()
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event: any, session: any) => {
       console.log('Auth state change:', event, session?.user?.email)
       checkAuth()
     })
@@ -111,7 +110,6 @@ export default function ClientDebugPage() {
         <div className="mt-4 space-x-4">
           <button
             onClick={async () => {
-              const supabase = createClient()
               const { error } = await supabase.auth.signInWithOAuth({
                 provider: 'google',
                 options: {
@@ -127,7 +125,6 @@ export default function ClientDebugPage() {
           
           <button
             onClick={async () => {
-              const supabase = createClient()
               const { error } = await supabase.auth.signOut()
               if (error) alert(error.message)
               else window.location.reload()

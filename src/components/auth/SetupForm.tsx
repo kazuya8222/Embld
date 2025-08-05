@@ -40,7 +40,7 @@ export function SetupForm() {
     }
 
     checkUser()
-  }, [user, supabase, router])
+  }, [user, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
