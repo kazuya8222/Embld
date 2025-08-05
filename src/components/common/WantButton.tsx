@@ -29,21 +29,23 @@ export function WantButton({ ideaId, initialWanted, initialCount, className, siz
     console.log('2. User:', user?.id)
     console.log('3. Idea ID:', ideaId)
     console.log('4. Current state - isWanted:', isWanted)
-    console.log('5. Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL)
+    console.log('5. Supabase instance:', supabase)
+    console.log('6. Supabase auth client:', supabase.auth)
+    console.log('7. Supabase from method:', supabase.from)
     
     if (!user) {
-      console.log('6. No user found, redirecting to login')
+      console.log('8. No user found, redirecting to login')
       window.location.href = '/auth/login'
       return
     }
 
     if (loading) {
-      console.log('6. Already loading, ignoring click')
+      console.log('8. Already loading, ignoring click')
       return
     }
 
     setLoading(true)
-    console.log('7. Loading state set to true')
+    console.log('9. Loading state set to true')
     
     // 楽観的アップデート
     const previousWanted = isWanted
@@ -51,84 +53,107 @@ export function WantButton({ ideaId, initialWanted, initialCount, className, siz
     
     setIsWanted(!isWanted)
     setWantsCount(isWanted ? wantsCount - 1 : wantsCount + 1)
-    console.log('8. Optimistic update applied')
+    console.log('10. Optimistic update applied')
 
     try {
       if (previousWanted) {
         // DELETE操作
-        console.log('9. Starting DELETE operation...')
-        console.log('10. DELETE request payload:', {
-          table: 'wants',
-          filters: { idea_id: ideaId, user_id: user.id }
-        })
+        console.log('11. Starting DELETE operation...')
+        console.log('12. Creating query builder...')
         
-        const startTime = Date.now()
+        const deleteQuery = supabase.from('wants')
+        console.log('13. Query builder created:', deleteQuery)
         
-        const { data, error } = await supabase
-          .from('wants')
+        const filteredQuery = deleteQuery
           .delete()
           .eq('idea_id', ideaId)
           .eq('user_id', user.id)
-          .select()
+        console.log('14. Filtered query created:', filteredQuery)
+        
+        console.log('15. Executing query...')
+        const startTime = Date.now()
+        
+        // Promise実行の詳細なログ
+        const queryPromise = filteredQuery.select()
+        console.log('16. Query promise created:', queryPromise)
+        
+        // タイムアウトを設定
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => {
+            console.log('17. Query timeout triggered')
+            reject(new Error('Query timeout after 30 seconds'))
+          }, 30000)
+        })
+        
+        console.log('18. Waiting for query response...')
+        const result = await Promise.race([queryPromise, timeoutPromise])
         
         const endTime = Date.now()
-        console.log(`11. DELETE completed in ${endTime - startTime}ms`)
-        console.log('12. DELETE response:', { data, error })
+        console.log(`19. Query completed in ${endTime - startTime}ms`)
+        console.log('20. Query result:', result)
+        
+        const { data, error } = result as any
         
         if (error) {
-          console.error('13. DELETE failed:', error)
+          console.error('21. DELETE failed:', error)
           throw error
         }
+        
+        console.log('22. DELETE successful:', data)
         
       } else {
         // INSERT操作
-        console.log('9. Starting INSERT operation...')
-        console.log('10. INSERT request payload:', {
-          table: 'wants',
-          data: { idea_id: ideaId, user_id: user.id }
-        })
+        console.log('11. Starting INSERT operation...')
+        console.log('12. Creating insert data...')
         
-        const startTime = Date.now()
+        const insertData = {
+          idea_id: ideaId,
+          user_id: user.id,
+        }
+        console.log('13. Insert data:', insertData)
         
-        const { data, error } = await supabase
+        console.log('14. Creating query...')
+        const insertQuery = supabase
           .from('wants')
-          .insert({
-            idea_id: ideaId,
-            user_id: user.id,
-          })
+          .insert(insertData)
           .select()
         
+        console.log('15. Executing query...')
+        const startTime = Date.now()
+        
+        const { data, error } = await insertQuery
+        
         const endTime = Date.now()
-        console.log(`11. INSERT completed in ${endTime - startTime}ms`)
-        console.log('12. INSERT response:', { data, error })
+        console.log(`16. Query completed in ${endTime - startTime}ms`)
+        console.log('17. INSERT response:', { data, error })
         
         if (error) {
-          console.error('13. INSERT failed:', error)
+          console.error('18. INSERT failed:', error)
           throw error
         }
+        
+        console.log('19. INSERT successful:', data)
       }
       
-      console.log('14. Operation successful')
-      
     } catch (error: any) {
-      console.error('15. Operation failed with error:', error)
-      console.error('16. Error details:', {
+      console.error('ERROR. Operation failed:', error)
+      console.error('ERROR details:', {
+        name: error.name,
         message: error.message,
         code: error.code,
-        details: error.details,
-        hint: error.hint,
-        stack: error.stack
+        stack: error.stack,
+        ...error
       })
       
       // エラー時は元に戻す
       setIsWanted(previousWanted)
       setWantsCount(previousCount)
-      console.log('17. Reverted optimistic update')
+      console.log('Reverted optimistic update')
       
       alert(`エラーが発生しました: ${error.message}`)
     } finally {
       setLoading(false)
-      console.log('18. Loading state set to false')
+      console.log('Loading state set to false')
       console.log('=== End of Debug ===')
     }
   }, [user, loading, ideaId, isWanted, wantsCount])
