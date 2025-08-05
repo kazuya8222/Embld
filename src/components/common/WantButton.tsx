@@ -94,43 +94,39 @@ export function WantButton({ ideaId, initialWanted, initialCount, className, siz
             })
           }
           
-          const result = await supabase
+          const { data, error } = await supabase
             .from('wants')
             .insert({
               idea_id: ideaId,
               user_id: user.id,
             })
             .select()
-            .catch((error: any) => {
-              console.error('Detailed error:', {
-                name: error.name,
-                message: error.message,
-                stack: error.stack,
-                cause: error.cause,
-                supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL
-              })
-              
-              // ネットワークエラーの詳細
-              if (error.name === 'TypeError' && error.message === 'Failed to fetch') {
-                console.error('Network error - possible causes:')
-                console.error('1. CORS policy blocking the request')
-                console.error('2. Ad blocker or browser extension')
-                console.error('3. Network connectivity issue')
-                console.error('4. Supabase URL misconfiguration')
-              }
-              
-              throw error
-            })
-          
-          console.log('Insert completed:', result)
-          const { data, error } = result
           
           console.log('Insert result:', { data, error })
-          if (!error) {
+          
+          if (error) {
+            console.error('Insert error:', error)
+            console.error('Detailed error:', {
+              name: error.name,
+              message: error.message,
+              stack: error.stack,
+              cause: error.cause,
+              supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL
+            })
+            
+            // ネットワークエラーの詳細
+            if (error.name === 'TypeError' && error.message === 'Failed to fetch') {
+              console.error('Network error - possible causes:')
+              console.error('1. CORS policy blocking the request')
+              console.error('2. Ad blocker or browser extension')
+              console.error('3. Network connectivity issue')
+              console.error('4. Supabase URL misconfiguration')
+            }
+            
+            throw error
+          } else {
             setIsWanted(true)
             setWantsCount(prev => prev + 1)
-          } else {
-            console.error('Insert error:', error)
           }
         } catch (insertError: any) {
           console.error('Insert catch error:', insertError)
