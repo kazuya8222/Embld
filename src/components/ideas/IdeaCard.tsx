@@ -1,11 +1,8 @@
 'use client'
-
-import { useState } from 'react'
 import Link from 'next/link'
 import { Idea } from '@/types'
-import { MessageCircle, User, Calendar, Heart, Tag, DollarSign } from 'lucide-react'
-import { useAuth } from '@/components/auth/AuthProvider'
-import { createClient } from '@/lib/supabase/client'
+import { MessageCircle, User, Calendar, Tag, DollarSign } from 'lucide-react'
+import { WantButton } from '@/components/common/WantButton'
 import { formatRevenue } from '@/data/revenue'
 
 interface IdeaCardProps {
@@ -21,49 +18,6 @@ interface IdeaCardProps {
 }
 
 export function IdeaCard({ idea }: IdeaCardProps) {
-  const { user } = useAuth()
-  const [isWanted, setIsWanted] = useState(idea.user_has_wanted)
-  const [wantsCount, setWantsCount] = useState(idea.wants_count)
-  const [loading, setLoading] = useState(false)
-  const supabase = createClient()
-
-  const handleWantToggle = async () => {
-    if (!user) {
-      window.location.href = '/auth/login'
-      return
-    }
-
-    setLoading(true)
-    try {
-      if (isWanted) {
-        const { error } = await supabase
-          .from('wants')
-          .delete()
-          .eq('idea_id', idea.id)
-          .eq('user_id', user.id)
-        
-        if (!error) {
-          setIsWanted(false)
-          setWantsCount(prev => prev - 1)
-        }
-      } else {
-        const { error } = await supabase
-          .from('wants')
-          .insert({
-            idea_id: idea.id,
-            user_id: user.id,
-          })
-        
-        if (!error) {
-          setIsWanted(true)
-          setWantsCount(prev => prev + 1)
-        }
-      }
-    } catch (error) {
-      console.error('Error toggling want:', error)
-    }
-    setLoading(false)
-  }
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('ja-JP', {
@@ -157,18 +111,12 @@ export function IdeaCard({ idea }: IdeaCardProps) {
 
             {/* 統計情報 */}
             <div className="flex items-center gap-3 text-sm text-gray-500">
-              <button
-                onClick={handleWantToggle}
-                disabled={loading}
-                className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-bold transition-all ${
-                  isWanted
-                    ? 'bg-red-100 text-red-600 hover:bg-red-200'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
-              >
-                <Heart className={`w-4 h-4 ${isWanted ? 'fill-current' : ''}`} />
-                <span>{wantsCount}</span>
-              </button>
+              <WantButton
+                ideaId={idea.id}
+                initialWanted={idea.user_has_wanted}
+                initialCount={idea.wants_count}
+                size="sm"
+              />
               
               <div className="flex items-center gap-1 text-gray-600">
                 <MessageCircle className="w-4 h-4" />

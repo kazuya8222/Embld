@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { AdminAppSubmissionForm } from '@/components/apps/AdminAppSubmissionForm'
 import Link from 'next/link'
@@ -9,7 +9,7 @@ export default async function AdminAppsPage({
 }: {
   searchParams: { ideaId?: string }
 }) {
-  const supabase = await createClient()
+  const supabase = await createSupabaseServerClient()
   const { data: { session } } = await supabase.auth.getSession()
 
   if (!session) {

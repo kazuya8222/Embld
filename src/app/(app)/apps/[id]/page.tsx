@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import { ReviewSection } from '@/components/apps/ReviewSection'
 import Link from 'next/link'
@@ -21,7 +21,7 @@ export default async function AppDetailPage({
 }: {
   params: { id: string }
 }) {
-  const supabase = await createClient()
+  const supabase = await createSupabaseServerClient()
 
   const { data: app, error } = await supabase
     .from('completed_apps')

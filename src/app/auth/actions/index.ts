@@ -2,10 +2,10 @@
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import { createSupabaseServerClient } from '@/lib/supabase/server'
 
 export async function login(formData: FormData) {
-  const supabase = await createClient()
+  const supabase = createSupabaseServerClient()
 
   const data = {
     email: formData.get('email') as string,
@@ -23,7 +23,7 @@ export async function login(formData: FormData) {
 }
 
 export async function signup(formData: FormData) {
-  const supabase = await createClient()
+  const supabase = createSupabaseServerClient()
 
   const data = {
     email: formData.get('email') as string,
@@ -63,7 +63,7 @@ export async function signup(formData: FormData) {
 
 export async function signout() {
   console.log('Server action: Starting signout...')
-  const supabase = await createClient()
+  const supabase = createSupabaseServerClient()
   
   try {
     console.log('Server action: Calling Supabase signOut...')
@@ -92,7 +92,7 @@ export async function signout() {
 }
 
 export async function loginWithGoogle() {
-  const supabase = await createClient()
+  const supabase = createSupabaseServerClient()
   
   // 本番環境でのリダイレクトURLを動的に生成
   let baseUrl = 'https://www.em-bld.com'

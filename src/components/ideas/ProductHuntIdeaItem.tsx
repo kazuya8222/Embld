@@ -1,10 +1,7 @@
 'use client'
-
-import { useState } from 'react'
 import Link from 'next/link'
-import { ChevronUp, MessageCircle, DollarSign } from 'lucide-react'
-import { useAuth } from '@/components/auth/AuthProvider'
-import { createClient } from '@/lib/supabase/client'
+import { MessageCircle, DollarSign } from 'lucide-react'
+import { WantButton } from '@/components/common/WantButton'
 import { formatRevenue } from '@/data/revenue'
 
 interface ProductHuntIdeaItemProps {
@@ -25,57 +22,9 @@ interface ProductHuntIdeaItemProps {
     comments_count: number
     user_has_wanted: boolean
   }
-  onVoteToggle?: () => void
 }
 
-export function ProductHuntIdeaItem({ idea, onVoteToggle }: ProductHuntIdeaItemProps) {
-  const { user } = useAuth()
-  const [isWanted, setIsWanted] = useState(idea.user_has_wanted)
-  const [wantsCount, setWantsCount] = useState(idea.wants_count)
-  const [loading, setLoading] = useState(false)
-  const supabase = createClient()
-
-  const handleWantToggle = async (e: React.MouseEvent) => {
-    e.preventDefault()
-    
-    if (!user) {
-      window.location.href = '/auth/login'
-      return
-    }
-
-    setLoading(true)
-    try {
-      if (isWanted) {
-        const { error } = await supabase
-          .from('wants')
-          .delete()
-          .eq('idea_id', idea.id)
-          .eq('user_id', user.id)
-        
-        if (!error) {
-          setIsWanted(false)
-          setWantsCount(prev => prev - 1)
-          onVoteToggle?.()
-        }
-      } else {
-        const { error } = await supabase
-          .from('wants')
-          .insert({
-            idea_id: idea.id,
-            user_id: user.id,
-          })
-        
-        if (!error) {
-          setIsWanted(true)
-          setWantsCount(prev => prev + 1)
-          onVoteToggle?.()
-        }
-      }
-    } catch (error) {
-      console.error('Error toggling want:', error)
-    }
-    setLoading(false)
-  }
+export function ProductHuntIdeaItem({ idea }: ProductHuntIdeaItemProps) {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
@@ -102,18 +51,13 @@ export function ProductHuntIdeaItem({ idea, onVoteToggle }: ProductHuntIdeaItemP
       <div className="p-4 flex items-start space-x-4">
         {/* 投票ボタン */}
         <div className="flex flex-col items-center">
-          <button
-            onClick={handleWantToggle}
-            disabled={loading}
-            className={`flex flex-col items-center justify-center px-3 py-2 rounded-lg transition-all ${
-              isWanted
-                ? 'bg-orange-100 text-orange-600 border border-orange-200'
-                : 'bg-gray-50 text-gray-600 hover:bg-gray-100 border border-gray-200'
-            } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
-          >
-            <ChevronUp className="w-5 h-5" />
-            <span className="text-sm font-bold">{wantsCount}</span>
-          </button>
+          <WantButton
+            ideaId={idea.id}
+            initialWanted={idea.user_has_wanted}
+            initialCount={idea.wants_count}
+            size="sm"
+            className="!flex-col !gap-0"
+          />
         </div>
 
         {/* コンテンツ */}

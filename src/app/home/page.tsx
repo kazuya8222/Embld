@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createSupabaseServerClient } from '@/lib/supabase/server'
 import HomePageClient from '@/components/home/HomePageClient'
 
 interface SearchParams {
@@ -30,7 +30,7 @@ export default async function HomePage({
 }: {
   searchParams: SearchParams
 }) {
-  const supabase = await createClient()
+  const supabase = createSupabaseServerClient()
   const { data: { session } } = await supabase.auth.getSession()
   
   let query = supabase

@@ -1,10 +1,10 @@
-import { createClient } from '@/lib/supabase/server'
+import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { AppCard } from '@/components/apps/AppCard'
 import Link from 'next/link'
 import { Smartphone, Plus } from 'lucide-react'
 
 export default async function AppsPage() {
-  const supabase = await createClient()
+  const supabase = await createSupabaseServerClient()
 
   const { data: apps, error } = await supabase
     .from('completed_apps')

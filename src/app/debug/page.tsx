@@ -1,7 +1,7 @@
-import { createClient } from '@/lib/supabase/server'
+import { createSupabaseServerClient } from '@/lib/supabase/server'
 
 export default async function DebugPage() {
-  const supabase = await createClient()
+  const supabase = await createSupabaseServerClient()
   
   let user = null
   let session = null

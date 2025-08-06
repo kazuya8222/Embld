@@ -1,14 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useTransition } from 'react'
 import { useAuth } from '@/components/auth/AuthProvider'
-import { createClient } from '@/lib/supabase/client'
 import { Comment } from '@/types'
 import { cn } from '@/lib/utils/cn'
 import { MessageCircle, Send, User } from 'lucide-react'
+import { addComment } from '@/app/actions/comment'
+import { useRouter } from 'next/navigation'
 
-// コンポーネントの外で一度だけクライアントを作成
-const supabase = createClient()
 
 interface CommentSectionProps {
   ideaId: string
@@ -17,45 +16,33 @@ interface CommentSectionProps {
 
 export function CommentSection({ ideaId, initialComments }: CommentSectionProps) {
   const { user } = useAuth()
+  const router = useRouter()
   const [comments, setComments] = useState(initialComments)
   const [newComment, setNewComment] = useState('')
-  const [loading, setLoading] = useState(false)
+  const [isPending, startTransition] = useTransition()
+  const [error, setError] = useState<string | null>(null)
 
   const handleSubmitComment = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!user || !newComment.trim()) return
 
-    console.log('Submitting comment:', { ideaId, userId: user.id, content: newComment.trim() })
-
-    setLoading(true)
-    try {
-      const { data, error } = await supabase
-        .from('comments')
-        .insert({
-          idea_id: ideaId,
-          user_id: user.id,
-          content: newComment.trim(),
-        })
-        .select(`
-          *,
-          user:users(username, avatar_url)
-        `)
-        .single()
-
-      console.log('Comment insert result:', { data, error })
-
-      if (!error && data) {
+    setError(null)
+    
+    startTransition(async () => {
+      try {
+        const data = await addComment(ideaId, newComment)
+        
+        // 楽観的アップデート
         setComments(prev => [data, ...prev])
         setNewComment('')
-      } else if (error) {
-        console.error('Comment insert error:', error)
-        alert(`エラー: ${error.message}`)
+        
+        // ページをリフレッシュして最新の状態を取得
+        router.refresh()
+      } catch (error) {
+        console.error('Error posting comment:', error)
+        setError(error instanceof Error ? error.message : 'コメントの投稿に失敗しました')
       }
-    } catch (error) {
-      console.error('Error posting comment:', error)
-      alert('コメントの投稿に失敗しました。もう一度お試しください。')
-    }
-    setLoading(false)
+    })
   }
 
   const formatDate = (dateString: string) => {
@@ -86,17 +73,20 @@ export function CommentSection({ ideaId, initialComments }: CommentSectionProps)
             rows={3}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
           />
+          {error && (
+            <div className="text-red-600 text-sm">{error}</div>
+          )}
           <div className="flex justify-end">
             <button
               type="submit"
-              disabled={loading || !newComment.trim()}
+              disabled={isPending || !newComment.trim()}
               className={cn(
                 "bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 transition-colors flex items-center gap-2",
-                (loading || !newComment.trim()) && "opacity-50 cursor-not-allowed"
+                (isPending || !newComment.trim()) && "opacity-50 cursor-not-allowed"
               )}
             >
               <Send className="w-4 h-4" />
-              {loading ? '投稿中...' : 'コメント'}
+              {isPending ? '投稿中...' : 'コメント'}
             </button>
           </div>
         </form>
