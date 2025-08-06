@@ -30,7 +30,6 @@ import {
   MessageCircle
 } from 'lucide-react'
 import { CoreFeature } from '@/types'
-import { formatRevenue } from '@/data/revenue'
 
 export default async function IdeaDetailPage({
   params,
@@ -143,7 +142,7 @@ export default async function IdeaDetailPage({
             {idea.revenue && idea.revenue > 0 && (
               <div className="flex items-center gap-2 text-green-600 font-semibold">
                 <DollarSign className="w-4 h-4" />
-                <span>{formatRevenue(idea.revenue)}</span>
+                <span>{idea.revenue}円</span>
               </div>
             )}
           </div>
@@ -169,7 +168,7 @@ export default async function IdeaDetailPage({
             <div className="bg-green-50 rounded-lg p-4">
               <div className="flex justify-between items-center mb-2">
                 <span className="text-sm text-gray-600">累計収益</span>
-                <span className="text-lg font-bold text-green-600">{formatRevenue(idea.revenue)}</span>
+                <span className="text-lg font-bold text-green-600">{idea.revenue}円</span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2">
                 <div className="bg-green-600 h-2 rounded-full" style={{width: `${Math.min((idea.revenue || 0) / 100000000 * 100, 100)}%`}}></div>
