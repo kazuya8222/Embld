@@ -2,7 +2,6 @@
 
 import Link from 'next/link'
 import { MessageCircle, Users, Clock, DollarSign } from 'lucide-react'
-import { formatRevenue } from '@/data/revenue'
 
 interface CardIdeaItemProps {
   idea: {
@@ -111,7 +110,7 @@ export function CardIdeaItem({ idea }: CardIdeaItemProps) {
               {idea.revenue && idea.revenue > 0 && (
                 <span className="flex items-center gap-1 text-green-600 font-bold">
                   <DollarSign className="w-4 h-4" />
-                  {formatRevenue(idea.revenue)}
+                  {idea.revenue}円
                 </span>
               )}
             </div>
