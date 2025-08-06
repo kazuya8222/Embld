@@ -2,7 +2,6 @@
 
 import Link from 'next/link'
 import { MessageCircle, Search, Lightbulb, Users, ChevronRight, DollarSign } from 'lucide-react'
-import { formatRevenue } from '@/data/revenue'
 import { PostIdeaButton } from '@/components/common/PostIdeaButton'
 import { CATEGORIES } from '@/types'
 
@@ -101,7 +100,7 @@ export default function HomePageClient({ ideasWithCounts, searchParams }: HomePa
                           </span>
                         </div>
                         <span className="text-lg font-bold text-green-600">
-                          {formatRevenue(idea.revenue)}
+                          {idea.revenue}円
                         </span>
                       </div>
                     </div>
@@ -184,7 +183,7 @@ export default function HomePageClient({ ideasWithCounts, searchParams }: HomePa
                               <span>{idea.wants_count}人</span>
                             </div>
                             <span className="text-lg font-bold text-green-600">
-                              {formatRevenue(idea.revenue)}
+                              {idea.revenue}円
                             </span>
                           </div>
                           <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
