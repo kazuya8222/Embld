@@ -62,8 +62,8 @@ export default function HomePageClient({ ideasWithCounts, searchParams }: HomePa
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {topRevenueIdeas.length > 0 ? (
               topRevenueIdeas.slice(0, 4).map((idea) => (
-                <Link key={idea.id} href={`/ideas/${idea.id}`} className="group block">
-                  <div className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow overflow-hidden">
+                <Link key={idea.id} href={`/ideas/${idea.id}`} className="group block h-full">
+                  <div className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow overflow-hidden h-full flex flex-col">
                     {/* サムネイル画像 */}
                     <div className="w-full h-48 relative">
                       {idea.sketch_urls && idea.sketch_urls.length > 0 ? (
@@ -82,14 +82,14 @@ export default function HomePageClient({ ideasWithCounts, searchParams }: HomePa
                         <Lightbulb className="w-16 h-16 text-white opacity-50" />
                       </div>
                     </div>
-                    <div className="p-4">
-                      <h3 className="font-bold text-gray-900 line-clamp-2 group-hover:text-blue-600 transition-colors">
+                    <div className="p-4 flex flex-col flex-1">
+                      <h3 className="font-bold text-gray-900 line-clamp-2 group-hover:text-blue-600 transition-colors min-h-[3rem]">
                         {idea.title}
                       </h3>
-                      <p className="text-gray-600 text-sm mt-2">
+                      <p className="text-gray-600 text-sm mt-2 min-h-[1.5rem]">
                         {idea.category}
                       </p>
-                      <div className="flex items-center justify-between mt-4">
+                      <div className="flex items-center justify-between mt-auto pt-4">
                         <div className="flex items-center gap-4 text-sm text-gray-500">
                           <span className="flex items-center gap-1">
                             <Users className="w-4 h-4" />
@@ -147,8 +147,8 @@ export default function HomePageClient({ ideasWithCounts, searchParams }: HomePa
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {latestIdeas.length > 0 ? (
                   latestIdeas.map((idea) => (
-                    <Link key={idea.id} href={`/ideas/${idea.id}`} className="group block">
-                      <div className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow overflow-hidden">
+                    <Link key={idea.id} href={`/ideas/${idea.id}`} className="group block h-full">
+                      <div className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow overflow-hidden h-full flex flex-col">
                         {/* サムネイル画像 */}
                         <div className="w-full h-40 relative">
                           {idea.sketch_urls && idea.sketch_urls.length > 0 ? (
@@ -171,14 +171,14 @@ export default function HomePageClient({ ideasWithCounts, searchParams }: HomePa
                             {idea.category}
                           </span>
                         </div>
-                        <div className="p-4">
-                          <h3 className="font-bold text-gray-900 line-clamp-2 group-hover:text-blue-600 transition-colors">
+                        <div className="p-4 flex flex-col flex-1">
+                          <h3 className="font-bold text-gray-900 line-clamp-2 group-hover:text-blue-600 transition-colors min-h-[3rem]">
                             {idea.title}
                           </h3>
-                          <p className="text-gray-600 text-sm mt-2 line-clamp-2">
+                          <p className="text-gray-600 text-sm mt-2 line-clamp-2 min-h-[2.5rem]">
                             {idea.problem}
                           </p>
-                          <div className="flex items-center justify-between mt-4">
+                          <div className="flex items-center justify-between mt-auto pt-4">
                             <div className="flex items-center gap-4 text-sm text-gray-500">
                               <span>{idea.wants_count}%</span>
                               <span>{idea.wants_count}人</span>

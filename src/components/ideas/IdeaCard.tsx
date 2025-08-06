@@ -47,8 +47,8 @@ export function IdeaCard({ idea }: IdeaCardProps) {
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden">
-      <div className="p-6 space-y-4">
+    <div className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden h-full">
+      <div className="p-6 space-y-4 flex flex-col h-full">
         {/* ヘッダー部分 */}
         <div className="flex items-start justify-between">
           <div className="flex flex-wrap items-center gap-2">
@@ -67,39 +67,43 @@ export function IdeaCard({ idea }: IdeaCardProps) {
         </div>
 
         {/* タイトルと説明 */}
-        <div>
-          <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2 hover:text-blue-600 transition-colors">
+        <div className="flex-1">
+          <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2 hover:text-blue-600 transition-colors min-h-[3.5rem]">
             <Link href={`/ideas/${idea.id}`}>
               {idea.title}
             </Link>
           </h3>
-          <p className="text-sm text-gray-600 line-clamp-3 leading-relaxed">
+          <p className="text-sm text-gray-600 line-clamp-3 leading-relaxed min-h-[4.5rem]">
             {idea.problem}
           </p>
         </div>
 
         {/* タグ */}
-        {idea.tags && idea.tags.length > 0 && (
-          <div className="flex flex-wrap items-center gap-2">
-            <Tag className="w-4 h-4 text-gray-400" />
-            {idea.tags.slice(0, 3).map((tag, index) => (
-              <span
-                key={index}
-                className="inline-flex px-3 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded-full hover:bg-gray-200 transition-colors"
-              >
-                {tag}
-              </span>
-            ))}
-            {idea.tags.length > 3 && (
-              <span className="text-xs text-gray-500">
-                他{idea.tags.length - 3}件
-              </span>
-            )}
-          </div>
-        )}
+        <div className="flex flex-wrap items-center gap-2 min-h-[2rem]">
+          {idea.tags && idea.tags.length > 0 ? (
+            <>
+              <Tag className="w-4 h-4 text-gray-400" />
+              {idea.tags.slice(0, 3).map((tag, index) => (
+                <span
+                  key={index}
+                  className="inline-flex px-3 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded-full hover:bg-gray-200 transition-colors"
+                >
+                  {tag}
+                </span>
+              ))}
+              {idea.tags.length > 3 && (
+                <span className="text-xs text-gray-500">
+                  他{idea.tags.length - 3}件
+                </span>
+              )}
+            </>
+          ) : (
+            <div className="h-6" /> {/* プレースホルダー */}
+          )}
+        </div>
 
         {/* フッター */}
-        <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+        <div className="flex items-center justify-between pt-4 border-t border-gray-100 mt-auto">
           <div className="flex items-center gap-4">
             {/* 投稿者情報 */}
             <div className="flex items-center gap-2">
