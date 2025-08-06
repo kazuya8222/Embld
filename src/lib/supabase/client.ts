@@ -11,10 +11,8 @@ console.log('Supabase client config check:', {
   keyType: typeof supabaseKey
 })
 
-// シングルトンパターンでクライアントを保持
-let supabaseClient: ReturnType<typeof createBrowserClient> | null = null;
-
-export const createClient = () => {
+// グローバルスコープでクライアントを作成（一度だけ）
+const supabaseClient = (() => {
   if (!supabaseUrl || !supabaseKey) {
     console.error('Missing Supabase environment variables:', {
       url: !!supabaseUrl,
@@ -23,35 +21,9 @@ export const createClient = () => {
     throw new Error('Missing Supabase environment variables')
   }
   
-  // 既存のクライアントがあればそれを返す
-  if (supabaseClient) {
-    console.log('Returning existing Supabase client')
-    
-    // initializePromiseの状態をデバッグ用に確認
-    if (typeof window !== 'undefined') {
-      const authClient = (supabaseClient as any).auth;
-      if (authClient && authClient.initializePromise) {
-        console.log('initializePromise exists, checking state...');
-        // Promiseの状態を確認（非同期）
-        Promise.race([
-          authClient.initializePromise.then(() => console.log('initializePromise: resolved')),
-          new Promise(resolve => setTimeout(() => {
-            console.log('initializePromise: still pending after 100ms');
-            resolve('pending');
-          }, 100))
-        ]);
-      }
-    }
-    
-    return supabaseClient
-  }
+  console.log('Creating Supabase client at module load time...')
   
-  console.log('Creating new Supabase client with options...')
-  
-  // isSingletonオプションを明示的にtrueに設定
-  // これにより、クライアントがブラウザ全体で共有され、
-  // 初期化が一度だけ行われる
-  supabaseClient = createBrowserClient(
+  const client = createBrowserClient(
     supabaseUrl,
     supabaseKey,
     {
@@ -59,27 +31,53 @@ export const createClient = () => {
         autoRefreshToken: true,
         persistSession: true,
         detectSessionInUrl: true
-      },
-      // シングルトンを強制
-      isSingleton: true
-    } as any
+      }
+    }
   );
   
-  console.log('Supabase client created:', supabaseClient)
+  console.log('Supabase client created:', client)
   
-  // 初期化後、すぐにinitializePromiseの状態を確認
+  // クライアント作成直後に初期化を強制的に開始
+  if (typeof window !== 'undefined') {
+    console.log('Browser environment detected, forcing initialization...');
+    
+    // 1. まずgetSessionを呼んで初期化を開始
+    client.auth.getSession().then((result) => {
+      console.log('Initial getSession completed:', { 
+        hasSession: !!result.data?.session,
+        error: result.error 
+      });
+    }).catch((err) => {
+      console.error('Initial getSession error:', err);
+    });
+    
+    // 2. initializePromiseが存在する場合、それも待つ
+    const authClient = (client as any).auth;
+    if (authClient && authClient.initializePromise) {
+      console.log('Waiting for initializePromise...');
+      authClient.initializePromise.then(() => {
+        console.log('initializePromise resolved successfully');
+      }).catch((err: any) => {
+        console.error('initializePromise error:', err);
+      });
+    }
+  }
+  
+  return client;
+})();
+
+// エクスポートする関数は単にクライアントを返すだけ
+export const createClient = () => {
+  // initializePromiseの現在の状態をチェック（デバッグ用）
   if (typeof window !== 'undefined') {
     const authClient = (supabaseClient as any).auth;
     if (authClient && authClient.initializePromise) {
-      console.log('New client initializePromise found, resolving it immediately...');
-      // initializePromiseを即座に解決するために、getSessionを呼び出す
-      authClient.getSession().then((result: any) => {
-        console.log('Initial getSession called:', { 
-          hasSession: !!result.data?.session,
-          error: result.error 
-        });
-      }).catch((err: any) => {
-        console.error('Error calling getSession:', err);
+      // Promiseの状態を非同期でチェック
+      Promise.race([
+        authClient.initializePromise.then(() => 'resolved'),
+        new Promise(resolve => setTimeout(() => resolve('pending'), 10))
+      ]).then(state => {
+        console.log(`createClient called, initializePromise state: ${state}`);
       });
     }
   }
