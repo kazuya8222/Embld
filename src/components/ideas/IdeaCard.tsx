@@ -98,7 +98,7 @@ export function IdeaCard({ idea }: IdeaCardProps) {
               )}
             </>
           ) : (
-            <div className="h-6" /> {/* プレースホルダー */}
+            <div className="h-6" />
           )}
         </div>
 
