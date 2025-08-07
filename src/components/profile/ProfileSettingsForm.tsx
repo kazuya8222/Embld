@@ -2,12 +2,11 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils/cn'
+import { useAuth } from '@/components/auth/AuthProvider'
 import { User } from 'lucide-react'
 import type { User as SupabaseUser } from '@supabase/supabase-js'
-
-const supabase = createClient()
+import { updateProfile, uploadAvatar } from '@/app/actions/profile'
 
 interface UserProfile {
   username: string
@@ -29,56 +28,37 @@ export function ProfileSettingsForm({ user, initialProfile }: ProfileSettingsFor
   const [message, setMessage] = useState('')
   const [isNewUser, setIsNewUser] = useState(!initialProfile?.username)
   const router = useRouter()
+  const { refreshProfile } = useAuth()
 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!user) {
-      setMessage('ユーザー情報が見つかりません')
-      return
-    }
-
     setSaving(true)
     setMessage('')
 
     try {
-      // ユーザー名が変更された場合は重複チェック
-      if (username !== profile?.username) {
-        const { data: existingUser } = await supabase
-          .from('users')
-          .select('id')
-          .eq('username', username)
-          .neq('id', user.id)
-          .single()
-
-        if (existingUser) {
-          setMessage('このユーザー名はすでに使用されています')
-          setSaving(false)
-          return
-        }
+      const formData = new FormData()
+      formData.append('username', username)
+      if (avatarUrl) {
+        formData.append('avatar_url', avatarUrl)
       }
 
-      // プロフィールを更新
-      const { error } = await supabase
-        .from('users')
-        .update({
-          username,
-          avatar_url: avatarUrl
-        })
-        .eq('id', user.id)
-
-      if (error) {
-        console.error('Profile update error:', error)
-        setMessage(`エラー: ${error.message}`)
+      const result = await updateProfile(formData)
+      
+      if (result.error) {
+        setMessage(result.error)
       } else {
-        setMessage('プロフィールを更新しました')
+        setMessage(result.success || 'プロフィールを更新しました')
         // プロフィール情報を再読み込み
         setProfile({
           ...profile!,
           username,
           avatar_url: avatarUrl || null
         })
+        // AuthProviderのプロフィール情報も更新
+        await refreshProfile()
+        
         // 新規ユーザーの場合はホームへリダイレクト
         if (isNewUser) {
           setTimeout(() => {
@@ -96,7 +76,7 @@ export function ProfileSettingsForm({ user, initialProfile }: ProfileSettingsFor
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (!file || !user) return
+    if (!file) return
 
     // ファイルサイズチェック (5MB以下)
     if (file.size > 5 * 1024 * 1024) {
@@ -108,62 +88,22 @@ export function ProfileSettingsForm({ user, initialProfile }: ProfileSettingsFor
     setMessage('')
 
     try {
-      // 既存のアバター画像を削除
-      if (avatarUrl) {
-        const oldFileName = avatarUrl.split('/').pop()
-        if (oldFileName) {
-          const { error: deleteError } = await supabase.storage
-            .from('avatars')
-            .remove([`${user.id}/${oldFileName}`])
-          
-          if (deleteError) {
-            console.error('Failed to delete old avatar:', deleteError)
-          }
-        }
+      const formData = new FormData()
+      formData.append('file', file)
+
+      const result = await uploadAvatar(formData)
+      
+      if (result.error) {
+        setMessage(result.error)
+      } else {
+        setAvatarUrl(result.avatarUrl || '')
+        setMessage(result.success || '画像をアップロードしました')
+        // AuthProviderのプロフィール情報も更新
+        await refreshProfile()
       }
-
-      // ファイル名を生成
-      const fileExt = file.name.split('.').pop()
-      const fileName = `${Date.now()}.${fileExt}`
-      const filePath = `${user.id}/${fileName}`
-
-      // Supabase Storageにアップロード
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(filePath, file, {
-          upsert: true
-        })
-
-      if (uploadError) {
-        console.error('Upload error details:', uploadError)
-        throw uploadError
-      }
-
-      if (!uploadData) {
-        throw new Error('No upload data returned')
-      }
-
-      // 公開URLを取得
-      const { data: { publicUrl } } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(filePath)
-
-      // プロフィールを更新
-      const { error: updateError } = await supabase
-        .from('users')
-        .update({ avatar_url: publicUrl })
-        .eq('id', user.id)
-
-      if (updateError) {
-        throw updateError
-      }
-
-      setAvatarUrl(publicUrl)
-      setMessage('画像をアップロードしました')
     } catch (error: any) {
       console.error('Upload error:', error)
-      const errorMessage = error.message || '画像のアップロードに失敗しました'
-      setMessage(`エラー: ${errorMessage}`)
+      setMessage('画像のアップロードに失敗しました')
     } finally {
       setSaving(false)
     }

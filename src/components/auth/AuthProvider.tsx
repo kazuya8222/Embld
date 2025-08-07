@@ -13,6 +13,7 @@ interface AuthContextType {
   userProfile: any | null
   loading: boolean
   signOut: () => Promise<void>
+  refreshProfile: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -20,6 +21,7 @@ const AuthContext = createContext<AuthContextType>({
   userProfile: null,
   loading: true,
   signOut: async () => {},
+  refreshProfile: async () => {},
 })
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -27,6 +29,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [userProfile, setUserProfile] = useState<any | null>(null)
   const [loading, setLoading] = useState(true)
   const router = useRouter()
+
+  // プロフィール情報を再取得する関数
+  const refreshProfile = async () => {
+    if (!user) return
+    
+    try {
+      const { data: profile } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', user.id)
+        .single()
+      
+      setUserProfile(profile)
+    } catch (error) {
+      console.error('Error refreshing profile:', error)
+    }
+  }
 
   // ログアウト処理
   const signOut = async () => {
@@ -139,7 +158,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   return (
-    <AuthContext.Provider value={{ user, userProfile, loading, signOut }}>
+    <AuthContext.Provider value={{ user, userProfile, loading, signOut, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   )
