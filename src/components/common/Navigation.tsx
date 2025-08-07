@@ -115,8 +115,16 @@ export function Navigation() {
                       onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                       className="flex items-center space-x-2 text-sm font-medium text-gray-400 hover:text-white transition-colors"
                     >
-                      <div className="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center">
-                        <User className="h-5 w-5" />
+                      <div className="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center overflow-hidden">
+                        {userProfile?.avatar_url || userProfile?.google_avatar_url ? (
+                          <img
+                            src={userProfile.avatar_url || userProfile.google_avatar_url}
+                            alt={userProfile.username || 'User'}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <User className="h-5 w-5" />
+                        )}
                       </div>
                       <span className="hidden lg:block">
                         {userProfile?.username || user.email?.split('@')[0]}

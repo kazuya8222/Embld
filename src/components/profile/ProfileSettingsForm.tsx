@@ -12,16 +12,18 @@ const supabase = createClient()
 interface UserProfile {
   username: string
   avatar_url: string | null
+  google_avatar_url: string | null
   email: string
 }
 
 export function ProfileSettingsForm() {
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [username, setUsername] = useState('')
-  const [avatarUrl, setAvatarUrl] = useState('')
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState('')
+  const [isNewUser, setIsNewUser] = useState(false)
   const router = useRouter()
   const { user } = useAuth()
 
@@ -36,7 +38,7 @@ export function ProfileSettingsForm() {
       try {
         const { data, error } = await supabase
           .from('users')
-          .select('username, avatar_url, email')
+          .select('username, avatar_url, google_avatar_url, email')
           .eq('id', user.id)
           .single()
 
@@ -46,7 +48,11 @@ export function ProfileSettingsForm() {
         } else if (data) {
           setProfile(data)
           setUsername(data.username || '')
-          setAvatarUrl(data.avatar_url || '')
+          setAvatarUrl(data.avatar_url)
+          // ユーザー名が未設定の場合は新規ユーザー
+          if (!data.username) {
+            setIsNewUser(true)
+          }
         }
       } catch (error) {
         console.error('Unexpected error:', error)
@@ -92,8 +98,7 @@ export function ProfileSettingsForm() {
         .from('users')
         .update({
           username,
-          avatar_url: avatarUrl || null,
-          updated_at: new Date().toISOString()
+          avatar_url: avatarUrl
         })
         .eq('id', user.id)
 
@@ -108,6 +113,12 @@ export function ProfileSettingsForm() {
           username,
           avatar_url: avatarUrl || null
         })
+        // 新規ユーザーの場合はホームへリダイレクト
+        if (isNewUser) {
+          setTimeout(() => {
+            router.push('/home')
+          }, 1000)
+        }
       }
     } catch (error: any) {
       console.error('Update error:', error)
@@ -131,30 +142,62 @@ export function ProfileSettingsForm() {
     setMessage('')
 
     try {
+      // 既存のアバター画像を削除
+      if (avatarUrl) {
+        const oldFileName = avatarUrl.split('/').pop()
+        if (oldFileName) {
+          const { error: deleteError } = await supabase.storage
+            .from('avatars')
+            .remove([`${user.id}/${oldFileName}`])
+          
+          if (deleteError) {
+            console.error('Failed to delete old avatar:', deleteError)
+          }
+        }
+      }
+
       // ファイル名を生成
       const fileExt = file.name.split('.').pop()
-      const fileName = `${user.id}-${Date.now()}.${fileExt}`
-      const filePath = `avatars/${fileName}`
+      const fileName = `${Date.now()}.${fileExt}`
+      const filePath = `${user.id}/${fileName}`
 
       // Supabase Storageにアップロード
-      const { error: uploadError } = await supabase.storage
-        .from('public')
-        .upload(filePath, file)
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file, {
+          upsert: true
+        })
 
       if (uploadError) {
+        console.error('Upload error details:', uploadError)
         throw uploadError
+      }
+
+      if (!uploadData) {
+        throw new Error('No upload data returned')
       }
 
       // 公開URLを取得
       const { data: { publicUrl } } = supabase.storage
-        .from('public')
+        .from('avatars')
         .getPublicUrl(filePath)
+
+      // プロフィールを更新
+      const { error: updateError } = await supabase
+        .from('users')
+        .update({ avatar_url: publicUrl })
+        .eq('id', user.id)
+
+      if (updateError) {
+        throw updateError
+      }
 
       setAvatarUrl(publicUrl)
       setMessage('画像をアップロードしました')
     } catch (error: any) {
       console.error('Upload error:', error)
-      setMessage('画像のアップロードに失敗しました')
+      const errorMessage = error.message || '画像のアップロードに失敗しました'
+      setMessage(`エラー: ${errorMessage}`)
     } finally {
       setSaving(false)
     }
@@ -172,6 +215,16 @@ export function ProfileSettingsForm() {
 
   return (
     <div className="max-w-2xl mx-auto">
+      {isNewUser && (
+        <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <h3 className="font-semibold text-blue-900 mb-2">ようこそEMBLDへ！</h3>
+          <p className="text-blue-700 text-sm">
+            まずはユーザー名を設定してプロフィールを完成させましょう。
+            ユーザー名は他のユーザーに表示される名前です。
+          </p>
+        </div>
+      )}
+      
       <div className="bg-white rounded-lg shadow">
         <div className="p-6">
           <h2 className="text-xl font-semibold mb-6">プロフィール設定</h2>
@@ -183,9 +236,9 @@ export function ProfileSettingsForm() {
               </label>
               <div className="flex items-center space-x-4">
                 <div className="relative">
-                  {avatarUrl ? (
+                  {avatarUrl || profile?.google_avatar_url ? (
                     <img
-                      src={avatarUrl}
+                      src={avatarUrl || profile?.google_avatar_url || ''}
                       alt="Avatar"
                       className="w-20 h-20 rounded-full object-cover"
                     />
@@ -232,7 +285,7 @@ export function ProfileSettingsForm() {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
-                pattern="[a-zA-Z0-9_-]+"
+                pattern="[a-zA-Z0-9_\-]+"
                 minLength={3}
                 maxLength={20}
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
@@ -243,22 +296,6 @@ export function ProfileSettingsForm() {
               </p>
             </div>
 
-            <div>
-              <label htmlFor="avatarUrl" className="block text-sm font-medium text-gray-700">
-                アバター画像URL（任意）
-              </label>
-              <input
-                id="avatarUrl"
-                type="url"
-                value={avatarUrl}
-                onChange={(e) => setAvatarUrl(e.target.value)}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                placeholder="https://example.com/avatar.jpg"
-              />
-              <p className="mt-1 text-sm text-gray-500">
-                外部の画像URLを直接指定することもできます
-              </p>
-            </div>
 
             <div className="pt-4">
               <button

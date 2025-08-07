@@ -12,10 +12,25 @@ export async function login(formData: FormData) {
     password: formData.get('password') as string,
   }
 
-  const { error } = await supabase.auth.signInWithPassword(data)
+  const { data: authData, error } = await supabase.auth.signInWithPassword(data)
 
   if (error) {
     redirect('/auth/login?error=' + encodeURIComponent(error.message))
+  }
+
+  // ユーザープロフィールを確認
+  if (authData.user) {
+    const { data: profile } = await supabase
+      .from('users')
+      .select('username')
+      .eq('id', authData.user.id)
+      .single()
+
+    // usernameが設定されていない場合はプロフィール設定ページへ
+    if (!profile?.username) {
+      revalidatePath('/', 'layout')
+      redirect('/profile/settings')
+    }
   }
 
   revalidatePath('/', 'layout')
@@ -28,11 +43,6 @@ export async function signup(formData: FormData) {
   const data = {
     email: formData.get('email') as string,
     password: formData.get('password') as string,
-    options: {
-      data: {
-        username: formData.get('username') as string,
-      },
-    },
   }
 
   const { data: authData, error: authError } = await supabase.auth.signUp(data)
@@ -42,13 +52,13 @@ export async function signup(formData: FormData) {
   }
 
   if (authData.user) {
-    // ユーザープロフィールを作成
+    // ユーザープロフィールを作成（usernameはnullで作成）
     const { error: profileError } = await supabase
       .from('users')
       .insert({
         id: authData.user.id,
         email: authData.user.email!,
-        username: formData.get('username') as string,
+        username: null, // usernameは後で設定
         auth_provider: 'email',
       })
 

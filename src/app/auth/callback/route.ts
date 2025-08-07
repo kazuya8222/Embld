@@ -37,26 +37,31 @@ export async function GET(request: NextRequest) {
           .eq('id', session.user.id)
           .single()
         
-        // プロフィールが存在しないか、usernameが設定されていない場合は初回ログイン
-        if (!profile || !profile.username) {
+        // プロフィールが存在しない場合は新規ユーザー
+        if (!profile) {
           console.log('Creating new user profile for:', session.user.email)
           
-          // Google認証の場合、ユーザープロフィールを作成
+          // Google認証の場合、ユーザープロフィールを作成（usernameはnullで作成）
           const { error: insertError } = await supabase
             .from('users')
             .insert({
               id: session.user.id,
               email: session.user.email!,
-              username: session.user.email!.split('@')[0], // デフォルトのユーザー名
+              username: null, // usernameは後で設定
               auth_provider: 'google',
+              google_avatar_url: session.user.user_metadata?.avatar_url || null,
             })
           
           if (!insertError) {
-            console.log('Redirecting to setup page')
-            return NextResponse.redirect(new URL('/auth/setup', baseUrl))
+            console.log('Redirecting to profile settings page for new user')
+            return NextResponse.redirect(new URL('/profile/settings', baseUrl))
           } else {
             console.error('Profile creation error:', insertError)
           }
+        } else if (!profile.username) {
+          // プロフィールは存在するがusernameが未設定の場合もプロフィール設定ページへ
+          console.log('Username not set, redirecting to profile settings page')
+          return NextResponse.redirect(new URL('/profile/settings', baseUrl))
         }
         
         // 既存ユーザーはホームへ

@@ -61,20 +61,6 @@ export function RegisterForm() {
 
       <form action={signup} className="space-y-4">
         <div>
-          <label htmlFor="username" className="block text-sm font-medium text-gray-700">
-            ユーザー名
-          </label>
-          <input
-            id="username"
-            name="username"
-            type="text"
-            required
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
-            placeholder="username"
-          />
-        </div>
-
-        <div>
           <label htmlFor="email" className="block text-sm font-medium text-gray-700">
             メールアドレス
           </label>

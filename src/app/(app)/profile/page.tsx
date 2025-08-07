@@ -112,12 +112,12 @@ export default async function ProfilePage() {
       <div className="bg-white rounded-lg shadow-sm p-8">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-6">
-            <div className="w-20 h-20 bg-gray-300 rounded-full flex items-center justify-center">
-              {userProfile?.google_avatar_url || userProfile?.avatar_url ? (
+            <div className="w-20 h-20 bg-gray-300 rounded-full flex items-center justify-center overflow-hidden">
+              {userProfile?.avatar_url || userProfile?.google_avatar_url ? (
                 <img
-                  src={userProfile.google_avatar_url || userProfile.avatar_url}
+                  src={userProfile.avatar_url || userProfile.google_avatar_url}
                   alt={userProfile.username}
-                  className="w-20 h-20 rounded-full"
+                  className="w-full h-full object-cover"
                 />
               ) : (
                 <User className="w-10 h-10 text-gray-600" />

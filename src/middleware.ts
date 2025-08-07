@@ -10,23 +10,54 @@ export async function middleware(request: NextRequest) {
       data: { user },
     } = await supabase.auth.getUser()
 
-    // Protected routes
-    const protectedRoutes = ['/profile', '/ideas/new', '/auth/setup']
+    // Protected routes that require username to be set
+    const protectedRoutes = ['/ideas/new']
     const isProtectedRoute = protectedRoutes.some(route => 
       request.nextUrl.pathname.startsWith(route)
     )
 
-    // If accessing protected route without auth, redirect to login
-    if (isProtectedRoute && !user) {
+    // Profile pages require auth but settings page doesn't require username
+    const isProfilePage = request.nextUrl.pathname.startsWith('/profile')
+    const isProfileSettings = request.nextUrl.pathname.startsWith('/profile/settings')
+
+    // If accessing protected route or profile without auth, redirect to login
+    if ((isProtectedRoute || isProfilePage) && !user) {
       const redirectUrl = new URL('/auth/login', request.url)
       return NextResponse.redirect(redirectUrl)
     }
 
-    // If authenticated user tries to access auth pages, redirect to home
+    // Check if user has completed profile setup (has username)
+    if (user && !isProfileSettings) {
+      const { data: profile } = await supabase
+        .from('users')
+        .select('username')
+        .eq('id', user.id)
+        .single()
+
+      // If username is not set and not on profile settings page, redirect to profile settings
+      if (!profile?.username && 
+          !request.nextUrl.pathname.startsWith('/profile/settings') &&
+          !request.nextUrl.pathname.startsWith('/auth/login') &&
+          !request.nextUrl.pathname.startsWith('/auth/register') &&
+          !request.nextUrl.pathname.startsWith('/auth/callback')) {
+        const redirectUrl = new URL('/profile/settings', request.url)
+        return NextResponse.redirect(redirectUrl)
+      }
+    }
+
+    // If authenticated user with username tries to access auth pages, redirect to home
     if (user && (request.nextUrl.pathname.startsWith('/auth/login') || 
                  request.nextUrl.pathname.startsWith('/auth/register'))) {
-      const redirectUrl = new URL('/home', request.url)
-      return NextResponse.redirect(redirectUrl)
+      const { data: profile } = await supabase
+        .from('users')
+        .select('username')
+        .eq('id', user.id)
+        .single()
+      
+      if (profile?.username) {
+        const redirectUrl = new URL('/home', request.url)
+        return NextResponse.redirect(redirectUrl)
+      }
     }
 
     return response
