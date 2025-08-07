@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils/cn'
-import { useAuth } from '@/components/auth/AuthProvider'
 import { User } from 'lucide-react'
+import type { User as SupabaseUser } from '@supabase/supabase-js'
 
 const supabase = createClient()
 
@@ -16,54 +16,20 @@ interface UserProfile {
   email: string
 }
 
-export function ProfileSettingsForm() {
-  const [profile, setProfile] = useState<UserProfile | null>(null)
-  const [username, setUsername] = useState('')
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
-  const [loading, setLoading] = useState(false)
+interface ProfileSettingsFormProps {
+  user: SupabaseUser
+  initialProfile: UserProfile | null
+}
+
+export function ProfileSettingsForm({ user, initialProfile }: ProfileSettingsFormProps) {
+  const [profile, setProfile] = useState<UserProfile | null>(initialProfile)
+  const [username, setUsername] = useState(initialProfile?.username || '')
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(initialProfile?.avatar_url || null)
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState('')
-  const [isNewUser, setIsNewUser] = useState(false)
+  const [isNewUser, setIsNewUser] = useState(!initialProfile?.username)
   const router = useRouter()
-  const { user } = useAuth()
 
-  useEffect(() => {
-    const loadProfile = async () => {
-      if (!user) {
-        router.push('/auth/login')
-        return
-      }
-
-      setLoading(true)
-      try {
-        const { data, error } = await supabase
-          .from('users')
-          .select('username, avatar_url, google_avatar_url, email')
-          .eq('id', user.id)
-          .single()
-
-        if (error) {
-          console.error('Error loading profile:', error)
-          setMessage('プロフィールの読み込みに失敗しました')
-        } else if (data) {
-          setProfile(data)
-          setUsername(data.username || '')
-          setAvatarUrl(data.avatar_url)
-          // ユーザー名が未設定の場合は新規ユーザー
-          if (!data.username) {
-            setIsNewUser(true)
-          }
-        }
-      } catch (error) {
-        console.error('Unexpected error:', error)
-        setMessage('予期しないエラーが発生しました')
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    loadProfile()
-  }, [user, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -203,15 +169,6 @@ export function ProfileSettingsForm() {
     }
   }
 
-  if (loading) {
-    return (
-      <div className="max-w-2xl mx-auto">
-        <div className="bg-white rounded-lg shadow p-6">
-          <p className="text-gray-600 text-center">読み込み中...</p>
-        </div>
-      </div>
-    )
-  }
 
   return (
     <div className="max-w-2xl mx-auto">
