@@ -221,26 +221,6 @@ export function ProfileSettingsForm({ user, initialProfile }: ProfileSettingsFor
         </div>
       </div>
 
-      <div className="mt-6 bg-white rounded-lg shadow">
-        <div className="p-6">
-          <h2 className="text-xl font-semibold mb-4 text-red-600">危険な操作</h2>
-          <div className="space-y-4">
-            <div>
-              <h3 className="font-medium mb-2">アカウントの削除</h3>
-              <p className="text-sm text-gray-600 mb-3">
-                アカウントを削除すると、すべてのデータが完全に削除され、復元することはできません。
-              </p>
-              <button
-                type="button"
-                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
-                onClick={() => alert('この機能は現在開発中です')}
-              >
-                アカウントを削除
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   )
 }
