@@ -2,9 +2,8 @@
 
 import { useState, useCallback } from 'react'
 import { Heart } from 'lucide-react'
-import { toggleWant } from '@/app/actions/wantPost'
+import { supabase } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils/cn'
-import { useRouter } from 'next/navigation'
 
 interface WantButtonProps {
   ideaId: string
@@ -15,7 +14,6 @@ interface WantButtonProps {
 }
 
 export function WantButton({ ideaId, initialWanted, initialCount, className, size = 'md' }: WantButtonProps) {
-  const router = useRouter()
   const [isWanted, setIsWanted] = useState(initialWanted)
   const [wantsCount, setWantsCount] = useState(initialCount)
   const [loading, setLoading] = useState(false)
@@ -33,14 +31,44 @@ export function WantButton({ ideaId, initialWanted, initialCount, className, siz
     setWantsCount(isWanted ? wantsCount - 1 : wantsCount + 1)
 
     try {
-      const result = await toggleWant(ideaId)
+      // セッションを取得
+      const { data: { session } } = await supabase.auth.getSession()
       
-      // サーバーからの結果で状態を更新
-      setIsWanted(result.wanted)
-      setWantsCount(previousCount + (result.wanted ? 1 : -1))
+      if (!session) {
+        throw new Error('ログインが必要です')
+      }
       
-      // ページをリフレッシュして最新の状態を取得
-      router.refresh()
+      const userId = session.user.id
+
+      // 既存のwantをチェック
+      const { data: existingWant } = await supabase
+        .from('wants')
+        .select('*')
+        .eq('idea_id', ideaId)
+        .eq('user_id', userId)
+        .maybeSingle()
+
+      if (existingWant) {
+        // wantを削除
+        const { error } = await supabase
+          .from('wants')
+          .delete()
+          .eq('id', existingWant.id)
+        
+        if (error) throw error
+        setIsWanted(false)
+      } else {
+        // wantを追加
+        const { error } = await supabase
+          .from('wants')
+          .insert({
+            idea_id: ideaId,
+            user_id: userId,
+          })
+        
+        if (error) throw error
+        setIsWanted(true)
+      }
       
     } catch (error: any) {
       console.error('Toggle want failed:', error)
@@ -52,7 +80,7 @@ export function WantButton({ ideaId, initialWanted, initialCount, className, siz
     } finally {
       setLoading(false)
     }
-  }, [ideaId, isWanted, wantsCount, loading, router])
+  }, [ideaId, isWanted, wantsCount, loading])
 
   const sizeClasses = {
     sm: 'px-3 py-1.5 text-sm',

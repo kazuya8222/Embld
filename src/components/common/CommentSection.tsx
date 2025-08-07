@@ -1,12 +1,10 @@
 'use client'
 
-import { useState, useTransition } from 'react'
-import { useAuth } from '@/components/auth/AuthProvider'
+import { useState, useEffect } from 'react'
+import { supabase } from '@/lib/supabase/client'
 import { Comment } from '@/types'
 import { cn } from '@/lib/utils/cn'
 import { MessageCircle, Send, User } from 'lucide-react'
-import { addComment } from '@/app/actions/comment'
-import { useRouter } from 'next/navigation'
 
 
 interface CommentSectionProps {
@@ -15,34 +13,63 @@ interface CommentSectionProps {
 }
 
 export function CommentSection({ ideaId, initialComments }: CommentSectionProps) {
-  const { user } = useAuth()
-  const router = useRouter()
   const [comments, setComments] = useState(initialComments)
   const [newComment, setNewComment] = useState('')
-  const [isPending, startTransition] = useTransition()
+  const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [user, setUser] = useState<any>(null)
+
+  // セッション確認
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      setUser(session?.user || null)
+    }
+    checkSession()
+  }, [])
 
   const handleSubmitComment = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!user || !newComment.trim()) return
+    if (!newComment.trim()) return
 
     setError(null)
+    setLoading(true)
     
-    startTransition(async () => {
-      try {
-        const data = await addComment(ideaId, newComment)
-        
-        // 楽観的アップデート
-        setComments(prev => [data, ...prev])
-        setNewComment('')
-        
-        // ページをリフレッシュして最新の状態を取得
-        router.refresh()
-      } catch (error) {
-        console.error('Error posting comment:', error)
-        setError(error instanceof Error ? error.message : 'コメントの投稿に失敗しました')
+    try {
+      // セッションを取得
+      const { data: { session } } = await supabase.auth.getSession()
+      
+      if (!session) {
+        throw new Error('ログインが必要です')
       }
-    })
+      
+      const userId = session.user.id
+
+      const { data, error } = await supabase
+        .from('comments')
+        .insert({
+          idea_id: ideaId,
+          user_id: userId,
+          content: newComment.trim(),
+        })
+        .select(`
+          *,
+          user:users(username, avatar_url)
+        `)
+        .single()
+
+      if (error) throw error
+
+      // コメントを追加
+      setComments(prev => [data, ...prev])
+      setNewComment('')
+      
+    } catch (error) {
+      console.error('Error posting comment:', error)
+      setError(error instanceof Error ? error.message : 'コメントの投稿に失敗しました')
+    } finally {
+      setLoading(false)
+    }
   }
 
   const formatDate = (dateString: string) => {
@@ -79,14 +106,14 @@ export function CommentSection({ ideaId, initialComments }: CommentSectionProps)
           <div className="flex justify-end">
             <button
               type="submit"
-              disabled={isPending || !newComment.trim()}
+              disabled={loading || !newComment.trim()}
               className={cn(
                 "bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 transition-colors flex items-center gap-2",
-                (isPending || !newComment.trim()) && "opacity-50 cursor-not-allowed"
+                (loading || !newComment.trim()) && "opacity-50 cursor-not-allowed"
               )}
             >
               <Send className="w-4 h-4" />
-              {isPending ? '投稿中...' : 'コメント'}
+              {loading ? '投稿中...' : 'コメント'}
             </button>
           </div>
         </form>
