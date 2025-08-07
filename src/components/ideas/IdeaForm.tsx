@@ -410,9 +410,9 @@ export function IdeaForm({ initialData, ideaId }: IdeaFormProps) {
                 <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center mb-4 group-hover:bg-primary-200 transition-colors">
                   <Lightbulb className="w-6 h-6 text-primary-600" />
                 </div>
-                <h2 className="text-xl font-bold text-gray-900 mb-2">シンプル投稿</h2>
+                <h2 className="text-xl font-bold text-gray-900 mb-2">アイデアをつぶやく</h2>
                 <p className="text-gray-600">
-                  アイデアの概要を簡単に投稿できます。必要最小限の情報だけで、すぐに投稿可能です。
+                  アイデアの概要を入力するだけで、簡単に投稿が可能です。入力後、すぐに企画書が作成されます。
                 </p>
               </div>
               <ul className="space-y-2 text-sm text-gray-500">
@@ -422,11 +422,11 @@ export function IdeaForm({ initialData, ideaId }: IdeaFormProps) {
                 </li>
                 <li className="flex items-center gap-2">
                   <CheckCircle className="w-4 h-4 text-green-500" />
-                  必須項目は4つだけ
+                  AIによるサポート
                 </li>
                 <li className="flex items-center gap-2">
                   <CheckCircle className="w-4 h-4 text-green-500" />
-                  後から詳細を追加可能
+                  いつでも変更案の提出可能
                 </li>
               </ul>
             </button>

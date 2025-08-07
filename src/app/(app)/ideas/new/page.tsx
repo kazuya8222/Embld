@@ -1,6 +1,6 @@
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { IdeaForm } from '@/components/ideas/IdeaForm'
+import { IdeaChatForm } from '@/components/ideas/IdeaChatForm'
 
 export default async function NewIdeaPage() {
   const supabase = await createSupabaseServerClient()
@@ -10,5 +10,5 @@ export default async function NewIdeaPage() {
     redirect('/auth/login')
   }
 
-  return <IdeaForm />
+  return <IdeaChatForm />
 }

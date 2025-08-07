@@ -1,6 +1,6 @@
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
-import { IdeaForm } from '@/components/ideas/IdeaForm'
+import { IdeaChatForm } from '@/components/ideas/IdeaChatForm'
 
 export default async function EditIdeaPage({
   params,
@@ -25,5 +25,5 @@ export default async function EditIdeaPage({
     notFound()
   }
 
-  return <IdeaForm initialData={idea} ideaId={idea.id} />
+  return <IdeaChatForm initialData={idea} ideaId={idea.id} />
 }
