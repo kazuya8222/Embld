@@ -2,7 +2,7 @@
 
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { revalidatePath, revalidateTag } from 'next/cache'
+import { revalidateTag } from 'next/cache'
 
 // ユーザーキャッシュ（wantPost.tsと同様）
 let cachedUser: { id: string; timestamp: number } | null = null

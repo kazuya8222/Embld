@@ -6,6 +6,7 @@ import { Comment } from '@/types'
 import { cn } from '@/lib/utils/cn'
 import { MessageCircle, Send, User, Heart } from 'lucide-react'
 import { addCommentForm } from '@/app/actions/comment'
+import { postCommentViaEdge } from '@/lib/supabase/edge-functions'
 
 
 interface CommentSectionProps {
@@ -45,12 +46,9 @@ export function CommentSection({ ideaId, initialComments }: CommentSectionProps)
     // フォーカスを維持してスムーズな連続投稿を可能に
     inputRef.current?.focus()
 
-    // バックグラウンドでDB保存（fire and forget）
+    // Edge Functionで高速投稿（CDN経由）
     startTransition(() => {
-      const formData = new FormData()
-      formData.append('content', content)
-      
-      addCommentForm(ideaId, formData).catch(error => {
+      postCommentViaEdge(ideaId, content).catch(error => {
         console.error('Error posting comment:', error)
         // エラー時のみ該当コメントを削除
         setComments(prev => prev.filter(c => c.id !== optimisticComment.id))
