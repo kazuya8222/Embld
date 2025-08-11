@@ -44,10 +44,12 @@ export function CommentSection({ ideaId, initialComments }: CommentSectionProps)
 
     // UIを即座に更新
     setComments(prev => [optimisticComment, ...prev])
-    setNewComment('')
     
-    // 入力フィールドを即座にフォーカス
-    inputRef.current?.focus()
+    // 入力欄をクリアして再フォーカス
+    setNewComment('')
+    setTimeout(() => {
+      inputRef.current?.focus()
+    }, 100)
 
     // バックグラウンドでサーバー更新（WantButtonと同じパターン）
     startTransition(() => {
@@ -106,13 +108,22 @@ export function CommentSection({ ideaId, initialComments }: CommentSectionProps)
                 ref={inputRef}
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
-                placeholder="コメントを追加..."
-                rows={1}
+                placeholder="コメントを追加... (Ctrl+Enterで送信)"
+                rows={2}
                 className="w-full px-4 py-3 bg-gray-50 border-0 rounded-full resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all duration-100 text-sm"
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault()
-                    handleSubmit(e)
+                  if (e.key === 'Enter') {
+                    if (e.shiftKey) {
+                      // Shift+Enterで改行を許可
+                      return
+                    } else if (e.ctrlKey || e.metaKey) {
+                      // Ctrl+Enter (Windows) または Cmd+Enter (Mac) で送信
+                      e.preventDefault()
+                      handleSubmit(e)
+                    } else {
+                      // 単体のEnterでは何もしない（改行のみ）
+                      return
+                    }
                   }
                 }}
                 autoComplete="off"
