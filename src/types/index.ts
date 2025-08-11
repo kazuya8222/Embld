@@ -75,6 +75,9 @@ export interface Comment {
   idea_id: string
   user_id: string
   content: string
+  parent_id?: string
+  likes_count: number
+  replies_count: number
   created_at: string
   user?: User
 }

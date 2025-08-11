@@ -5,7 +5,7 @@ import { useAuth } from '@/components/auth/AuthProvider'
 import { Comment } from '@/types'
 import { cn } from '@/lib/utils/cn'
 import { MessageCircle, Send, User, Heart } from 'lucide-react'
-import { addComment } from '@/app/actions/comment'
+import { addComment, addReply, toggleCommentLike } from '@/app/actions/comment'
 
 
 interface CommentSectionProps {
@@ -18,8 +18,11 @@ export function CommentSection({ ideaId, initialComments }: CommentSectionProps)
   const [comments, setComments] = useState(initialComments)
   const [newComment, setNewComment] = useState('')
   const [isPending, startTransition] = useTransition()
-  const [lastEnterTime, setLastEnterTime] = useState<number>(0)
+  const [replyTo, setReplyTo] = useState<string | null>(null)
+  const [replyContent, setReplyContent] = useState('')
+  const [likedComments, setLikedComments] = useState<Set<string>>(new Set())
   const inputRef = useRef<HTMLTextAreaElement>(null)
+  const replyInputRef = useRef<HTMLTextAreaElement>(null)
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -69,6 +72,88 @@ export function CommentSection({ ideaId, initialComments }: CommentSectionProps)
     })
   }
 
+  // いいね機能のハンドラー
+  const handleLike = (commentId: string) => {
+    if (!user) return
+    
+    // UI即座更新
+    setLikedComments(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(commentId)) {
+        newSet.delete(commentId)
+      } else {
+        newSet.add(commentId)
+      }
+      return newSet
+    })
+
+    // バックグラウンド更新
+    startTransition(() => {
+      toggleCommentLike(commentId).catch(error => {
+        console.error('Like error:', error)
+        // エラー時はUIを元に戻す
+        setLikedComments(prev => {
+          const newSet = new Set(prev)
+          if (newSet.has(commentId)) {
+            newSet.delete(commentId)
+          } else {
+            newSet.add(commentId)
+          }
+          return newSet
+        })
+      })
+    })
+  }
+
+  // 返信機能のハンドラー
+  const handleReply = (commentId: string) => {
+    setReplyTo(commentId)
+    setTimeout(() => {
+      replyInputRef.current?.focus()
+    }, 100)
+  }
+
+  const handleReplySubmit = (parentId: string) => {
+    const content = replyContent.trim()
+    if (!content || !user) return
+
+    // 即座に返信を表示
+    const tempId = `temp-reply-${Date.now()}`
+    const userInfo = {
+      username: userProfile?.username || user?.email?.split('@')[0] || 'Guest',
+      avatar_url: userProfile?.avatar_url || userProfile?.google_avatar_url,
+    }
+    
+    const optimisticReply = {
+      id: tempId,
+      idea_id: ideaId,
+      user_id: user.id,
+      content,
+      parent_id: parentId,
+      created_at: new Date().toISOString(),
+      user: userInfo,
+      isOptimistic: true,
+    } as Comment & { user: { username: string; avatar_url?: string }; isOptimistic?: boolean }
+
+    setComments(prev => [optimisticReply, ...prev])
+    setReplyContent('')
+    setReplyTo(null)
+
+    // バックグラウンド更新
+    startTransition(() => {
+      addReply(parentId, ideaId, content)
+        .then(savedReply => {
+          setComments(prev => prev.map(c => 
+            c.id === tempId ? { ...savedReply, isOptimistic: false } : c
+          ))
+        })
+        .catch(error => {
+          console.error('Reply error:', error)
+          setComments(prev => prev.filter(c => c.id !== tempId))
+        })
+    })
+  }
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('ja-JP', {
       year: 'numeric',
@@ -109,26 +194,15 @@ export function CommentSection({ ideaId, initialComments }: CommentSectionProps)
                 ref={inputRef}
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
-                placeholder="コメントを追加... (Enterを2回で送信)"
+                placeholder="コメントを追加..."
                 rows={2}
-                className="w-full px-4 py-3 bg-gray-50 border-0 rounded-full resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all duration-100 text-sm"
+                className="w-full max-w-md px-4 py-3 bg-gray-50 border-0 rounded-full resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all duration-100 text-sm"
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey && !e.ctrlKey && !e.metaKey) {
-                    const now = Date.now()
-                    const timeSinceLastEnter = now - lastEnterTime
-                    
-                    // 500ms以内の連続Enterで送信（Claude風）
-                    if (timeSinceLastEnter < 500 && newComment.trim()) {
-                      e.preventDefault()
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault()
+                    if (newComment.trim()) {
                       handleSubmit(e)
-                      setLastEnterTime(0) // リセット
-                    } else {
-                      // 最初のEnterは改行
-                      setLastEnterTime(now)
                     }
-                  } else if (e.key === 'Enter' && e.shiftKey) {
-                    // Shift+Enterは常に改行
-                    return
                   }
                 }}
                 autoComplete="off"
@@ -172,7 +246,10 @@ export function CommentSection({ ideaId, initialComments }: CommentSectionProps)
             <p className="text-sm">最初のコメントを投稿してみませんか？</p>
           </div>
         ) : (
-          comments.map((comment, index) => {
+          comments
+            .filter(comment => !comment.parent_id) // 親コメントのみ表示
+            .map((comment) => {
+              const replies = comments.filter(reply => reply.parent_id === comment.id)
             const isOptimistic = comment.id.startsWith('temp-')
             return (
               <div 
@@ -213,14 +290,154 @@ export function CommentSection({ ideaId, initialComments }: CommentSectionProps)
                   
                   <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
                     <span>{formatDate(comment.created_at)}</span>
-                    <button className="hover:text-gray-700 transition-colors flex items-center gap-1">
-                      <Heart className="w-3 h-3" />
+                    <button 
+                      onClick={() => handleLike(comment.id)}
+                      className={cn(
+                        "hover:text-red-500 transition-colors flex items-center gap-1",
+                        likedComments.has(comment.id) && "text-red-500"
+                      )}
+                    >
+                      <Heart className={cn(
+                        "w-3 h-3", 
+                        likedComments.has(comment.id) && "fill-current"
+                      )} />
                       いいね
                     </button>
-                    <button className="hover:text-gray-700 transition-colors">
+                    <button 
+                      onClick={() => handleReply(comment.id)}
+                      className="hover:text-blue-500 transition-colors"
+                    >
                       返信
                     </button>
                   </div>
+                  
+                  {/* 返信入力欄 */}
+                  {replyTo === comment.id && (
+                    <div className="mt-3 flex gap-2">
+                      <div className="w-6 h-6 rounded-full overflow-hidden bg-gray-200 flex-shrink-0">
+                        {(userProfile?.avatar_url || userProfile?.google_avatar_url) ? (
+                          <img
+                            src={userProfile.avatar_url || userProfile.google_avatar_url}
+                            alt="Your avatar"
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center">
+                            <User className="w-3 h-3 text-white" />
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-1 relative">
+                        <textarea
+                          ref={replyInputRef}
+                          value={replyContent}
+                          onChange={(e) => setReplyContent(e.target.value)}
+                          placeholder={`@${comment.user.username} に返信...`}
+                          rows={1}
+                          className="w-full px-3 py-2 bg-gray-50 border-0 rounded-full resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all text-xs"
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' && !e.shiftKey) {
+                              e.preventDefault()
+                              if (replyContent.trim()) {
+                                handleReplySubmit(comment.id)
+                              }
+                            }
+                            if (e.key === 'Escape') {
+                              setReplyTo(null)
+                              setReplyContent('')
+                            }
+                          }}
+                          autoComplete="off"
+                          spellCheck={false}
+                        />
+                        <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex gap-1">
+                          <button
+                            onClick={() => {
+                              setReplyTo(null)
+                              setReplyContent('')
+                            }}
+                            className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
+                          >
+                            ×
+                          </button>
+                          <button
+                            onClick={() => handleReplySubmit(comment.id)}
+                            disabled={!replyContent.trim()}
+                            className={cn(
+                              "p-1 rounded-full transition-all",
+                              replyContent.trim()
+                                ? "bg-blue-500 text-white hover:bg-blue-600"
+                                : "bg-gray-200 text-gray-400"
+                            )}
+                          >
+                            <Send className="w-3 h-3" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* 返信表示 */}
+                  {replies.length > 0 && (
+                    <div className="mt-3 space-y-2">
+                      {replies.map((reply) => {
+                        const isReplyOptimistic = reply.id.startsWith('temp-')
+                        return (
+                          <div key={reply.id} className={cn(
+                            "flex gap-2 ml-6 transition-all duration-300",
+                            isReplyOptimistic && "animate-in slide-in-from-bottom-2 opacity-80"
+                          )}>
+                            <div className="w-6 h-6 rounded-full overflow-hidden bg-gray-200 flex-shrink-0">
+                              {reply.user.avatar_url ? (
+                                <img
+                                  src={reply.user.avatar_url}
+                                  alt={reply.user.username}
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <div className="w-full h-full bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center">
+                                  <User className="w-3 h-3 text-white" />
+                                </div>
+                              )}
+                            </div>
+                            
+                            <div className="flex-1 min-w-0">
+                              <div className="bg-gray-100 rounded-xl px-3 py-2">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span className="font-semibold text-gray-900 text-xs">
+                                    {reply.user.username}
+                                  </span>
+                                  {isReplyOptimistic && (
+                                    <span className="text-xs text-blue-500 animate-pulse">送信中</span>
+                                  )}
+                                </div>
+                                <p className="text-gray-800 text-xs leading-relaxed">
+                                  {reply.content}
+                                </p>
+                              </div>
+                              
+                              <div className="flex items-center gap-3 mt-1 text-xs text-gray-500">
+                                <span>{formatDate(reply.created_at)}</span>
+                                <button 
+                                  onClick={() => handleLike(reply.id)}
+                                  className={cn(
+                                    "hover:text-red-500 transition-colors flex items-center gap-1",
+                                    likedComments.has(reply.id) && "text-red-500"
+                                  )}
+                                >
+                                  <Heart className={cn(
+                                    "w-3 h-3", 
+                                    likedComments.has(reply.id) && "fill-current"
+                                  )} />
+                                  いいね
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )}
                 </div>
               </div>
             )
