@@ -28,7 +28,7 @@ export function ProfileSettingsForm({ user, initialProfile }: ProfileSettingsFor
   const [message, setMessage] = useState('')
   const [isNewUser, setIsNewUser] = useState(!initialProfile?.username)
   const router = useRouter()
-  const { refreshProfile } = useAuth()
+  const { refreshProfile, updateProfileOptimistic } = useAuth()
 
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -51,13 +51,18 @@ export function ProfileSettingsForm({ user, initialProfile }: ProfileSettingsFor
       } else {
         setMessage(result.success || 'プロフィールを更新しました')
         // プロフィール情報を再読み込み
-        setProfile({
+        const updatedProfile = {
           ...profile!,
           username,
           avatar_url: avatarUrl || null
-        })
-        // AuthProviderのプロフィール情報も更新
-        await refreshProfile()
+        }
+        setProfile(updatedProfile)
+        
+        // AuthProviderのプロフィール情報を楽観的更新
+        updateProfileOptimistic({ username, avatar_url: avatarUrl || null })
+        
+        // バックグラウンドで正確な情報を取得
+        setTimeout(() => refreshProfile(), 500)
         
         // 新規ユーザーの場合はホームへリダイレクト
         if (isNewUser) {
@@ -84,6 +89,11 @@ export function ProfileSettingsForm({ user, initialProfile }: ProfileSettingsFor
       return
     }
 
+    // 即座にプレビュー表示（楽観的更新）
+    const previewUrl = URL.createObjectURL(file)
+    setAvatarUrl(previewUrl)
+    updateProfileOptimistic({ avatar_url: previewUrl })
+
     setSaving(true)
     setMessage('')
 
@@ -95,15 +105,30 @@ export function ProfileSettingsForm({ user, initialProfile }: ProfileSettingsFor
       
       if (result.error) {
         setMessage(result.error)
+        // エラー時は元に戻す
+        setAvatarUrl(initialProfile?.avatar_url || null)
+        updateProfileOptimistic({ avatar_url: initialProfile?.avatar_url || null })
       } else {
-        setAvatarUrl(result.avatarUrl || '')
+        const newAvatarUrl = result.avatarUrl || ''
+        setAvatarUrl(newAvatarUrl)
         setMessage(result.success || '画像をアップロードしました')
-        // AuthProviderのプロフィール情報も更新
-        await refreshProfile()
+        
+        // AuthProviderのプロフィール情報を楽観的更新
+        updateProfileOptimistic({ avatar_url: newAvatarUrl })
+        
+        // バックグラウンドで正確な情報を取得
+        setTimeout(() => refreshProfile(), 1000)
+        
+        // プレビューURLをクリーンアップ
+        URL.revokeObjectURL(previewUrl)
       }
     } catch (error: any) {
       console.error('Upload error:', error)
       setMessage('画像のアップロードに失敗しました')
+      // エラー時は元に戻す
+      setAvatarUrl(initialProfile?.avatar_url || null)
+      updateProfileOptimistic({ avatar_url: initialProfile?.avatar_url || null })
+      URL.revokeObjectURL(previewUrl)
     } finally {
       setSaving(false)
     }

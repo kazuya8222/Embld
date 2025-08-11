@@ -14,6 +14,7 @@ interface AuthContextType {
   loading: boolean
   signOut: () => Promise<void>
   refreshProfile: () => Promise<void>
+  updateProfileOptimistic: (newProfile: Partial<any>) => void
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -22,6 +23,7 @@ const AuthContext = createContext<AuthContextType>({
   loading: true,
   signOut: async () => {},
   refreshProfile: async () => {},
+  updateProfileOptimistic: () => {},
 })
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -48,7 +50,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
-  // プロフィール情報を強制再取得する関数
+  // プロフィール情報を強制再取得する関数（高速化）
   const refreshProfile = async () => {
     if (!user) {
       console.log('AuthProvider: No user, skipping profile refresh')
@@ -56,7 +58,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     
     console.log('AuthProvider: Force refreshing profile...')
-    setUserProfile(null) // 一旦クリアして再取得
     
     // 簡易的なプロフィール再取得（エラー時のフォールバック付き）
     try {
@@ -67,23 +68,53 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .single()
       
       if (error || !profile) {
-        setUserProfile({
+        const fallbackProfile = {
           username: user.email?.split('@')[0] || 'User',
           avatar_url: null,
           google_avatar_url: null,
           email: user.email
-        })
+        }
+        setUserProfile(fallbackProfile)
       } else {
+        console.log('AuthProvider: Profile refreshed:', profile)
+        
+        // プロフィールをローカルストレージにもキャッシュ
+        if (typeof window !== 'undefined') {
+          const cacheData = {
+            data: profile,
+            expires: Date.now() + (24 * 60 * 60 * 1000) // 24時間後
+          }
+          localStorage.setItem('embld_user_profile', JSON.stringify(cacheData))
+        }
+        
         setUserProfile(profile)
       }
     } catch (error) {
       console.error('RefreshProfile error:', error)
-      setUserProfile({
+      const fallbackProfile = {
         username: user.email?.split('@')[0] || 'User',
         avatar_url: null,
         google_avatar_url: null,
         email: user.email
-      })
+      }
+      setUserProfile(fallbackProfile)
+    }
+  }
+
+  // プロフィールの即座更新（楽観的更新）
+  const updateProfileOptimistic = (newProfile: Partial<any>) => {
+    if (userProfile) {
+      const updatedProfile = { ...userProfile, ...newProfile }
+      setUserProfile(updatedProfile)
+      
+      // ローカルストレージも即座に更新
+      if (typeof window !== 'undefined') {
+        const cacheData = {
+          data: updatedProfile,
+          expires: Date.now() + (24 * 60 * 60 * 1000)
+        }
+        localStorage.setItem('embld_user_profile', JSON.stringify(cacheData))
+      }
     }
   }
 
@@ -292,7 +323,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   return (
-    <AuthContext.Provider value={{ user, userProfile, loading, signOut, refreshProfile }}>
+    <AuthContext.Provider value={{ user, userProfile, loading, signOut, refreshProfile, updateProfileOptimistic }}>
       {children}
     </AuthContext.Provider>
   )
