@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useAuth } from '@/components/auth/AuthProvider'
-import { supabase } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/client'
 import { Review } from '@/types'
 import { cn } from '@/lib/utils/cn'
 import { Star, Send, User } from 'lucide-react'
@@ -19,6 +19,7 @@ export function ReviewSection({ appId, initialReviews }: ReviewSectionProps) {
   const [hoverRating, setHoverRating] = useState(0)
   const [content, setContent] = useState('')
   const [loading, setLoading] = useState(false)
+  const supabase = createClient()
 
   const handleSubmitReview = async (e: React.FormEvent) => {
     e.preventDefault()

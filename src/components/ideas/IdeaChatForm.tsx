@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/components/auth/AuthProvider'
-import { supabase } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils/cn'
 import { Send, Bot, User, Loader2, CheckCircle, FileText } from 'lucide-react'
 
@@ -279,8 +279,9 @@ export function IdeaChatForm({ initialData, ideaId }: IdeaChatFormProps) {
     // Supabaseクライアントの認証状態を確認
     console.log('Checking supabase auth...')
     
-    // Supabaseクライアントを使用
-    console.log('Using supabase client')
+    // 新しいクライアントインスタンスを作成（強制的に新規作成）
+    const supabase = createClient(true)
+    console.log('Supabase client created')
     
     try {
       const { data: { session }, error: sessionError } = await supabase.auth.getSession()

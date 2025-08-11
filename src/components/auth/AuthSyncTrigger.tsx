@@ -2,10 +2,11 @@
 
 import { useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { supabase } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/client'
 
 export function AuthSyncTrigger() {
   const searchParams = useSearchParams()
+  const supabase = createClient()
 
   useEffect(() => {
     const authParam = searchParams.get('auth')

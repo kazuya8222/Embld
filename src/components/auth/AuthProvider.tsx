@@ -2,8 +2,11 @@
 
 import { createContext, useContext, useEffect, useState } from 'react'
 import type { User } from '@supabase/supabase-js'
-import { supabase } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
+
+// コンポーネントの外で一度だけクライアントを作成
+const supabase = createClient()
 
 interface AuthContextType {
   user: User | null
