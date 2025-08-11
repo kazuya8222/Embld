@@ -56,3 +56,8 @@ export const toggleWant = async (ideaId: string) => {
 
   return { wanted: !!now, count: count ?? 0 }
 }
+
+export const toggleWantForm = async (prevState: any, formData: FormData) => {
+  const ideaId = formData.get('ideaId') as string
+  return toggleWant(ideaId)
+}

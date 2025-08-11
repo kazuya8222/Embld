@@ -209,19 +209,3 @@ export function CommentSection({ ideaId, initialComments }: CommentSectionProps)
   )
 }
 
-function SubmitButton({ disabled }: { disabled?: boolean }) {
-  const { pending } = useFormStatus()
-  return (
-    <button
-      type="submit"
-      disabled={pending || disabled}
-      className={cn(
-        "bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 transition-all duration-150 flex items-center gap-2 transform active:scale-95",
-        (pending || disabled) && "opacity-50 cursor-not-allowed"
-      )}
-    >
-      <Send className={cn("w-4 h-4", pending && "animate-pulse")} />
-      {pending ? '投稿中...' : 'コメント'}
-    </button>
-  )
-}
