@@ -30,6 +30,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
   const router = useRouter()
 
+  // 即座にローカルストレージからプロフィールを復元（最速表示）
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const cachedProfile = localStorage.getItem('embld_user_profile')
+        if (cachedProfile) {
+          const profile = JSON.parse(cachedProfile)
+          // 24時間以内のキャッシュなら使用
+          if (profile.expires && Date.now() < profile.expires) {
+            setUserProfile(profile.data)
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load cached profile:', error)
+      }
+    }
+  }, [])
+
   // プロフィール情報を強制再取得する関数
   const refreshProfile = async () => {
     if (!user) {
@@ -109,9 +127,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   useEffect(() => {
-    // ユーザープロフィール取得の共通関数（useEffect内に移動）
+    // ユーザープロフィール取得の共通関数（高速化版）
     const fetchUserProfile = async (user: any, retryCount = 0) => {
-      const timeoutMs = 5000 // 5秒タイムアウト
+      const timeoutMs = 3000 // 3秒タイムアウト（高速化）
       
       try {
         if (retryCount > 0) {
@@ -167,6 +185,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (retryCount === 0) {
           console.log('AuthProvider: Profile loaded successfully:', profile.username)
         }
+        
+        // プロフィールをローカルストレージにキャッシュ（24時間）
+        if (typeof window !== 'undefined') {
+          const cacheData = {
+            data: profile,
+            expires: Date.now() + (24 * 60 * 60 * 1000) // 24時間後
+          }
+          localStorage.setItem('embld_user_profile', JSON.stringify(cacheData))
+        }
+        
         setUserProfile(profile)
         
       } catch (error) {
@@ -178,19 +206,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } else {
           // 最終的にエラーの場合、emailベースのフォールバック
           console.warn('AuthProvider: Using email fallback due to persistent exception')
-          setUserProfile({
+          const fallbackProfile = {
             username: user.email?.split('@')[0] || 'User',
             avatar_url: null,
             google_avatar_url: null,
             email: user.email
-          })
+          }
+          
+          // フォールバックもキャッシュ（1時間）
+          if (typeof window !== 'undefined') {
+            const cacheData = {
+              data: fallbackProfile,
+              expires: Date.now() + (60 * 60 * 1000) // 1時間後
+            }
+            localStorage.setItem('embld_user_profile', JSON.stringify(cacheData))
+          }
+          
+          setUserProfile(fallbackProfile)
         }
       }
     }
 
-    // 初期セッションの取得
+    // 初期セッション取得の高速化
     const getInitialSession = async () => {
       try {
+        // ローディング状態をできるだけ早く解除
+        setTimeout(() => setLoading(false), 100)
+        
         const { data: { user }, error } = await supabase.auth.getUser()
         
         if (error) {
@@ -199,7 +241,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUserProfile(null)
         } else if (user) {
           setUser(user)
-          await fetchUserProfile(user)
+          
+          // キャッシュされたプロフィールが既にあるかチェック
+          if (!userProfile) {
+            await fetchUserProfile(user)
+          }
         } else {
           setUser(null)
           setUserProfile(null)
@@ -222,9 +268,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUser(null)
           setUserProfile(null)
           
-          // ローカルストレージもクリア
+          // ローカルストレージもクリア（プロフィールキャッシュも含む）
           if (typeof window !== 'undefined') {
             localStorage.removeItem('supabase.auth.token')
+            localStorage.removeItem('embld_user_profile')
             sessionStorage.clear()
           }
         } else if (session?.user) {
