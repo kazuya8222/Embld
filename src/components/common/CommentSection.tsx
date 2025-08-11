@@ -4,7 +4,7 @@ import { useState, useTransition, useRef } from 'react'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { Comment } from '@/types'
 import { cn } from '@/lib/utils/cn'
-import { MessageCircle, Send, User, Heart } from 'lucide-react'
+import { MessageCircle, Send, User, Heart, ChevronDown, ChevronUp } from 'lucide-react'
 import { addComment, addReply, toggleCommentLike } from '@/app/actions/comment'
 
 
@@ -21,6 +21,9 @@ export function CommentSection({ ideaId, initialComments }: CommentSectionProps)
   const [replyTo, setReplyTo] = useState<string | null>(null)
   const [replyContent, setReplyContent] = useState('')
   const [likedComments, setLikedComments] = useState<Set<string>>(new Set())
+  const [showReplies, setShowReplies] = useState<Set<string>>(new Set())
+  const [enterCount, setEnterCount] = useState(0)
+  const [replyEnterCount, setReplyEnterCount] = useState(0)
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const replyInputRef = useRef<HTMLTextAreaElement>(null)
 
@@ -51,6 +54,7 @@ export function CommentSection({ ideaId, initialComments }: CommentSectionProps)
     
     // 入力欄をクリアして再フォーカス
     setNewComment('')
+    setEnterCount(0)
     setTimeout(() => {
       inputRef.current?.focus()
     }, 100)
@@ -138,6 +142,14 @@ export function CommentSection({ ideaId, initialComments }: CommentSectionProps)
     setComments(prev => [optimisticReply, ...prev])
     setReplyContent('')
     setReplyTo(null)
+    setReplyEnterCount(0)
+    
+    // 返信したコメントの返信を表示状態にする
+    setShowReplies(prev => {
+      const newSet = new Set(prev)
+      newSet.add(parentId)
+      return newSet
+    })
 
     // バックグラウンド更新
     startTransition(() => {
@@ -151,6 +163,19 @@ export function CommentSection({ ideaId, initialComments }: CommentSectionProps)
           console.error('Reply error:', error)
           setComments(prev => prev.filter(c => c.id !== tempId))
         })
+    })
+  }
+
+  // 返信表示の切り替え
+  const toggleReplies = (commentId: string) => {
+    setShowReplies(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(commentId)) {
+        newSet.delete(commentId)
+      } else {
+        newSet.add(commentId)
+      }
+      return newSet
     })
   }
 
@@ -199,10 +224,19 @@ export function CommentSection({ ideaId, initialComments }: CommentSectionProps)
                 className="w-full max-w-md px-4 py-3 bg-gray-50 border-0 rounded-full resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all duration-100 text-sm"
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault()
-                    if (newComment.trim()) {
-                      handleSubmit(e)
+                    if (enterCount === 0) {
+                      // 1回目のEnterは確定（何もしない）
+                      setEnterCount(1)
+                    } else if (enterCount === 1) {
+                      // 2回目のEnterで送信
+                      e.preventDefault()
+                      if (newComment.trim()) {
+                        handleSubmit(e)
+                      }
                     }
+                  } else {
+                    // 他のキーが押されたらEnterカウントをリセット
+                    setEnterCount(0)
                   }
                 }}
                 autoComplete="off"
@@ -309,6 +343,24 @@ export function CommentSection({ ideaId, initialComments }: CommentSectionProps)
                     >
                       返信
                     </button>
+                    {replies.length > 0 && (
+                      <button 
+                        onClick={() => toggleReplies(comment.id)}
+                        className="hover:text-blue-500 transition-colors text-blue-600 font-medium flex items-center gap-1"
+                      >
+                        {showReplies.has(comment.id) ? (
+                          <>
+                            <ChevronUp className="w-3 h-3" />
+                            返信を非表示
+                          </>
+                        ) : (
+                          <>
+                            <ChevronDown className="w-3 h-3" />
+                            {replies.length}件の返信を表示
+                          </>
+                        )}
+                      </button>
+                    )}
                   </div>
                   
                   {/* 返信入力欄 */}
@@ -337,14 +389,23 @@ export function CommentSection({ ideaId, initialComments }: CommentSectionProps)
                           className="w-full px-3 py-2 bg-gray-50 border-0 rounded-full resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all text-xs"
                           onKeyDown={(e) => {
                             if (e.key === 'Enter' && !e.shiftKey) {
-                              e.preventDefault()
-                              if (replyContent.trim()) {
-                                handleReplySubmit(comment.id)
+                              if (replyEnterCount === 0) {
+                                // 1回目のEnterは確定（何もしない）
+                                setReplyEnterCount(1)
+                              } else if (replyEnterCount === 1) {
+                                // 2回目のEnterで送信
+                                e.preventDefault()
+                                if (replyContent.trim()) {
+                                  handleReplySubmit(comment.id)
+                                }
                               }
-                            }
-                            if (e.key === 'Escape') {
+                            } else if (e.key === 'Escape') {
                               setReplyTo(null)
                               setReplyContent('')
+                              setReplyEnterCount(0)
+                            } else {
+                              // 他のキーが押されたらEnterカウントをリセット
+                              setReplyEnterCount(0)
                             }
                           }}
                           autoComplete="off"
@@ -355,6 +416,7 @@ export function CommentSection({ ideaId, initialComments }: CommentSectionProps)
                             onClick={() => {
                               setReplyTo(null)
                               setReplyContent('')
+                              setReplyEnterCount(0)
                             }}
                             className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
                           >
@@ -377,8 +439,33 @@ export function CommentSection({ ideaId, initialComments }: CommentSectionProps)
                     </div>
                   )}
                   
+                  {/* 返信プレビュー（折りたたみ時） */}
+                  {replies.length > 0 && !showReplies.has(comment.id) && (
+                    <div className="mt-2 ml-6 opacity-60">
+                      <div className="flex gap-2 items-center">
+                        <div className="w-5 h-5 rounded-full overflow-hidden bg-gray-200 flex-shrink-0">
+                          {replies[0].user.avatar_url ? (
+                            <img
+                              src={replies[0].user.avatar_url}
+                              alt={replies[0].user.username}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center">
+                              <User className="w-2 h-2 text-white" />
+                            </div>
+                          )}
+                        </div>
+                        <span className="text-xs text-gray-600 font-medium">{replies[0].user.username}</span>
+                        <span className="text-xs text-gray-500 truncate max-w-[200px]">
+                          {replies[0].content}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                  
                   {/* 返信表示 */}
-                  {replies.length > 0 && (
+                  {replies.length > 0 && showReplies.has(comment.id) && (
                     <div className="mt-3 space-y-2">
                       {replies.map((reply) => {
                         const isReplyOptimistic = reply.id.startsWith('temp-')
