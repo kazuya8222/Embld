@@ -38,12 +38,28 @@ interface HomePageClientProps {
 export default function HomePageClient({ ideasWithCounts, searchParams }: HomePageClientProps) {
   const router = useRouter()
   
-  // リンクのプリフェッチ（表示されたアイデアのページを事前取得）
+  // CAMPFIRE風プリフェッチ最適化
   useEffect(() => {
-    // 表示されているアイデアのリンクを事前取得
-    ideasWithCounts.slice(0, 9).forEach(idea => {
-      router.prefetch(`/ideas/${idea.id}`)
-    })
+    // Intersection Observer で見えているアイデアのみプリフェッチ
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const ideaId = entry.target.getAttribute('data-idea-id')
+            if (ideaId) {
+              router.prefetch(`/ideas/${ideaId}`)
+            }
+          }
+        })
+      },
+      { rootMargin: '100px' } // 100px手前でプリフェッチ
+    )
+
+    // 最初の6個のアイデアを監視対象に
+    const ideaElements = document.querySelectorAll('[data-idea-id]')
+    ideaElements.forEach(el => observer.observe(el))
+
+    return () => observer.disconnect()
   }, [ideasWithCounts, router])
   
   // useMemo で計算結果をキャッシュ（レンダリング最適化）
@@ -68,7 +84,7 @@ export default function HomePageClient({ ideasWithCounts, searchParams }: HomePa
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {topRevenueIdeas.length > 0 ? (
               topRevenueIdeas.map((idea) => (
-                <Link key={idea.id} href={`/ideas/${idea.id}`} className="group block h-full">
+                <Link key={idea.id} href={`/ideas/${idea.id}`} className="group block h-full" data-idea-id={idea.id}>
                   <div className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow overflow-hidden h-full flex flex-col">
                     {/* サムネイル画像 */}
                     <div className="w-full h-48 relative">
@@ -157,7 +173,7 @@ export default function HomePageClient({ ideasWithCounts, searchParams }: HomePa
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {latestIdeas.length > 0 ? (
                   latestIdeas.map((idea) => (
-                    <Link key={idea.id} href={`/ideas/${idea.id}`} className="group block h-full">
+                    <Link key={idea.id} href={`/ideas/${idea.id}`} className="group block h-full" data-idea-id={idea.id}>
                       <div className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow overflow-hidden h-full flex flex-col">
                         {/* サムネイル画像 */}
                         <div className="w-full h-40 relative">
