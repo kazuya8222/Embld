@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+// 認証必須にすると生成が止まるケースがあるため、ここではチェックしない（保存時に認証）
 import OpenAI from 'openai'
 
 const openai = new OpenAI({

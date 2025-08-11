@@ -3,7 +3,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/components/auth/AuthProvider'
-import { createClient } from '@/lib/supabase/client'
+// DB 書き込みはサーバーアクション経由に変更
+import { saveIdeaFromAI } from '@/app/actions/ideas'
 import { cn } from '@/lib/utils/cn'
 import { Send, Bot, User, Loader2, CheckCircle, FileText } from 'lucide-react'
 
@@ -48,7 +49,7 @@ export function IdeaChatForm({ initialData, ideaId }: IdeaChatFormProps) {
     scrollToBottom()
   }, [messages])
 
-  const sendMessage = async (messageContent: string) => {
+  const sendMessage = async (messageContent: string, stepOverride?: ChatStep) => {
     if (!messageContent.trim() || isLoading) return
 
     const userMessage: Message = {
@@ -73,7 +74,7 @@ export function IdeaChatForm({ initialData, ideaId }: IdeaChatFormProps) {
             role: msg.role,
             content: msg.content
           })),
-          step: currentStep
+          step: stepOverride ?? currentStep
         }),
       })
 
@@ -92,8 +93,9 @@ export function IdeaChatForm({ initialData, ideaId }: IdeaChatFormProps) {
 
       setMessages(prev => [...prev, assistantMessage])
 
-      // ステップの進行を管理
-      switch (currentStep) {
+      // ステップの進行を管理（明示されたステップを優先）
+      const stepUsed = stepOverride ?? currentStep
+      switch (stepUsed) {
         case 'service_overview':
           setCurrentStep('persona')
           break
@@ -127,6 +129,10 @@ export function IdeaChatForm({ initialData, ideaId }: IdeaChatFormProps) {
         timestamp: new Date()
       }
       setMessages(prev => [...prev, errorMessage])
+      // 生成中で失敗した場合は入力可能なステップへ戻す
+      if ((stepOverride ?? currentStep) === 'generate_plan') {
+        setCurrentStep('solution')
+      }
     } finally {
       setIsLoading(false)
     }
@@ -135,10 +141,10 @@ export function IdeaChatForm({ initialData, ideaId }: IdeaChatFormProps) {
   const handleConfirmation = (isConfirmed: boolean) => {
     if (isConfirmed) {
       setCurrentStep('generate_plan')
-      sendMessage('はい、問題ありません。企画書を生成してください。')
+      sendMessage('はい、問題ありません。企画書を生成してください。', 'generate_plan')
     } else {
       setCurrentStep('revise')
-      sendMessage('いいえ、修正が必要です。どの部分を修正したいか教えてください。')
+      sendMessage('いいえ、修正が必要です。どの部分を修正したいか教えてください。', 'revise')
     }
   }
 
@@ -195,34 +201,12 @@ export function IdeaChatForm({ initialData, ideaId }: IdeaChatFormProps) {
     setIsLoading(true)
 
     try {
-      const supabase = createClient()
       const dataToSubmit = extractDataFromPlan(generatedPlan)
-
-      let result
-      if (ideaId) {
-        result = await supabase
-          .from('ideas')
-          .update(dataToSubmit)
-          .eq('id', ideaId)
-          .eq('user_id', user.id)
-          .select()
-          .single()
+      const res = await saveIdeaFromAI(dataToSubmit, ideaId)
+      if (!res.ok || !res.id) {
+        console.error('Save error:', res.error)
       } else {
-        result = await supabase
-          .from('ideas')
-          .insert(dataToSubmit)
-          .select()
-          .single()
-      }
-
-      if (result.error) {
-        console.error('Save error:', result.error)
-        // エラーメッセージを表示
-      } else {
-        const targetId = ideaId || result.data?.id
-        if (targetId) {
-          router.push(`/ideas/${targetId}`)
-        }
+        router.push(`/ideas/${res.id}`)
       }
     } catch (error) {
       console.error('Save failed:', error)

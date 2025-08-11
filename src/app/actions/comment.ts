@@ -39,3 +39,9 @@ export const addComment = async (ideaId: string, content: string) => {
   
   return data
 }
+
+// フォーム向けのサーバーアクション（Server Actions + useFormStatus対応）
+export const addCommentForm = async (ideaId: string, formData: FormData) => {
+  const content = (formData.get('content') as string) ?? ''
+  return addComment(ideaId, content)
+}
