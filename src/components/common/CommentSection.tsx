@@ -18,6 +18,7 @@ export function CommentSection({ ideaId, initialComments }: CommentSectionProps)
   const [comments, setComments] = useState(initialComments)
   const [newComment, setNewComment] = useState('')
   const [isPending, startTransition] = useTransition()
+  const [lastEnterTime, setLastEnterTime] = useState<number>(0)
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -108,22 +109,26 @@ export function CommentSection({ ideaId, initialComments }: CommentSectionProps)
                 ref={inputRef}
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
-                placeholder="コメントを追加... (Ctrl+Enterで送信)"
+                placeholder="コメントを追加... (Enterを2回で送信)"
                 rows={2}
                 className="w-full px-4 py-3 bg-gray-50 border-0 rounded-full resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all duration-100 text-sm"
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    if (e.shiftKey) {
-                      // Shift+Enterで改行を許可
-                      return
-                    } else if (e.ctrlKey || e.metaKey) {
-                      // Ctrl+Enter (Windows) または Cmd+Enter (Mac) で送信
+                  if (e.key === 'Enter' && !e.shiftKey && !e.ctrlKey && !e.metaKey) {
+                    const now = Date.now()
+                    const timeSinceLastEnter = now - lastEnterTime
+                    
+                    // 500ms以内の連続Enterで送信（Claude風）
+                    if (timeSinceLastEnter < 500 && newComment.trim()) {
                       e.preventDefault()
                       handleSubmit(e)
+                      setLastEnterTime(0) // リセット
                     } else {
-                      // 単体のEnterでは何もしない（改行のみ）
-                      return
+                      // 最初のEnterは改行
+                      setLastEnterTime(now)
                     }
+                  } else if (e.key === 'Enter' && e.shiftKey) {
+                    // Shift+Enterは常に改行
+                    return
                   }
                 }}
                 autoComplete="off"
