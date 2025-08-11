@@ -1,8 +1,8 @@
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { IdeaSubmissionSelector } from '@/components/ideas/IdeaSubmissionSelector'
+import { IdeaChatForm } from '@/components/ideas/IdeaChatForm'
 
-export default async function NewIdeaPage() {
+export default async function NewIdeaChatPage() {
   const supabase = await createSupabaseServerClient()
   const { data: { session } } = await supabase.auth.getSession()
 
@@ -10,5 +10,5 @@ export default async function NewIdeaPage() {
     redirect('/auth/login')
   }
 
-  return <IdeaSubmissionSelector />
+  return <IdeaChatForm />
 }
