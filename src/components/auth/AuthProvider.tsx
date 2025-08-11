@@ -100,11 +100,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUser(user)
           
           // ユーザープロフィールを取得
-          const { data: profile } = await supabase
+          const { data: profile, error: profileError } = await supabase
             .from('users')
             .select('*')
             .eq('id', user.id)
             .single()
+          
+          if (profileError) {
+            console.error('Error fetching profile:', profileError)
+          } else {
+            console.log('Profile loaded:', profile)
+          }
           
           setUserProfile(profile)
         }
@@ -136,11 +142,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUser(session.user)
           
           // ユーザープロフィールを取得
-          const { data: profile } = await supabase
+          const { data: profile, error: profileError } = await supabase
             .from('users')
             .select('*')
             .eq('id', session.user.id)
             .single()
+          
+          if (profileError) {
+            console.error('Error fetching profile in auth state change:', profileError)
+          } else {
+            console.log('Profile loaded in auth state change:', profile)
+          }
           
           setUserProfile(profile)
         } else {

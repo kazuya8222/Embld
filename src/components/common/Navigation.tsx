@@ -121,10 +121,14 @@ export function Navigation() {
                             src={userProfile.avatar_url || userProfile.google_avatar_url}
                             alt={userProfile.username || 'User'}
                             className="w-full h-full object-cover"
+                            onError={(e) => {
+                              console.error('Avatar image failed to load:', userProfile)
+                              e.currentTarget.style.display = 'none'
+                              e.currentTarget.nextElementSibling?.classList.remove('hidden')
+                            }}
                           />
-                        ) : (
-                          <User className="h-5 w-5" />
-                        )}
+                        ) : null}
+                        <User className={cn("h-5 w-5 text-gray-400", (userProfile?.avatar_url || userProfile?.google_avatar_url) && "hidden")} />
                       </div>
                       <span className="hidden lg:block">
                         {userProfile?.username || user.email?.split('@')[0]}
