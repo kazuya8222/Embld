@@ -4,8 +4,8 @@ import { useState, useTransition, useRef } from 'react'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { Comment } from '@/types'
 import { cn } from '@/lib/utils/cn'
-import { MessageCircle, Send, User, Heart, ChevronDown, ChevronUp } from 'lucide-react'
-import { addComment, addReply, toggleCommentLike } from '@/app/actions/comment'
+import { MessageCircle, Send, User, Heart, ChevronDown, ChevronUp, Trash2 } from 'lucide-react'
+import { addComment, addReply, toggleCommentLike, deleteComment } from '@/app/actions/comment'
 
 
 interface CommentSectionProps {
@@ -195,6 +195,29 @@ export function CommentSection({ ideaId, initialComments }: CommentSectionProps)
     })
   }
 
+  // コメント削除機能
+  const handleDeleteComment = (commentId: string) => {
+    if (!user) return
+    
+    // 確認ダイアログ
+    if (!confirm('このコメントを削除しますか？')) {
+      return
+    }
+    
+    // 即座にUIから削除
+    setComments(prev => prev.filter(c => c.id !== commentId))
+    
+    // バックグラウンドで削除
+    startTransition(() => {
+      deleteComment(commentId).catch(error => {
+        console.error('Delete comment error:', error)
+        // エラー時は元に戻すため、ページリロードを促す
+        alert('コメントの削除に失敗しました。ページを再読み込みしてください。')
+        window.location.reload()
+      })
+    })
+  }
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('ja-JP', {
       year: 'numeric',
@@ -237,7 +260,7 @@ export function CommentSection({ ideaId, initialComments }: CommentSectionProps)
                 onChange={(e) => setNewComment(e.target.value)}
                 placeholder="コメントを追加..."
                 rows={2}
-                className="w-full max-w-md px-4 py-3 bg-gray-50 border-0 rounded-full resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all duration-100 text-sm"
+                className="w-full max-w-2xl px-4 py-3 bg-gray-50 border-0 rounded-full resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all duration-100 text-sm"
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && !e.shiftKey) {
                     if (enterCount === 0) {
@@ -331,6 +354,16 @@ export function CommentSection({ ideaId, initialComments }: CommentSectionProps)
                       </span>
                       {isOptimistic && (
                         <span className="text-xs text-blue-500 animate-pulse">送信中</span>
+                      )}
+                      {/* 削除ボタン（自分のコメントの場合のみ） */}
+                      {user && comment.user_id === user.id && !isOptimistic && (
+                        <button
+                          onClick={() => handleDeleteComment(comment.id)}
+                          className="ml-auto p-1 text-gray-400 hover:text-red-500 transition-colors"
+                          title="コメントを削除"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </button>
                       )}
                     </div>
                     <p className="text-gray-800 text-sm leading-relaxed">
@@ -512,6 +545,16 @@ export function CommentSection({ ideaId, initialComments }: CommentSectionProps)
                                   </span>
                                   {isReplyOptimistic && (
                                     <span className="text-xs text-blue-500 animate-pulse">送信中</span>
+                                  )}
+                                  {/* 削除ボタン（自分の返信の場合のみ） */}
+                                  {user && reply.user_id === user.id && !isReplyOptimistic && (
+                                    <button
+                                      onClick={() => handleDeleteComment(reply.id)}
+                                      className="ml-auto p-1 text-gray-400 hover:text-red-500 transition-colors"
+                                      title="返信を削除"
+                                    >
+                                      <Trash2 className="w-3 h-3" />
+                                    </button>
                                   )}
                                 </div>
                                 <p className="text-gray-800 text-xs leading-relaxed">

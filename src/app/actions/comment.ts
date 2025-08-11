@@ -176,3 +176,48 @@ export const toggleCommentLike = async (commentId: string) => {
     return { liked: true }
   }
 }
+
+// コメントを削除
+export const deleteComment = async (commentId: string) => {
+  const supabase = createSupabaseServerClient()
+  
+  let userId: string
+  if (cachedUser && Date.now() - cachedUser.timestamp < 5000) {
+    userId = cachedUser.id
+  } else {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      redirect('/auth/login')
+    }
+    cachedUser = { id: user.id, timestamp: Date.now() }
+    userId = user.id
+  }
+
+  // 自分のコメントかチェック
+  const { data: comment, error: fetchError } = await supabase
+    .from('comments')
+    .select('user_id')
+    .eq('id', commentId)
+    .single()
+
+  if (fetchError) {
+    throw new Error(`コメントが見つかりませんでした: ${fetchError.message}`)
+  }
+
+  if (comment.user_id !== userId) {
+    throw new Error('自分のコメントのみ削除できます')
+  }
+
+  // コメント削除
+  const { error } = await supabase
+    .from('comments')
+    .delete()
+    .eq('id', commentId)
+    .eq('user_id', userId) // 追加のセキュリティチェック
+
+  if (error) {
+    throw new Error(`コメントの削除に失敗しました: ${error.message}`)
+  }
+
+  return { success: true }
+}
