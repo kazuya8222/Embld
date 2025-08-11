@@ -3,19 +3,30 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/components/auth/AuthProvider'
-// DB 書き込みはサーバーアクション経由に変更
 import { saveIdeaFromAI } from '@/app/actions/ideas'
 import { cn } from '@/lib/utils/cn'
-import { Send, Bot, User, Loader2, CheckCircle, FileText } from 'lucide-react'
+import { Send, Bot, User, Loader2, CheckCircle, FileText, ArrowLeft, ArrowRight, Sparkles } from 'lucide-react'
 
-interface Message {
+interface ChatStep {
   id: string
-  role: 'user' | 'assistant'
-  content: string
-  timestamp: Date
+  question: string
+  placeholder: string
+  key: keyof ChatData
+  isOptional?: boolean
 }
 
-type ChatStep = 'service_overview' | 'persona' | 'problem' | 'solution' | 'confirmation' | 'revise' | 'generate_plan' | 'completed'
+interface ChatData {
+  title: string
+  problem: string
+  solution: string
+  target_users: string
+  service_name: string
+  service_description: string
+  value_proposition: string
+  core_features: string
+  monetization_method: string
+  differentiators: string
+}
 
 interface IdeaChatFormProps {
   initialData?: any
@@ -25,388 +36,375 @@ interface IdeaChatFormProps {
 export function IdeaChatForm({ initialData, ideaId }: IdeaChatFormProps) {
   const { user } = useAuth()
   const router = useRouter()
-  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
   
-  const [messages, setMessages] = useState<Message[]>([
+  // ステップ定義
+  const chatSteps: ChatStep[] = [
     {
-      id: '1',
-      role: 'assistant',
-      content: 'こんにちは！新しいアイデアを一緒に作り上げていきましょう。\n\nまず、サービスの概要を教えてください。どのようなサービスを考えていますか？',
-      timestamp: new Date()
+      id: 'title',
+      question: 'あなたのアイデアを一言で表現してください',
+      placeholder: 'サービス名やアイデアのタイトルを入力',
+      key: 'title'
+    },
+    {
+      id: 'problem',
+      question: 'どのような課題を解決したいですか？',
+      placeholder: '解決したい問題や困りごとを詳しく教えてください',
+      key: 'problem'
+    },
+    {
+      id: 'target_users',
+      question: '誰のための解決策ですか？',
+      placeholder: 'ターゲットユーザーを具体的に教えてください',
+      key: 'target_users'
+    },
+    {
+      id: 'solution',
+      question: 'どのような方法で解決しますか？',
+      placeholder: 'あなたの解決策やアプローチを教えてください',
+      key: 'solution'
+    },
+    {
+      id: 'service_name',
+      question: 'サービスの正式名称を教えてください',
+      placeholder: 'サービス名を入力してください',
+      key: 'service_name',
+      isOptional: true
+    },
+    {
+      id: 'service_description',
+      question: 'サービスの詳細を教えてください',
+      placeholder: 'サービスの機能や特徴を詳しく説明してください',
+      key: 'service_description',
+      isOptional: true
+    },
+    {
+      id: 'value_proposition',
+      question: 'ユーザーにとっての価値は何ですか？',
+      placeholder: 'このサービスがユーザーに提供する価値を教えてください',
+      key: 'value_proposition',
+      isOptional: true
+    },
+    {
+      id: 'core_features',
+      question: '主要な機能を教えてください',
+      placeholder: 'コア機能や重要な機能を箇条書きで教えてください',
+      key: 'core_features',
+      isOptional: true
+    },
+    {
+      id: 'monetization_method',
+      question: 'どのように収益化しますか？',
+      placeholder: 'サブスク、広告、手数料など収益モデルを教えてください',
+      key: 'monetization_method',
+      isOptional: true
+    },
+    {
+      id: 'differentiators',
+      question: '他との違いや独自性は何ですか？',
+      placeholder: '競合との差別化ポイントを教えてください',
+      key: 'differentiators',
+      isOptional: true
     }
-  ])
+  ]
   
+  const [currentStepIndex, setCurrentStepIndex] = useState(0)
+  const [chatData, setChatData] = useState<ChatData>({
+    title: '',
+    problem: '',
+    solution: '',
+    target_users: '',
+    service_name: '',
+    service_description: '',
+    value_proposition: '',
+    core_features: '',
+    monetization_method: '',
+    differentiators: ''
+  })
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const [currentStep, setCurrentStep] = useState<ChatStep>('service_overview')
-  const [generatedPlan, setGeneratedPlan] = useState('')
+  const [showSummary, setShowSummary] = useState(false)
   
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }
-
+  const currentStep = chatSteps[currentStepIndex]
+  const isLastStep = currentStepIndex === chatSteps.length - 1
+  const isFirstStep = currentStepIndex === 0
+  
   useEffect(() => {
-    scrollToBottom()
-  }, [messages])
+    // フォーカスを入力欄に移す
+    if (inputRef.current) {
+      inputRef.current.focus()
+    }
+  }, [currentStepIndex])
 
-  const sendMessage = async (messageContent: string, stepOverride?: ChatStep) => {
-    if (!messageContent.trim() || isLoading) return
-
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      role: 'user',
-      content: messageContent.trim(),
-      timestamp: new Date()
+  const handleNext = () => {
+    if (!input.trim()) {
+      if (currentStep.isOptional) {
+        // オプションの場合はスキップ可能
+        goToNextStep()
+      }
+      return
     }
 
-    setMessages(prev => [...prev, userMessage])
+    // データを保存
+    setChatData(prev => ({
+      ...prev,
+      [currentStep.key]: input.trim()
+    }))
+
     setInput('')
-    setIsLoading(true)
-
-    try {
-      const response = await fetch('/api/idea-chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          messages: [...messages, userMessage].map(msg => ({
-            role: msg.role,
-            content: msg.content
-          })),
-          step: stepOverride ?? currentStep
-        }),
-      })
-
-      if (!response.ok) {
-        throw new Error('API request failed')
-      }
-
-      const data = await response.json()
-      
-      const assistantMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        content: data.response,
-        timestamp: new Date()
-      }
-
-      setMessages(prev => [...prev, assistantMessage])
-
-      // ステップの進行を管理（明示されたステップを優先）
-      const stepUsed = stepOverride ?? currentStep
-      switch (stepUsed) {
-        case 'service_overview':
-          setCurrentStep('persona')
-          break
-        case 'persona':
-          setCurrentStep('problem')
-          break
-        case 'problem':
-          setCurrentStep('solution')
-          break
-        case 'solution':
-          setCurrentStep('confirmation')
-          break
-        case 'confirmation':
-          // ペルソナ/課題/解決策の確認段階 - 2択ボタンで処理
-          break
-        case 'revise':
-          setCurrentStep('confirmation')
-          break
-        case 'generate_plan':
-          setGeneratedPlan(data.response)
-          setCurrentStep('completed')
-          break
-      }
-
-    } catch (error) {
-      console.error('Error sending message:', error)
-      const errorMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        content: 'すみません、エラーが発生しました。もう一度お試しください。',
-        timestamp: new Date()
-      }
-      setMessages(prev => [...prev, errorMessage])
-      // 生成中で失敗した場合は入力可能なステップへ戻す
-      if ((stepOverride ?? currentStep) === 'generate_plan') {
-        setCurrentStep('solution')
-      }
-    } finally {
-      setIsLoading(false)
-    }
+    goToNextStep()
   }
 
-  const handleConfirmation = (isConfirmed: boolean) => {
-    if (isConfirmed) {
-      setCurrentStep('generate_plan')
-      sendMessage('はい、問題ありません。企画書を生成してください。', 'generate_plan')
+  const goToNextStep = () => {
+    if (isLastStep) {
+      setShowSummary(true)
     } else {
-      setCurrentStep('revise')
-      sendMessage('いいえ、修正が必要です。どの部分を修正したいか教えてください。', 'revise')
+      setCurrentStepIndex(prev => prev + 1)
     }
   }
 
-  const extractDataFromPlan = (plan: string) => {
-    const userMessages = messages.filter(msg => msg.role === 'user').map(msg => msg.content)
-    
-    // 基本的な情報を企画書から抽出
-    const lines = plan.split('\n')
-    let title = 'AI生成企画書'
-    let problem = ''
-    let solution = ''
-    let target_users = ''
-    
-    // 最初のユーザーメッセージをサービス概要として使用
-    if (userMessages[0]) {
-      title = userMessages[0].slice(0, 50) // 最初の50文字をタイトルに
-    }
-    
-    // 企画書からペルソナ、課題、解決策を抽出
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i].trim()
-      if (line.includes('ターゲットユーザー') || line.includes('ペルソナ')) {
-        target_users = lines[i + 1]?.trim() || ''
-      } else if (line.includes('課題') || line.includes('Problem')) {
-        problem = lines[i + 1]?.trim() || ''
-      } else if (line.includes('解決策') || line.includes('価値提案') || line.includes('Value Prop')) {
-        solution = lines[i + 1]?.trim() || ''
+  const handlePrevious = () => {
+    if (!isFirstStep) {
+      // 現在の入力を保存してから前に戻る
+      if (input.trim()) {
+        setChatData(prev => ({
+          ...prev,
+          [currentStep.key]: input.trim()
+        }))
       }
+      
+      setCurrentStepIndex(prev => prev - 1)
+      // 前のステップのデータを入力欄に復元
+      const prevStep = chatSteps[currentStepIndex - 1]
+      setInput(chatData[prevStep.key] || '')
     }
-    
-    return {
-      user_id: user?.id || '',
-      title: title || 'AI生成企画書',
-      problem: problem || userMessages[2] || '',
-      solution: solution || userMessages[3] || '',
-      target_users: target_users || userMessages[1] || '',
-      category: 'その他',
-      tags: ['AI生成', '企画書'],
-      sketch_urls: [],
-      // 企画書の全文を追加フィールドとして保存
-      service_name: title,
-      service_description: plan.slice(0, 500),
-      background_problem: problem,
-      main_target: target_users,
-      value_proposition: solution,
-    }
+  }
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    handleNext()
   }
 
   const handleSavePlan = async () => {
-    if (!user || !generatedPlan) {
+    if (!user) {
       return
     }
 
     setIsLoading(true)
 
     try {
-      const dataToSubmit = extractDataFromPlan(generatedPlan)
+      // ChatDataをideaテーブルの形式に変換
+      const dataToSubmit = {
+        user_id: user.id,
+        title: chatData.title || 'AI生成アイデア',
+        problem: chatData.problem,
+        solution: chatData.solution,
+        target_users: chatData.target_users,
+        category: 'その他',
+        tags: ['AI生成'],
+        sketch_urls: [],
+        status: 'open' as const,
+        // 詳細項目
+        service_name: chatData.service_name || chatData.title,
+        service_description: chatData.service_description,
+        value_proposition: chatData.value_proposition,
+        core_features: chatData.core_features ? [{ title: 'コア機能', description: chatData.core_features }] : [],
+        monetization_method: chatData.monetization_method,
+        differentiators: chatData.differentiators,
+        // その他デフォルト値
+        background_problem: chatData.problem,
+        main_target: chatData.target_users,
+      }
+
       const res = await saveIdeaFromAI(dataToSubmit, ideaId)
       if (!res.ok || !res.id) {
         console.error('Save error:', res.error)
+        alert('保存に失敗しました')
       } else {
         router.push(`/ideas/${res.id}`)
       }
     } catch (error) {
       console.error('Save failed:', error)
+      alert('保存に失敗しました')
     } finally {
       setIsLoading(false)
     }
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    sendMessage(input)
-  }
-
-  const getStepTitle = () => {
-    switch (currentStep) {
-      case 'service_overview':
-        return 'サービス概要の確認'
-      case 'persona':
-        return 'ターゲットユーザーの明確化'
-      case 'problem':
-        return '課題の特定'
-      case 'solution':
-        return '解決策の検討'
-      case 'confirmation':
-        return '内容の確認'
-      case 'revise':
-        return '内容の修正'
-      case 'generate_plan':
-        return '企画書生成中'
-      case 'completed':
-        return '企画書完成'
-      default:
-        return 'アイデア作成中'
-    }
-  }
-
-  const isConfirmationStep = currentStep === 'confirmation'
-  const isGeneratingPlan = currentStep === 'generate_plan'
-  const isCompleted = currentStep === 'completed'
-
-  return (
-    <div className="max-w-4xl mx-auto h-[80vh] flex flex-col">
-      <div className="bg-white rounded-lg shadow-sm flex-1 flex flex-col overflow-hidden">
-        {/* ヘッダー */}
-        <div className="px-6 py-4 border-b bg-gray-50">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
-              <Bot className="w-5 h-5 text-primary-600" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-gray-900">
-                {ideaId ? 'アイデアを編集' : 'アイデア作成アシスタント'}
-              </h1>
-              <p className="text-sm text-gray-600">{getStepTitle()}</p>
-            </div>
-          </div>
-        </div>
-
-        {/* メッセージエリア */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-4">
-          {messages.map((message) => (
-            <div
-              key={message.id}
-              className={cn(
-                "flex gap-3 max-w-3xl",
-                message.role === 'user' ? 'ml-auto flex-row-reverse' : ''
-              )}
-            >
-              <div
-                className={cn(
-                  "w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0",
-                  message.role === 'user'
-                    ? 'bg-blue-100'
-                    : 'bg-gray-100'
-                )}
-              >
-                {message.role === 'user' ? (
-                  <User className="w-4 h-4 text-blue-600" />
-                ) : (
-                  <Bot className="w-4 h-4 text-gray-600" />
-                )}
+  if (showSummary) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4">
+        <div className="max-w-3xl mx-auto">
+          <div className="bg-white rounded-2xl shadow-lg p-8">
+            <div className="text-center mb-8">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CheckCircle className="w-8 h-8 text-green-600" />
               </div>
-              <div
-                className={cn(
-                  "p-3 rounded-lg flex-1",
-                  message.role === 'user'
-                    ? 'bg-blue-600 text-white ml-12'
-                    : 'bg-gray-100 text-gray-900 mr-12'
-                )}
-              >
-                <div className="whitespace-pre-wrap text-sm">{message.content}</div>
-                <div
-                  className={cn(
-                    "text-xs mt-2 opacity-70",
-                    message.role === 'user' ? 'text-blue-100' : 'text-gray-500'
-                  )}
-                >
-                  {message.timestamp.toLocaleTimeString()}
-                </div>
-              </div>
+              <h1 className="text-2xl font-bold text-gray-900 mb-2">アイデアが完成しました！</h1>
+              <p className="text-gray-600">入力内容を確認して投稿してください</p>
             </div>
-          ))}
-          
-          {/* 確認ボタン */}
-          {isConfirmationStep && !isLoading && (
-            <div className="flex justify-center gap-4 pt-4">
+
+            <div className="space-y-6 mb-8">
+              {chatSteps.map((step, index) => {
+                const value = chatData[step.key]
+                if (!value && step.isOptional) return null
+                
+                return (
+                  <div key={step.id} className="border border-gray-200 rounded-lg p-4">
+                    <h3 className="font-semibold text-gray-900 mb-2">{step.question}</h3>
+                    <p className="text-gray-700">{value || '未入力'}</p>
+                  </div>
+                )
+              })}
+            </div>
+
+            <div className="flex gap-4">
               <button
-                onClick={() => handleConfirmation(true)}
-                className="flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                onClick={() => setShowSummary(false)}
+                className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
               >
-                <CheckCircle className="w-5 h-5" />
-                はい、問題ありません
+                修正する
               </button>
               <button
-                onClick={() => handleConfirmation(false)}
-                className="flex items-center gap-2 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                修正が必要です
-              </button>
-            </div>
-          )}
-
-          {/* 企画書表示 */}
-          {isCompleted && generatedPlan && (
-            <div className="mt-6 p-6 bg-blue-50 border border-blue-200 rounded-lg">
-              <div className="flex items-center gap-2 mb-4">
-                <FileText className="w-6 h-6 text-blue-600" />
-                <h3 className="text-lg font-semibold text-blue-900">生成された企画書</h3>
-              </div>
-              <div className="prose prose-sm max-w-none">
-                <div className="whitespace-pre-wrap text-gray-800">{generatedPlan}</div>
-              </div>
-              <div className="mt-6 flex gap-4">
-                <button
-                  onClick={handleSavePlan}
-                  disabled={isLoading}
-                  className={cn(
-                    "px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors",
-                    isLoading && "opacity-50 cursor-not-allowed"
-                  )}
-                >
-                  {isLoading ? '保存中...' : 'この企画書で投稿する'}
-                </button>
-                <button
-                  onClick={() => {
-                    setCurrentStep('solution')
-                    setGeneratedPlan('')
-                  }}
-                  className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  修正する
-                </button>
-              </div>
-            </div>
-          )}
-          
-          {isLoading && (
-            <div className="flex items-center gap-3 text-gray-500">
-              <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
-                <Bot className="w-4 h-4" />
-              </div>
-              <div className="flex items-center gap-2">
-                <Loader2 className="w-4 h-4 animate-spin" />
-                <span className="text-sm">考え中...</span>
-              </div>
-            </div>
-          )}
-          <div ref={messagesEndRef} />
-        </div>
-
-        {/* 入力エリア */}
-        {!isCompleted && !isConfirmationStep && (
-          <div className="p-6 border-t bg-gray-50">
-            <form onSubmit={handleSubmit} className="flex gap-3">
-              <input
-                type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder={isGeneratingPlan ? "企画書を生成中です..." : "メッセージを入力してください..."}
-                disabled={isLoading || isGeneratingPlan}
-                className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
-              />
-              <button
-                type="submit"
-                disabled={!input.trim() || isLoading || isGeneratingPlan}
+                onClick={handleSavePlan}
+                disabled={isLoading}
                 className={cn(
-                  "px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors flex items-center gap-2",
-                  (!input.trim() || isLoading || isGeneratingPlan) && "opacity-50 cursor-not-allowed"
+                  "flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2",
+                  isLoading && "opacity-50 cursor-not-allowed"
                 )}
               >
                 {isLoading ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    投稿中...
+                  </>
                 ) : (
-                  <Send className="w-5 h-5" />
+                  <>
+                    <FileText className="w-5 h-5" />
+                    アイデアを投稿
+                  </>
                 )}
-                送信
               </button>
-            </form>
+            </div>
           </div>
-        )}
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+      <div className="w-full max-w-2xl">
+        {/* プログレスバー */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium text-gray-700">
+              {currentStepIndex + 1} / {chatSteps.length}
+            </span>
+            <span className="text-sm text-gray-500">
+              {currentStep.isOptional ? '任意' : '必須'}
+            </span>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-2">
+            <div 
+              className="bg-blue-600 h-2 rounded-full transition-all duration-300 ease-out"
+              style={{ width: `${((currentStepIndex + 1) / chatSteps.length) * 100}%` }}
+            />
+          </div>
+        </div>
+
+        {/* メインカード */}
+        <div className="bg-white rounded-2xl shadow-lg p-8 transform transition-all duration-300 hover:shadow-xl">
+          {/* AIアバター */}
+          <div className="flex items-center gap-4 mb-8">
+            <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+              <Bot className="w-6 h-6 text-blue-600" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-gray-900">AIアシスタント</h3>
+              <p className="text-sm text-gray-500">あなたのアイデアを整理します</p>
+            </div>
+          </div>
+
+          {/* 質問 */}
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4 leading-relaxed">
+              {currentStep.question}
+            </h2>
+          </div>
+
+          {/* 入力フォーム */}
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <input
+                ref={inputRef}
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder={currentStep.placeholder}
+                className="w-full px-6 py-4 text-lg border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                autoComplete="off"
+              />
+            </div>
+
+            {/* ボタン */}
+            <div className="flex gap-3">
+              {!isFirstStep && (
+                <button
+                  type="button"
+                  onClick={handlePrevious}
+                  className="flex items-center gap-2 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  戻る
+                </button>
+              )}
+              
+              <button
+                type="submit"
+                disabled={!input.trim() && !currentStep.isOptional}
+                className={cn(
+                  "flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-lg transition-colors font-medium",
+                  (!input.trim() && !currentStep.isOptional)
+                    ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                    : "bg-blue-600 text-white hover:bg-blue-700"
+                )}
+              >
+                {isLastStep ? (
+                  <>
+                    <CheckCircle className="w-5 h-5" />
+                    完了
+                  </>
+                ) : (
+                  <>
+                    次へ
+                    <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
+              </button>
+              
+              {currentStep.isOptional && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setInput('')
+                    goToNextStep()
+                  }}
+                  className="px-6 py-3 text-gray-500 hover:text-gray-700 transition-colors"
+                >
+                  スキップ
+                </button>
+              )}
+            </div>
+          </form>
+        </div>
+
+        {/* キーボードショートカット案内 */}
+        <div className="text-center mt-6">
+          <p className="text-sm text-gray-500">
+            Enterで次へ進みます
+          </p>
+        </div>
       </div>
     </div>
   )
