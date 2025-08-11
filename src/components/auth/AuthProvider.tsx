@@ -320,7 +320,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => {
       subscription.unsubscribe()
     }
-  }, [])
+  }, [userProfile])
 
   return (
     <AuthContext.Provider value={{ user, userProfile, loading, signOut, refreshProfile, updateProfileOptimistic }}>

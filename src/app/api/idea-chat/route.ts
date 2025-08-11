@@ -65,19 +65,23 @@ export async function POST(request: NextRequest) {
       const response = completion.choices[0]?.message?.content || 'すみません、応答を生成できませんでした。'
       
       // JSONを抽出してupdatesとして返す
-      let updates = null
+      let updates: { persona?: string; problem?: string; service?: string } | null = null
       const jsonMatch = response.match(/```json\n([\s\S]*?)\n```/)
       if (jsonMatch) {
         try {
           const parsedUpdates = JSON.parse(jsonMatch[1])
           // null値を除去
-          updates = {}
-          if (parsedUpdates.persona) updates.persona = parsedUpdates.persona
-          if (parsedUpdates.problem) updates.problem = parsedUpdates.problem
-          if (parsedUpdates.service) updates.service = parsedUpdates.service
+          const tempUpdates: { persona?: string; problem?: string; service?: string } = {}
+          if (parsedUpdates.persona) tempUpdates.persona = parsedUpdates.persona
+          if (parsedUpdates.problem) tempUpdates.problem = parsedUpdates.problem
+          if (parsedUpdates.service) tempUpdates.service = parsedUpdates.service
           
           // 空のupdatesの場合はnullに
-          if (Object.keys(updates).length === 0) updates = null
+          if (Object.keys(tempUpdates).length === 0) {
+            updates = null
+          } else {
+            updates = tempUpdates
+          }
         } catch (e) {
           console.error('JSON parsing error:', e)
         }
