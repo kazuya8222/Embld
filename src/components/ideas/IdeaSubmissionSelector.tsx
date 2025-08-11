@@ -1,9 +1,34 @@
 'use client'
 
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Bot, PenTool, Lightbulb, ArrowRight, Sparkles, MessageSquare } from 'lucide-react'
+import { useAuth } from '@/components/auth/AuthProvider'
 
 export function IdeaSubmissionSelector() {
+  const { user, loading } = useAuth()
+  const router = useRouter()
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/auth/login')
+    }
+  }, [user, loading, router])
+
+  // ローディング中は何も表示しない（避免布局转换）
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    )
+  }
+
+  // 認証されていない場合も何も表示しない（リダイレクト処理中）
+  if (!user) {
+    return null
+  }
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4">
       <div className="max-w-4xl mx-auto">
@@ -29,14 +54,14 @@ export function IdeaSubmissionSelector() {
         <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
           {/* AIチャット */}
           <Link href="/ideas/new/chat" className="group">
-            <div className="relative bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 group-hover:scale-105 border border-gray-100 overflow-hidden">
-              {/* 背景装飾 */}
-              <div className="absolute -top-4 -right-4 w-24 h-24 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full opacity-10 group-hover:opacity-20 transition-opacity"></div>
-              <div className="absolute -bottom-6 -left-6 w-32 h-32 bg-gradient-to-tr from-indigo-400 to-cyan-400 rounded-full opacity-5 group-hover:opacity-15 transition-opacity"></div>
+            <div className="relative bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow duration-200 border border-gray-100 overflow-hidden">
+              {/* 軽量化された背景装飾 */}
+              <div className="absolute -top-4 -right-4 w-16 h-16 bg-blue-400 rounded-full opacity-10"></div>
+              <div className="absolute -bottom-4 -left-4 w-20 h-20 bg-indigo-400 rounded-full opacity-5"></div>
               
               <div className="relative z-10">
                 {/* アイコン */}
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <div className="w-16 h-16 bg-blue-500 rounded-2xl flex items-center justify-center mb-6">
                   <Bot className="w-8 h-8 text-white" />
                 </div>
 
@@ -71,7 +96,7 @@ export function IdeaSubmissionSelector() {
                 {/* CTA */}
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-blue-600">おすすめ</span>
-                  <div className="flex items-center gap-2 text-blue-600 group-hover:gap-3 transition-all">
+                  <div className="flex items-center gap-2 text-blue-600">
                     <span className="font-medium">始める</span>
                     <ArrowRight className="w-4 h-4" />
                   </div>
@@ -82,14 +107,14 @@ export function IdeaSubmissionSelector() {
 
           {/* 手動投稿 */}
           <Link href="/ideas/new/manual" className="group">
-            <div className="relative bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 group-hover:scale-105 border border-gray-100 overflow-hidden">
-              {/* 背景装飾 */}
-              <div className="absolute -top-4 -right-4 w-24 h-24 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-full opacity-10 group-hover:opacity-20 transition-opacity"></div>
-              <div className="absolute -bottom-6 -left-6 w-32 h-32 bg-gradient-to-tr from-green-400 to-blue-400 rounded-full opacity-5 group-hover:opacity-15 transition-opacity"></div>
+            <div className="relative bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow duration-200 border border-gray-100 overflow-hidden">
+              {/* 軽量化された背景装飾 */}
+              <div className="absolute -top-4 -right-4 w-16 h-16 bg-emerald-400 rounded-full opacity-10"></div>
+              <div className="absolute -bottom-4 -left-4 w-20 h-20 bg-green-400 rounded-full opacity-5"></div>
               
               <div className="relative z-10">
                 {/* アイコン */}
-                <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <div className="w-16 h-16 bg-emerald-500 rounded-2xl flex items-center justify-center mb-6">
                   <PenTool className="w-8 h-8 text-white" />
                 </div>
 
@@ -123,7 +148,7 @@ export function IdeaSubmissionSelector() {
                 {/* CTA */}
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-emerald-600">手動入力</span>
-                  <div className="flex items-center gap-2 text-emerald-600 group-hover:gap-3 transition-all">
+                  <div className="flex items-center gap-2 text-emerald-600">
                     <span className="font-medium">始める</span>
                     <ArrowRight className="w-4 h-4" />
                   </div>
