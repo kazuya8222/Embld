@@ -27,16 +27,19 @@ export function CommentSection({ ideaId, initialComments }: CommentSectionProps)
 
     // 即座にコメントを表示（Instagram風）
     const tempId = `temp-${Date.now()}`
+    const userInfo = {
+      id: user.id,
+      username: userProfile?.username || user.email?.split('@')[0] || 'You',
+      avatar_url: userProfile?.avatar_url || userProfile?.google_avatar_url,
+    }
+    
     const optimisticComment = {
       id: tempId,
       idea_id: ideaId,
       user_id: user.id,
       content,
       created_at: new Date().toISOString(),
-      user: {
-        username: userProfile?.username || user.email?.split('@')[0] || 'You',
-        avatar_url: userProfile?.avatar_url || userProfile?.google_avatar_url,
-      },
+      user: userInfo,
       isOptimistic: true,
     } as Comment & { user: { username: string; avatar_url?: string }; isOptimistic?: boolean }
 
@@ -44,24 +47,21 @@ export function CommentSection({ ideaId, initialComments }: CommentSectionProps)
     setComments(prev => [optimisticComment, ...prev])
     setNewComment('')
     
-    // 入力フィールドをアクティブに保つ
-    setTimeout(() => inputRef.current?.focus(), 0)
+    // 入力フィールドを即座にフォーカス
+    inputRef.current?.focus()
 
-    // Instagram風の超高速投稿
-    postCommentInstant(ideaId, content)
+    // ユーザー情報を渡して超高速投稿（認証チェックをスキップ）
+    postCommentInstant(ideaId, content, userInfo)
       .then(savedComment => {
-        // 成功時はスムーズに置き換え（チラつき防止）
-        requestAnimationFrame(() => {
-          setComments(prev => prev.map(c => 
-            c.id === tempId ? { ...savedComment, isOptimistic: false } : c
-          ))
-        })
+        // 成功時は「送信中」を消すだけ
+        setComments(prev => prev.map(c => 
+          c.id === tempId ? { ...savedComment, isOptimistic: false } : c
+        ))
       })
       .catch(error => {
         console.error('Comment error:', error)
-        // エラー時のみ削除（アニメーション付き）
+        // エラー時のみ削除
         setComments(prev => prev.filter(c => c.id !== tempId))
-        // エラートースト表示する場合はここに追加
       })
   }
 
