@@ -10,7 +10,7 @@ import { addComment, addReply, toggleCommentLike } from '@/app/actions/comment'
 
 interface CommentSectionProps {
   ideaId: string
-  initialComments: (Comment & { user: { username: string; avatar_url?: string } })[]
+  initialComments: (Comment & { user: { username: string; avatar_url?: string }; user_has_liked?: boolean })[]
 }
 
 export function CommentSection({ ideaId, initialComments }: CommentSectionProps) {
@@ -20,7 +20,9 @@ export function CommentSection({ ideaId, initialComments }: CommentSectionProps)
   const [isPending, startTransition] = useTransition()
   const [replyTo, setReplyTo] = useState<string | null>(null)
   const [replyContent, setReplyContent] = useState('')
-  const [likedComments, setLikedComments] = useState<Set<string>>(new Set())
+  const [likedComments, setLikedComments] = useState<Set<string>>(
+    new Set(initialComments.filter(c => c.user_has_liked).map(c => c.id))
+  )
   const [showReplies, setShowReplies] = useState<Set<string>>(new Set())
   const [enterCount, setEnterCount] = useState(0)
   const [replyEnterCount, setReplyEnterCount] = useState(0)
@@ -49,7 +51,7 @@ export function CommentSection({ ideaId, initialComments }: CommentSectionProps)
       isOptimistic: true,
     } as Comment & { user: { username: string; avatar_url?: string }; isOptimistic?: boolean }
 
-    // UIを即座に更新
+    // UIを即座に更新（新しいコメントを最上位に追加）
     setComments(prev => [optimisticComment, ...prev])
     
     // 入力欄をクリアして再フォーカス
@@ -76,20 +78,29 @@ export function CommentSection({ ideaId, initialComments }: CommentSectionProps)
     })
   }
 
-  // いいね機能のハンドラー
+  // いいね機能のハンドラー（WantButtonと同じパターン）
   const handleLike = (commentId: string) => {
     if (!user) return
+    
+    const isCurrentlyLiked = likedComments.has(commentId)
     
     // UI即座更新
     setLikedComments(prev => {
       const newSet = new Set(prev)
-      if (newSet.has(commentId)) {
+      if (isCurrentlyLiked) {
         newSet.delete(commentId)
       } else {
         newSet.add(commentId)
       }
       return newSet
     })
+
+    // コメントのいいね数も更新
+    setComments(prev => prev.map(comment => 
+      comment.id === commentId 
+        ? { ...comment, likes_count: comment.likes_count + (isCurrentlyLiked ? -1 : 1) }
+        : comment
+    ))
 
     // バックグラウンド更新
     startTransition(() => {
@@ -98,13 +109,18 @@ export function CommentSection({ ideaId, initialComments }: CommentSectionProps)
         // エラー時はUIを元に戻す
         setLikedComments(prev => {
           const newSet = new Set(prev)
-          if (newSet.has(commentId)) {
-            newSet.delete(commentId)
-          } else {
+          if (isCurrentlyLiked) {
             newSet.add(commentId)
+          } else {
+            newSet.delete(commentId)
           }
           return newSet
         })
+        setComments(prev => prev.map(comment => 
+          comment.id === commentId 
+            ? { ...comment, likes_count: comment.likes_count + (isCurrentlyLiked ? 1 : -1) }
+            : comment
+        ))
       })
     })
   }
@@ -335,7 +351,7 @@ export function CommentSection({ ideaId, initialComments }: CommentSectionProps)
                         "w-3 h-3", 
                         likedComments.has(comment.id) && "fill-current"
                       )} />
-                      いいね
+                      {comment.likes_count > 0 ? comment.likes_count : 'いいね'}
                     </button>
                     <button 
                       onClick={() => handleReply(comment.id)}
@@ -516,7 +532,7 @@ export function CommentSection({ ideaId, initialComments }: CommentSectionProps)
                                     "w-3 h-3", 
                                     likedComments.has(reply.id) && "fill-current"
                                   )} />
-                                  いいね
+                                  {reply.likes_count > 0 ? reply.likes_count : 'いいね'}
                                 </button>
                               </div>
                             </div>

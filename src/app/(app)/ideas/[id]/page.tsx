@@ -47,7 +47,8 @@ export default async function IdeaDetailPage({
       wants(user_id),
       comments(
         *,
-        user:users(username, avatar_url, google_avatar_url)
+        user:users(username, avatar_url, google_avatar_url),
+        comment_likes(user_id)
       ),
       completed_apps(
         *,
@@ -56,6 +57,7 @@ export default async function IdeaDetailPage({
       )
     `)
     .eq('id', params.id)
+    .order('created_at', { ascending: false, referencedTable: 'comments' })
     .single()
 
   if (error || !idea) {
@@ -64,7 +66,12 @@ export default async function IdeaDetailPage({
 
   const wantsCount = idea.wants?.length || 0
   const userHasWanted = session ? idea.wants?.some((want: any) => want.user_id === session.user.id) || false : false
-  const comments = idea.comments || []
+  
+  // コメントにいいね情報を追加
+  const comments = (idea.comments || []).map((comment: any) => ({
+    ...comment,
+    user_has_liked: session ? comment.comment_likes?.some((like: any) => like.user_id === session.user.id) || false : false
+  }))
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('ja-JP', {
