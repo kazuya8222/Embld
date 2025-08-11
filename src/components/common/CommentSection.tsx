@@ -5,7 +5,7 @@ import { useAuth } from '@/components/auth/AuthProvider'
 import { Comment } from '@/types'
 import { cn } from '@/lib/utils/cn'
 import { MessageCircle, Send, User, Heart } from 'lucide-react'
-import { postCommentInstant } from '@/lib/supabase/fast-comment'
+import { addComment } from '@/app/actions/comment'
 
 
 interface CommentSectionProps {
@@ -28,7 +28,6 @@ export function CommentSection({ ideaId, initialComments }: CommentSectionProps)
     // 即座にコメントを表示（Instagram風）
     const tempId = `temp-${Date.now()}`
     const userInfo = {
-      id: user.id,
       username: userProfile?.username || 'Guest',
       avatar_url: userProfile?.avatar_url,
     }
@@ -50,19 +49,21 @@ export function CommentSection({ ideaId, initialComments }: CommentSectionProps)
     // 入力フィールドを即座にフォーカス
     inputRef.current?.focus()
 
-    // ユーザー情報を渡して超高速投稿（認証チェックをスキップ）
-    postCommentInstant(ideaId, content, userInfo)
-      .then(savedComment => {
-        // 成功時は「送信中」を消すだけ
-        setComments(prev => prev.map(c => 
-          c.id === tempId ? { ...savedComment, isOptimistic: false } : c
-        ))
-      })
-      .catch(error => {
-        console.error('Comment error:', error)
-        // エラー時のみ削除
-        setComments(prev => prev.filter(c => c.id !== tempId))
-      })
+    // バックグラウンドでサーバー更新（WantButtonと同じパターン）
+    startTransition(() => {
+      addComment(ideaId, content)
+        .then(savedComment => {
+          // 成功時は「送信中」を消すだけ
+          setComments(prev => prev.map(c => 
+            c.id === tempId ? { ...savedComment, isOptimistic: false } : c
+          ))
+        })
+        .catch(error => {
+          console.error('Comment error:', error)
+          // エラー時のみ削除
+          setComments(prev => prev.filter(c => c.id !== tempId))
+        })
+    })
   }
 
   const formatDate = (dateString: string) => {
