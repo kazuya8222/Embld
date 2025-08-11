@@ -37,7 +37,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const { data: profile } = await supabase
         .from('users')
-        .select('username, avatar_url, google_avatar_url') // 必要な項目のみ
+        .select('username, avatar_url') // 必要な項目のみ
         .eq('id', user.id)
         .single()
       
@@ -102,7 +102,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           // ユーザープロフィールを取得（必要な項目のみ）
           const { data: profile, error: profileError } = await supabase
             .from('users')
-            .select('username, avatar_url, google_avatar_url')
+            .select('username, avatar_url')
             .eq('id', user.id)
             .single()
           
@@ -144,7 +144,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           // ユーザープロフィールを取得（必要な項目のみ）
           const { data: profile, error: profileError } = await supabase
             .from('users')
-            .select('username, avatar_url, google_avatar_url')
+            .select('username, avatar_url')
             .eq('id', session.user.id)
             .single()
           

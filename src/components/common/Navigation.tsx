@@ -116,9 +116,9 @@ export function Navigation() {
                       className="flex items-center space-x-2 text-sm font-medium text-gray-400 hover:text-white transition-colors"
                     >
                       <div className="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center overflow-hidden">
-                        {userProfile?.avatar_url || userProfile?.google_avatar_url ? (
+                        {userProfile?.avatar_url ? (
                           <img
-                            src={userProfile.avatar_url || userProfile.google_avatar_url}
+                            src={userProfile.avatar_url}
                             alt={userProfile.username || 'User'}
                             className="w-full h-full object-cover"
                             onError={(e) => {
@@ -128,10 +128,10 @@ export function Navigation() {
                             }}
                           />
                         ) : null}
-                        <User className={cn("h-5 w-5 text-gray-400", (userProfile?.avatar_url || userProfile?.google_avatar_url) && "hidden")} />
+                        <User className={cn("h-5 w-5 text-gray-400", userProfile?.avatar_url && "hidden")} />
                       </div>
                       <span className="hidden lg:block">
-                        {userProfile?.username || user.email?.split('@')[0]}
+                        {userProfile?.username || 'Guest'}
                       </span>
                       <ChevronDown className="h-4 w-4" />
                     </button>

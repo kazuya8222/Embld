@@ -64,7 +64,7 @@ async function fastInsert(ideaId: string, content: string, userId: string, userI
   // ユーザー情報を別途取得（必要な場合のみ）
   const { data: userData } = await supabase
     .from('users')
-    .select('username, avatar_url, google_avatar_url')
+    .select('username, avatar_url')
     .eq('id', userId)
     .single()
 
