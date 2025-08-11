@@ -28,8 +28,8 @@ export function CommentSection({ ideaId, initialComments }: CommentSectionProps)
     // 即座にコメントを表示（Instagram風）
     const tempId = `temp-${Date.now()}`
     const userInfo = {
-      username: userProfile?.username || 'Guest',
-      avatar_url: userProfile?.avatar_url,
+      username: userProfile?.username || user?.email?.split('@')[0] || 'Guest',
+      avatar_url: userProfile?.avatar_url || userProfile?.google_avatar_url,
     }
     
     const optimisticComment = {
@@ -89,9 +89,9 @@ export function CommentSection({ ideaId, initialComments }: CommentSectionProps)
         <form onSubmit={handleSubmit} className="space-y-3">
           <div className="flex gap-3">
             <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-200 flex-shrink-0">
-              {userProfile?.avatar_url ? (
+              {(userProfile?.avatar_url || userProfile?.google_avatar_url) ? (
                 <img
-                  src={userProfile.avatar_url}
+                  src={userProfile.avatar_url || userProfile.google_avatar_url}
                   alt="Your avatar"
                   className="w-full h-full object-cover"
                 />

@@ -28,6 +28,16 @@ export function Navigation() {
   const pathname = usePathname()
   const router = useRouter()
 
+  // デバッグ用ログ
+  console.log('Navigation: Render with:', {
+    hasUser: !!user,
+    hasUserProfile: !!userProfile,
+    username: userProfile?.username,
+    avatar_url: userProfile?.avatar_url,
+    google_avatar_url: userProfile?.google_avatar_url,
+    userEmail: user?.email
+  })
+
   const handleSignOut = async () => {
     console.log('Navigation: Starting logout...')
     setIsUserMenuOpen(false)
@@ -131,7 +141,7 @@ export function Navigation() {
                         <User className={cn("h-5 w-5 text-gray-400", (userProfile?.avatar_url || userProfile?.google_avatar_url) && "hidden")} />
                       </div>
                       <span className="hidden lg:block">
-                        {userProfile?.username || 'Guest'}
+                        {userProfile?.username || user?.email?.split('@')[0] || 'Guest'}
                       </span>
                       <ChevronDown className="h-4 w-4" />
                     </button>

@@ -30,20 +30,70 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
   const router = useRouter()
 
-  // プロフィール情報を再取得する関数（必要な場合のみ実行）
+  // プロフィール情報を強制再取得する関数
   const refreshProfile = async () => {
-    if (!user || userProfile) return // 既にプロフィールがある場合はスキップ
+    if (!user) {
+      console.log('AuthProvider: No user, skipping profile refresh')
+      return
+    }
     
+    console.log('AuthProvider: Force refreshing profile...')
+    setUserProfile(null) // 一旦クリアして再取得
+    
+    // 後で定義されるfetchUserProfile関数を使用
+    await fetchUserProfileInternal(user, 0)
+  }
+
+  // 内部用のプロフィール取得関数
+  const fetchUserProfileInternal = async (user: any, retryCount = 0) => {
     try {
-      const { data: profile } = await supabase
+      console.log(`AuthProvider: Fetching profile for user ${user.id} (attempt ${retryCount + 1})`)
+      
+      const { data: profile, error: profileError } = await supabase
         .from('users')
-        .select('username, avatar_url, google_avatar_url') // google_avatar_urlも含む
+        .select('username, avatar_url, google_avatar_url, email, created_at')
         .eq('id', user.id)
         .single()
       
+      if (profileError) {
+        console.error('AuthProvider: Profile fetch error:', profileError)
+        
+        // リトライ（最大3回）
+        if (retryCount < 2) {
+          console.log(`AuthProvider: Retrying profile fetch in ${(retryCount + 1) * 1000}ms...`)
+          setTimeout(() => fetchUserProfileInternal(user, retryCount + 1), (retryCount + 1) * 1000)
+          return
+        }
+        
+        // 最終的にエラーの場合、emailベースのフォールバック
+        console.warn('AuthProvider: Using email fallback for profile')
+        setUserProfile({
+          username: user.email?.split('@')[0] || 'User',
+          avatar_url: null,
+          google_avatar_url: null,
+          email: user.email
+        })
+        return
+      }
+      
+      console.log('AuthProvider: Profile successfully fetched:', profile)
       setUserProfile(profile)
+      
     } catch (error) {
-      console.error('Error refreshing profile:', error)
+      console.error('AuthProvider: Exception during profile fetch:', error)
+      
+      // 例外が発生した場合もリトライ
+      if (retryCount < 2) {
+        setTimeout(() => fetchUserProfileInternal(user, retryCount + 1), (retryCount + 1) * 1000)
+      } else {
+        // 最終的にエラーの場合、emailベースのフォールバック
+        setUserProfile({
+          username: user.email?.split('@')[0] || 'User',
+          avatar_url: null,
+          google_avatar_url: null,
+          email: user.email
+        })
+      }
     }
   }
 
@@ -87,48 +137,56 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   useEffect(() => {
-    // 初期セッションの取得（getUser()を使用）
+    // 初期セッションの取得（ロバストなエラーハンドリング付き）
     const getInitialSession = async () => {
       try {
+        console.log('AuthProvider: Getting initial session...')
+        
         const { data: { user }, error } = await supabase.auth.getUser()
         
         if (error) {
-          console.error('Error getting user:', error)
+          console.error('AuthProvider: Error getting user:', error)
           setUser(null)
           setUserProfile(null)
         } else if (user) {
+          console.log('AuthProvider: User found:', {
+            id: user.id,
+            email: user.email,
+            created_at: user.created_at
+          })
+          
           setUser(user)
           
-          // ユーザープロフィールを取得（google_avatar_urlも含む）
-          const { data: profile, error: profileError } = await supabase
-            .from('users')
-            .select('username, avatar_url, google_avatar_url')
-            .eq('id', user.id)
-            .single()
-          
-          if (profileError) {
-            console.error('Error fetching profile:', profileError)
-          } else {
-            console.log('Profile loaded:', profile)
-          }
-          
-          setUserProfile(profile)
+          // プロフィール取得（リトライ機能付き）
+          await fetchUserProfileInternal(user)
+        } else {
+          console.log('AuthProvider: No user found')
+          setUser(null)
+          setUserProfile(null)
         }
       } catch (error) {
-        console.error('Error fetching user:', error)
+        console.error('AuthProvider: Exception during initial session:', error)
+        setUser(null)
+        setUserProfile(null)
       } finally {
         setLoading(false)
       }
     }
 
+
     getInitialSession()
 
-    // 認証状態の変更を監視
+    // 認証状態の変更を監視（ロバストなハンドリング付き）
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event: any, session: any) => {
-        console.log('Auth state changed:', event)
+        console.log('AuthProvider: Auth state changed:', event, {
+          hasSession: !!session,
+          hasUser: !!session?.user,
+          userId: session?.user?.id
+        })
         
         if (event === 'SIGNED_OUT') {
+          console.log('AuthProvider: User signed out')
           // ログアウト時は即座に状態をクリア
           setUser(null)
           setUserProfile(null)
@@ -139,23 +197,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             sessionStorage.clear()
           }
         } else if (session?.user) {
+          console.log('AuthProvider: User signed in:', {
+            id: session.user.id,
+            email: session.user.email
+          })
+          
           setUser(session.user)
           
-          // ユーザープロフィールを取得（google_avatar_urlも含む）
-          const { data: profile, error: profileError } = await supabase
-            .from('users')
-            .select('username, avatar_url, google_avatar_url')
-            .eq('id', session.user.id)
-            .single()
-          
-          if (profileError) {
-            console.error('Error fetching profile in auth state change:', profileError)
-          } else {
-            console.log('Profile loaded in auth state change:', profile)
-          }
-          
-          setUserProfile(profile)
+          // 共通のプロフィール取得関数を使用
+          await fetchUserProfileInternal(session.user)
         } else {
+          console.log('AuthProvider: No session or user')
           setUser(null)
           setUserProfile(null)
         }
