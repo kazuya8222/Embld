@@ -1,77 +1,174 @@
 import { NextRequest, NextResponse } from 'next/server'
-// 認証必須にすると生成が止まるケースがあるため、ここではチェックしない（保存時に認証）
 import OpenAI from 'openai'
 
-const openai = new OpenAI({
+const openai = process.env.OPENAI_API_KEY ? new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
-})
+}) : null
 
 export async function POST(request: NextRequest) {
   try {
-    const { messages, step } = await request.json()
-
-    let systemPrompt = ''
-    
-    switch (step) {
-      case 'service_overview':
-        systemPrompt = 'あなたはアイデアを具体化するための質問をするアシスタントです。ユーザーからサービスの概要を聞いた後、そのサービスを使うペルソナを明確にするための質問を1つだけ簡潔に投げかけてください。'
-        break
-      case 'persona':
-        systemPrompt = 'あなたはアイデアを具体化するためのアシスタントです。ペルソナが決まったので、次はそのペルソナがどのような課題を抱えているかを明確にするための質問を1つだけ簡潔に投げかけてください。'
-        break
-      case 'problem':
-        systemPrompt = 'あなたはアイデアを具体化するためのアシスタントです。課題が明確になったので、次はその課題の解決策を明確にするための質問を1つだけ簡潔に投げかけてください。'
-        break
-      case 'solution':
-        systemPrompt = 'あなたはアイデアを具体化するためのアシスタントです。解決策が明確になったので、これまでのやり取りから、ビジネス性を考慮した上で以下の形式でペルソナ、課題、解決策をまとめて提示してください。\n\n【ペルソナ】\n具体的な人物像\n\n【課題】\nそのペルソナが抱える具体的な課題\n\n【解決策】\n課題を解決する具体的な方法\n\n最後に「この内容に齟齬はありませんか？」と質問してください。'
-        break
-      case 'confirmation':
-        // confirmationステップは実際にはユーザーが2択ボタンで回答するため、AIメッセージは生成されない
-        systemPrompt = ''
-        break
-      case 'revise':
-        systemPrompt = 'ユーザーの指摘に基づいて、ペルソナ、課題、解決策を修正し、再度同じ形式で提示してください。最後に「この内容で問題ありませんか？」と質問してください。'
-        break
-      case 'generate_plan':
-        systemPrompt = `あなたはビジネス企画書作成のエキスパートです。これまでのやり取りを基に、以下の形式で詳細な企画書を生成してください：
-
-# サービス概要
-
-# ターゲットユーザー／ペルソナ
-
-# 課題 (Problem Statement)
-
-# 解決策・価値提案 (Value Proposition)
-
-# 競合・代替手段と差別化ポイント
-
-# 市場規模イメージ（TAM／SAM／概算の潜在ユーザー数）
-
-# 最小実用プロダクト (MVP) の提供価値
-
-# ビジネスモデル（価格設定・収益の流れ・コスト概算）
-
-# 将来の拡張／収益拡大シナリオ
-
-各項目について具体的で実用的な内容を記載してください。`
-        break
-      default:
-        systemPrompt = 'あなたはフレンドリーなアシスタントです。ユーザーの質問に答えてください。'
+    if (!openai) {
+      return NextResponse.json(
+        { error: 'OpenAI API key is not configured' },
+        { status: 503 }
+      )
     }
 
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4",
-      messages: [
-        { role: "system", content: systemPrompt },
-        ...messages
-      ],
-      temperature: 0.7,
-      max_tokens: 1000,
-    })
+    const { messages, currentFrames, mode } = await request.json()
 
-    const response = completion.choices[0]?.message?.content || 'すみません、応答を生成できませんでした。'
+    if (mode === 'analyze_and_update') {
+      // ユーザーの入力を分析して3枠を更新するモード
+      const systemPrompt = `
+あなたは収益性を重視するビジネス企画のエキスパートです。ユーザーの入力を分析して、以下の3つの要素を最適化する役割があります：
 
-    return NextResponse.json({ response })
+1. **ペルソナ**: 具体的で収益性の高いターゲットユーザー
+2. **課題**: そのペルソナが抱える深刻で市場性のある課題  
+3. **サービス内容**: 課題を効果的に解決し、高い収益性を持つサービス
+
+現在の状態：
+- ペルソナ: ${currentFrames.persona || '未設定'}
+- 課題: ${currentFrames.problem || '未設定'}
+- サービス内容: ${currentFrames.service || '未設定'}
+
+## あなたの役割
+
+1. **入力内容を分析**して、ペルソナ・課題・サービス内容のどの要素に関連するかを判断
+2. **既存の3枠を改善**する提案を行う（入力内容を踏まえて、より収益性の高い方向にアップデート）
+3. **相互関連性を考慮**して、一つの要素が変わったら他の要素も最適化する
+4. **市場性・収益性・実現可能性**を重視した改善案を提示
+
+## 応答形式
+
+まず、ユーザーの入力に対する共感的な応答を行い、その後で改善提案があれば以下のJSONを最後に含めてください：
+
+\`\`\`json
+{
+  "persona": "改善されたペルソナ（変更がない場合は null）",
+  "problem": "改善された課題（変更がない場合は null）", 
+  "service": "改善されたサービス内容（変更がない場合は null）"
+}
+\`\`\`
+
+改善提案がない場合は、質問を投げかけて対話を深めてください。
+`
+
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [
+          { role: "system", content: systemPrompt },
+          ...messages
+        ],
+        temperature: 0.8,
+        max_tokens: 1200,
+      })
+
+      const response = completion.choices[0]?.message?.content || 'すみません、応答を生成できませんでした。'
+      
+      // JSONを抽出してupdatesとして返す
+      let updates = null
+      const jsonMatch = response.match(/```json\n([\s\S]*?)\n```/)
+      if (jsonMatch) {
+        try {
+          const parsedUpdates = JSON.parse(jsonMatch[1])
+          // null値を除去
+          updates = {}
+          if (parsedUpdates.persona) updates.persona = parsedUpdates.persona
+          if (parsedUpdates.problem) updates.problem = parsedUpdates.problem
+          if (parsedUpdates.service) updates.service = parsedUpdates.service
+          
+          // 空のupdatesの場合はnullに
+          if (Object.keys(updates).length === 0) updates = null
+        } catch (e) {
+          console.error('JSON parsing error:', e)
+        }
+      }
+
+      // JSONブロックを除去したレスポンスを返す
+      const cleanResponse = response.replace(/```json\n[\s\S]*?\n```/g, '').trim()
+
+      return NextResponse.json({ 
+        response: cleanResponse,
+        updates 
+      })
+
+    } else if (mode === 'generate_plan') {
+      // 企画書生成モード
+      const systemPrompt = `
+あなたは実績豊富なビジネス企画書作成のエキスパートです。以下の3つの要素から、収益性と実現可能性を重視した詳細な企画書を作成してください。
+
+現在の要素：
+- ペルソナ: ${currentFrames.persona}
+- 課題: ${currentFrames.problem}  
+- サービス内容: ${currentFrames.service}
+
+## 企画書作成の方針
+
+1. **収益性重視**: 明確な収益モデルと市場性を示す
+2. **実現可能性**: 技術的・事業的に実現可能な内容
+3. **差別化**: 競合に対する明確な優位性
+4. **成長性**: 将来的な拡張可能性を示す
+5. **具体性**: 曖昧な表現を避け、具体的な数値や事例を含む
+
+## 出力形式
+
+以下の形式で企画書を作成してください：
+
+# 🚀 [サービス名]
+
+## 📝 サービス概要
+[3-4行で簡潔に]
+
+## 🎯 ターゲットペルソナ
+[具体的な人物像と市場規模]
+
+## ⚡ 解決する課題
+[課題の深刻さと市場性]
+
+## 💡 価値提案・解決策
+[独自性のある解決方法]
+
+## 🏆 競合分析・差別化ポイント
+[3-5つの競合と明確な差別化]
+
+## 📊 市場規模・収益性
+[TAM/SAM/収益予測]
+
+## 🎪 MVP（最小実用プロダクト）
+[最初にリリースする機能]
+
+## 💰 ビジネスモデル
+[価格設定・収益構造・コスト]
+
+## 🚀 将来展開・成長戦略
+[段階的な拡張計画]
+
+## 📈 成功指標・KPI
+[測定可能な目標値]
+
+各セクションは具体的で実用的な内容を記載し、投資家や開発チームが納得できるレベルの企画書を作成してください。
+`
+
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [
+          { role: "system", content: systemPrompt },
+          ...messages.slice(-3) // 最新の3メッセージのみ使用
+        ],
+        temperature: 0.7,
+        max_tokens: 3000,
+      })
+
+      const response = completion.choices[0]?.message?.content || '企画書の生成に失敗しました。'
+
+      return NextResponse.json({ response })
+
+    } else {
+      return NextResponse.json(
+        { error: 'Invalid mode specified' },
+        { status: 400 }
+      )
+    }
+
   } catch (error) {
     console.error('OpenAI API error:', error)
     return NextResponse.json(
