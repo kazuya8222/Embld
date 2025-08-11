@@ -37,7 +37,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const { data: profile } = await supabase
         .from('users')
-        .select('username, avatar_url') // 必要な項目のみ
+        .select('username, avatar_url, google_avatar_url') // google_avatar_urlも含む
         .eq('id', user.id)
         .single()
       
@@ -99,10 +99,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } else if (user) {
           setUser(user)
           
-          // ユーザープロフィールを取得（必要な項目のみ）
+          // ユーザープロフィールを取得（google_avatar_urlも含む）
           const { data: profile, error: profileError } = await supabase
             .from('users')
-            .select('username, avatar_url')
+            .select('username, avatar_url, google_avatar_url')
             .eq('id', user.id)
             .single()
           
@@ -141,10 +141,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } else if (session?.user) {
           setUser(session.user)
           
-          // ユーザープロフィールを取得（必要な項目のみ）
+          // ユーザープロフィールを取得（google_avatar_urlも含む）
           const { data: profile, error: profileError } = await supabase
             .from('users')
-            .select('username, avatar_url')
+            .select('username, avatar_url, google_avatar_url')
             .eq('id', session.user.id)
             .single()
           
