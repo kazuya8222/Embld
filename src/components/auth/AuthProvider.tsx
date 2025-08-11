@@ -114,8 +114,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const timeoutMs = 5000 // 5秒タイムアウト
       
       try {
-        console.log(`AuthProvider: Fetching profile for user ${user.id} (attempt ${retryCount + 1})`)
-        console.log(`AuthProvider: User object:`, user)
+        if (retryCount > 0) {
+          console.log(`AuthProvider: Retrying profile fetch for user ${user.id} (attempt ${retryCount + 1})`)
+        }
         
         // タイムアウト付きでプロフィール取得
         const timeoutPromise = new Promise((_, reject) =>
@@ -128,93 +129,68 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           .eq('id', user.id)
           .single()
         
-        console.log(`AuthProvider: Starting profile fetch query...`)
-        console.log(`AuthProvider: Supabase client:`, supabase)
-        console.log(`AuthProvider: Query details:`, {
-          table: 'users',
-          select: 'username, avatar_url, google_avatar_url, email, created_at',
-          filter: `id = ${user.id}`
-        })
-        
         const result = await Promise.race([fetchPromise, timeoutPromise])
         const { data: profile, error: profileError } = result as any
         
-        console.log(`AuthProvider: Profile fetch completed`)
-        console.log(`AuthProvider: Profile data:`, profile)
-        console.log(`AuthProvider: Profile error:`, profileError)
-        
         if (profileError) {
-          console.error('AuthProvider: Profile fetch error details:', {
-            message: profileError.message,
-            details: profileError.details,
-            hint: profileError.hint,
-            code: profileError.code
-          })
+          console.error('AuthProvider: Profile fetch error:', profileError.message || profileError)
           
           // リトライ（最大3回）
           if (retryCount < 2) {
-            console.log(`AuthProvider: Retrying profile fetch in ${(retryCount + 1) * 1000}ms...`)
             setTimeout(() => fetchUserProfile(user, retryCount + 1), (retryCount + 1) * 1000)
             return
           }
           
           // 最終的にエラーの場合、emailベースのフォールバック
           console.warn('AuthProvider: Using email fallback due to persistent error')
-          const fallbackProfile = {
+          setUserProfile({
             username: user.email?.split('@')[0] || 'User',
             avatar_url: null,
             google_avatar_url: null,
             email: user.email
-          }
-          console.log('AuthProvider: Setting fallback profile:', fallbackProfile)
-          setUserProfile(fallbackProfile)
+          })
           return
         }
         
         if (!profile) {
-          console.warn('AuthProvider: Profile is null/undefined, using email fallback')
-          const fallbackProfile = {
+          console.warn('AuthProvider: Profile is null, using email fallback')
+          setUserProfile({
             username: user.email?.split('@')[0] || 'User',
             avatar_url: null,
             google_avatar_url: null,
             email: user.email
-          }
-          console.log('AuthProvider: Setting fallback profile:', fallbackProfile)
-          setUserProfile(fallbackProfile)
+          })
           return
         }
         
-        console.log('AuthProvider: Profile successfully fetched and setting:', profile)
+        // 初回のみ成功ログを表示
+        if (retryCount === 0) {
+          console.log('AuthProvider: Profile loaded successfully:', profile.username)
+        }
         setUserProfile(profile)
         
       } catch (error) {
         console.error('AuthProvider: Exception during profile fetch:', error)
-        console.error('AuthProvider: Exception stack:', error instanceof Error ? error.stack : 'Unknown error')
         
         // 例外が発生した場合もリトライ
         if (retryCount < 2) {
-          console.log(`AuthProvider: Retrying after exception in ${(retryCount + 1) * 1000}ms...`)
           setTimeout(() => fetchUserProfile(user, retryCount + 1), (retryCount + 1) * 1000)
         } else {
           // 最終的にエラーの場合、emailベースのフォールバック
           console.warn('AuthProvider: Using email fallback due to persistent exception')
-          const fallbackProfile = {
+          setUserProfile({
             username: user.email?.split('@')[0] || 'User',
             avatar_url: null,
             google_avatar_url: null,
             email: user.email
-          }
-          console.log('AuthProvider: Setting fallback profile after exception:', fallbackProfile)
-          setUserProfile(fallbackProfile)
+          })
         }
       }
     }
 
-    // 初期セッションの取得（ロバストなエラーハンドリング付き）
+    // 初期セッションの取得
     const getInitialSession = async () => {
       try {
-        console.log('AuthProvider: Getting initial session...')
-        
         const { data: { user }, error } = await supabase.auth.getUser()
         
         if (error) {
@@ -222,18 +198,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUser(null)
           setUserProfile(null)
         } else if (user) {
-          console.log('AuthProvider: User found:', {
-            id: user.id,
-            email: user.email,
-            created_at: user.created_at
-          })
-          
           setUser(user)
-          
-          // プロフィール取得（リトライ機能付き）
           await fetchUserProfile(user)
         } else {
-          console.log('AuthProvider: No user found')
           setUser(null)
           setUserProfile(null)
         }
@@ -248,18 +215,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     getInitialSession()
 
-    // 認証状態の変更を監視（ロバストなハンドリング付き）
+    // 認証状態の変更を監視
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event: any, session: any) => {
-        console.log('AuthProvider: Auth state changed:', event, {
-          hasSession: !!session,
-          hasUser: !!session?.user,
-          userId: session?.user?.id
-        })
-        
         if (event === 'SIGNED_OUT') {
-          console.log('AuthProvider: User signed out')
-          // ログアウト時は即座に状態をクリア
           setUser(null)
           setUserProfile(null)
           
@@ -269,17 +228,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             sessionStorage.clear()
           }
         } else if (session?.user) {
-          console.log('AuthProvider: User signed in:', {
-            id: session.user.id,
-            email: session.user.email
-          })
-          
           setUser(session.user)
-          
-          // 共通のプロフィール取得関数を使用
           await fetchUserProfile(session.user)
         } else {
-          console.log('AuthProvider: No session or user')
           setUser(null)
           setUserProfile(null)
         }

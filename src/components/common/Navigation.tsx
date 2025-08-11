@@ -28,27 +28,15 @@ export function Navigation() {
   const pathname = usePathname()
   const router = useRouter()
 
-  // デバッグ用ログ
-  console.log('Navigation: Render with:', {
-    hasUser: !!user,
-    hasUserProfile: !!userProfile,
-    username: userProfile?.username,
-    avatar_url: userProfile?.avatar_url,
-    google_avatar_url: userProfile?.google_avatar_url,
-    userEmail: user?.email
-  })
 
   const handleSignOut = async () => {
-    console.log('Navigation: Starting logout...')
     setIsUserMenuOpen(false)
     setIsMenuOpen(false)
     
     try {
       await signOut()
-      console.log('Navigation: Logout completed')
     } catch (error) {
       console.error('Navigation: Logout error:', error)
-      // エラーが発生してもリダイレクトを試行
       router.push('/auth/login')
     }
   }
