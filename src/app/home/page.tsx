@@ -64,7 +64,8 @@ const getCachedIdeas = unstable_cache(
       { data: users, error: usersError },
       { data: wantsCounts, error: wantsError },
       { data: commentsCounts, error: commentsError },
-      { data: userWants, error: userWantsError }
+      { data: userWants, error: userWantsError },
+      { data: completedApps, error: appsError }
     ] = await Promise.all([
       ideaQuery,
       
@@ -105,7 +106,24 @@ const getCachedIdeas = unstable_cache(
         .select('idea_id')
         .eq('user_id', userId)
         .then(({ data }) => ({ data: new Set(data?.map(w => w.idea_id)), error: null }))
-        : Promise.resolve({ data: new Set(), error: null })
+        : Promise.resolve({ data: new Set(), error: null }),
+      
+      // 完成アプリ取得
+      supabase
+        .from('completed_apps')
+        .select(`
+          id,
+          app_name,
+          description,
+          app_url,
+          store_urls,
+          screenshots,
+          created_at,
+          idea:ideas(id, title, revenue),
+          reviews(rating)
+        `)
+        .order('created_at', { ascending: false })
+        .limit(4)
     ])
 
     if (ideasError) throw ideasError
@@ -113,13 +131,18 @@ const getCachedIdeas = unstable_cache(
     // 3. メモリ内で高速結合（JOINなし）
     const userMap = new Map(users?.map(u => [u.id, u]) || [])
     
-    return ideas?.map(idea => ({
+    const formattedIdeas = ideas?.map(idea => ({
       ...idea,
       user: userMap.get(idea.user_id) || { username: 'Unknown', avatar_url: undefined },
       wants_count: wantsCounts?.get(idea.id) || 0,
       comments_count: commentsCounts?.get(idea.id) || 0,
       user_has_wanted: userWants?.has(idea.id) || false,
     })) || []
+
+    return {
+      ideas: formattedIdeas,
+      completedApps: completedApps || []
+    }
   },
   ['ideas-optimized'],
   { 
@@ -139,7 +162,7 @@ export default async function HomePage({
   const { data: { session } } = await supabase.auth.getSession()
   
   // 最適化されたアイデア取得（ユーザーIDを含む）
-  const ideas = await getCachedIdeas(
+  const { ideas, completedApps } = await getCachedIdeas(
     searchParams.category, 
     searchParams.search,
     session?.user?.id
@@ -148,6 +171,7 @@ export default async function HomePage({
   return (
     <HomePageClient 
       ideasWithCounts={ideas} 
+      completedApps={completedApps}
       searchParams={searchParams}
     />
   )

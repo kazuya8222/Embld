@@ -29,13 +29,14 @@ interface HomePageIdea {
 
 interface HomePageClientProps {
   ideasWithCounts: HomePageIdea[]
+  completedApps: any[]
   searchParams: {
     category?: string
     search?: string
   }
 }
 
-export default function HomePageClient({ ideasWithCounts, searchParams }: HomePageClientProps) {
+export default function HomePageClient({ ideasWithCounts, completedApps, searchParams }: HomePageClientProps) {
   const router = useRouter()
   
   // CAMPFIRE風プリフェッチ最適化
@@ -82,58 +83,66 @@ export default function HomePageClient({ ideasWithCounts, searchParams }: HomePa
         <div className="max-w-7xl mx-auto px-4">
           <h2 className="text-2xl font-bold text-gray-900 mb-8">プロジェクト開発事例</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {topRevenueIdeas.length > 0 ? (
-              topRevenueIdeas.map((idea) => (
-                <Link key={idea.id} href={`/ideas/${idea.id}`} className="group block h-full" data-idea-id={idea.id}>
-                  <div className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow overflow-hidden h-full flex flex-col">
-                    {/* サムネイル画像 */}
-                    <div className="w-full h-48 relative">
-                      {idea.sketch_urls && idea.sketch_urls.length > 0 ? (
-                        <OptimizedImage
-                          src={idea.sketch_urls[0]}
-                          alt={idea.title}
-                          width={320}
-                          height={192}
-                          className="w-full h-full object-cover"
-                          priority={true}
-                          fallback={
-                            <div className="w-full h-full bg-gradient-to-br from-blue-400 to-purple-600 flex items-center justify-center">
-                              <Lightbulb className="w-16 h-16 text-white opacity-50" />
-                            </div>
-                          }
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-gradient-to-br from-blue-400 to-purple-600 flex items-center justify-center">
-                          <Lightbulb className="w-16 h-16 text-white opacity-50" />
-                        </div>
-                      )}
-                    </div>
-                    <div className="p-4 flex flex-col flex-1">
-                      <h3 className="font-bold text-gray-900 line-clamp-2 group-hover:text-blue-600 transition-colors min-h-[3rem]">
-                        {idea.title}
-                      </h3>
-                      <p className="text-gray-600 text-sm mt-2 min-h-[1.5rem]">
-                        {idea.category}
-                      </p>
-                      <div className="flex items-center justify-between mt-auto pt-4">
-                        <div className="flex items-center gap-4 text-sm text-gray-500">
-                          <span className="flex items-center gap-1">
-                            <Users className="w-4 h-4" />
-                            {idea.wants_count}人
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <MessageCircle className="w-4 h-4" />
-                            {idea.comments_count}
-                          </span>
-                        </div>
-                        <span className="text-lg font-bold text-green-600">
-                          {idea.revenue}円
+            {completedApps.length > 0 ? (
+              completedApps.map((app) => {
+                const avgRating = app.reviews?.length > 0
+                  ? app.reviews.reduce((sum: number, review: any) => sum + review.rating, 0) / app.reviews.length
+                  : 0;
+                
+                return (
+                  <Link key={app.id} href={`/apps/${app.id}`} className="group block h-full">
+                    <div className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow overflow-hidden h-full flex flex-col">
+                      {/* サムネイル画像 */}
+                      <div className="w-full h-48 relative">
+                        {app.screenshots && app.screenshots.length > 0 ? (
+                          <OptimizedImage
+                            src={app.screenshots[0]}
+                            alt={app.app_name}
+                            width={320}
+                            height={192}
+                            className="w-full h-full object-cover"
+                            priority={true}
+                            fallback={
+                              <div className="w-full h-full bg-gradient-to-br from-green-400 to-blue-600 flex items-center justify-center">
+                                <Lightbulb className="w-16 h-16 text-white opacity-50" />
+                              </div>
+                            }
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-br from-green-400 to-blue-600 flex items-center justify-center">
+                            <Lightbulb className="w-16 h-16 text-white opacity-50" />
+                          </div>
+                        )}
+                        <span className="absolute top-2 left-2 bg-green-600 text-white text-xs px-2 py-1 rounded z-10">
+                          完成
                         </span>
                       </div>
+                      <div className="p-4 flex flex-col flex-1">
+                        <h3 className="font-bold text-gray-900 line-clamp-2 group-hover:text-green-600 transition-colors min-h-[3rem]">
+                          {app.app_name}
+                        </h3>
+                        <p className="text-gray-600 text-sm mt-2 min-h-[1.5rem]">
+                          {app.idea?.title || 'EmBldで開発'}
+                        </p>
+                        <div className="flex items-center justify-between mt-auto pt-4">
+                          <div className="flex items-center gap-4 text-sm text-gray-500">
+                            <span className="flex items-center gap-1">
+                              ⭐ {avgRating > 0 ? avgRating.toFixed(1) : '-'}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <MessageCircle className="w-4 h-4" />
+                              {app.reviews?.length || 0}
+                            </span>
+                          </div>
+                          <span className="text-lg font-bold text-green-600">
+                            {app.idea?.revenue || 0}円
+                          </span>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </Link>
-              ))
+                  </Link>
+                );
+              })
             ) : (
               <div className="col-span-full text-center py-12">
                 <p className="text-gray-500">まだ開発事例がありません</p>
