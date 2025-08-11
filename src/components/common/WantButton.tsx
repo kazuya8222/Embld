@@ -1,11 +1,9 @@
 'use client'
 
-import { useEffect, useOptimistic, useState } from 'react'
+import { useState, useTransition } from 'react'
 import { Heart } from 'lucide-react'
-import { toggleWantForm } from '@/app/actions/wantPost'
+import { toggleWant } from '@/app/actions/wantPost'
 import { cn } from '@/lib/utils/cn'
-import { useRouter } from 'next/navigation'
-import { useFormStatus, useFormState } from 'react-dom'
 
 interface WantButtonProps {
   ideaId: string
@@ -16,44 +14,31 @@ interface WantButtonProps {
 }
 
 export function WantButton({ ideaId, initialWanted, initialCount, className, size = 'md' }: WantButtonProps) {
-  const router = useRouter()
+  const [isWanted, setIsWanted] = useState(initialWanted)
+  const [count, setCount] = useState(initialCount)
+  const [, startTransition] = useTransition()
 
-  const [base, setBase] = useState({ wanted: initialWanted, count: initialCount })
-  const [optimistic, addOptimistic] = useOptimistic(
-    base,
-    (state, action: { type: 'toggle' }) => {
-      if (action.type === 'toggle') {
-        const nextWanted = !state.wanted
-        return {
-          wanted: nextWanted,
-          count: state.count + (nextWanted ? 1 : -1),
-        }
-      }
-      return state
-    }
-  )
+  const handleClick = () => {
+    // 即座にUIを更新（TikTok/Instagram風）
+    const newWantedState = !isWanted
+    setIsWanted(newWantedState)
+    setCount(prev => prev + (newWantedState ? 1 : -1))
 
-  type ToggleResult = { wanted: boolean; count: number } | null
-  const [serverState, formAction] = useFormState<ToggleResult, FormData>(toggleWantForm as any, null)
-
-  // サーバー応答後に真値で整合（再描画のみ・refreshしない）
-  useEffect(() => {
-    if (serverState) {
-      setBase({ wanted: serverState.wanted, count: serverState.count })
-    }
-  }, [serverState])
-
-  const onAction = async (formData: FormData) => {
-    // 即時反映
-    addOptimistic({ type: 'toggle' })
-    // サーバーへ
-    await formAction(formData)
+    // バックグラウンドでサーバー更新（完全非同期）
+    startTransition(() => {
+      toggleWant(ideaId).catch(error => {
+        // エラー時のみ元に戻す（ユーザーには見えない）
+        console.error('Toggle want failed:', error)
+        setIsWanted(!newWantedState)
+        setCount(prev => prev + (newWantedState ? -1 : 1))
+      })
+    })
   }
 
   const sizeClasses = {
-    sm: 'px-3 py-1.5 text-sm',
-    md: 'px-4 py-2 text-sm',
-    lg: 'px-6 py-3 text-base'
+    sm: 'px-2 py-1 text-sm gap-1.5',
+    md: 'px-3 py-1.5 text-sm gap-2',
+    lg: 'px-4 py-2 text-base gap-2'
   }
 
   const iconSizes = {
@@ -63,38 +48,33 @@ export function WantButton({ ideaId, initialWanted, initialCount, className, siz
   }
 
   return (
-    <form action={onAction}>
-      <input type="hidden" name="ideaId" value={ideaId} />
-      <SubmitButton
-        className={cn(
-          "inline-flex items-center gap-2 rounded-lg font-medium transition-all duration-200",
-          sizeClasses[size],
-          optimistic.wanted
-            ? 'bg-primary-100 text-primary-700 hover:bg-primary-200 border border-primary-200'
-            : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300',
-          className
-        )}
-        onPointerDown={() => addOptimistic({ type: 'toggle' })}
-      >
-        <Heart className={cn(
-          iconSizes[size],
-          'transition-transform duration-100',
-          optimistic.wanted && 'fill-current scale-110'
-        )} />
-        <span>{optimistic.wanted ? 'ほしい済み' : 'ほしい！'}</span>
-        <span className="font-semibold bg-white/50 px-2 py-0.5 rounded-full text-xs transition-transform duration-100" aria-live="polite">
-          {optimistic.count}
-        </span>
-      </SubmitButton>
-    </form>
-  )
-}
-
-function SubmitButton({ className, children, onPointerDown }: { className?: string; children: React.ReactNode; onPointerDown?: () => void }) {
-  const { pending } = useFormStatus()
-  return (
-    <button type="submit" disabled={pending} onPointerDown={onPointerDown} className={cn(className, pending && 'opacity-50 cursor-not-allowed')}>
-      {children}
+    <button
+      onClick={handleClick}
+      className={cn(
+        "relative inline-flex items-center rounded-full font-medium transition-all duration-200 transform active:scale-95 hover:scale-105 select-none overflow-hidden",
+        sizeClasses[size],
+        isWanted
+          ? 'bg-pink-500 text-white hover:bg-pink-600 shadow-lg shadow-pink-500/25'
+          : 'bg-gray-100 text-gray-600 hover:bg-gray-200 border border-gray-300',
+        className
+      )}
+    >
+      <Heart className={cn(
+        iconSizes[size],
+        isWanted ? 'fill-current text-white' : 'text-gray-500',
+        'transition-all duration-300 ease-out'
+      )} />
+      <span className="font-semibold transition-all duration-200 relative z-10">
+        {count}
+      </span>
+      
+      {/* いいね時のパルスエフェクト */}
+      {isWanted && (
+        <>
+          <div className="absolute inset-0 rounded-full bg-pink-400 animate-ping opacity-30 pointer-events-none" />
+          <div className="absolute inset-0 rounded-full bg-gradient-to-r from-pink-400 to-red-400 opacity-20 animate-pulse pointer-events-none" />
+        </>
+      )}
     </button>
   )
 }
