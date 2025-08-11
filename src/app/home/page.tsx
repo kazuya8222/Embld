@@ -115,7 +115,7 @@ const getCachedIdeas = unstable_cache(
     
     return ideas?.map(idea => ({
       ...idea,
-      user: userMap.get(idea.user_id) || { username: 'Unknown', avatar_url: null },
+      user: userMap.get(idea.user_id) || { username: 'Unknown', avatar_url: undefined },
       wants_count: wantsCounts?.get(idea.id) || 0,
       comments_count: commentsCounts?.get(idea.id) || 0,
       user_has_wanted: userWants?.has(idea.id) || false,
