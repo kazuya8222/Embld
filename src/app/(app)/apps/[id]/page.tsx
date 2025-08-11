@@ -21,7 +21,7 @@ export default async function AppDetailPage({
 }: {
   params: { id: string }
 }) {
-  const supabase = await createSupabaseServerClient()
+  const supabase = createSupabaseServerClient()
 
   const { data: app, error } = await supabase
     .from('completed_apps')
