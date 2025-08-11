@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { MessageCircle, Users, Clock, DollarSign } from 'lucide-react'
+import { OptimizedImage } from '../common/OptimizedImage'
 
 interface CardIdeaItemProps {
   idea: {
@@ -56,20 +57,23 @@ export function CardIdeaItem({ idea }: CardIdeaItemProps) {
         {/* サムネイル画像 */}
         <div className="aspect-[16/9] relative overflow-hidden">
           {idea.sketch_urls && idea.sketch_urls.length > 0 ? (
-            <img
+            <OptimizedImage
               src={idea.sketch_urls[0]}
               alt={idea.title}
+              width={400}
+              height={225}
               className="w-full h-full object-cover"
-              onError={(e) => {
-                e.currentTarget.style.display = 'none';
-                e.currentTarget.nextElementSibling?.classList.remove('hidden');
-              }}
+              fallback={
+                <div className="w-full h-full bg-gradient-to-br from-blue-100 to-green-100 flex items-center justify-center">
+                  <span className="text-6xl opacity-20">💡</span>
+                </div>
+              }
             />
-          ) : null}
-          {/* フォールバック用のプレースホルダー */}
-          <div className={`w-full h-full bg-gradient-to-br from-blue-100 to-green-100 absolute inset-0 flex items-center justify-center ${idea.sketch_urls && idea.sketch_urls.length > 0 ? 'hidden' : ''}`}>
-            <span className="text-6xl opacity-20">💡</span>
-          </div>
+          ) : (
+            <div className="w-full h-full bg-gradient-to-br from-blue-100 to-green-100 flex items-center justify-center">
+              <span className="text-6xl opacity-20">💡</span>
+            </div>
+          )}
           {/* カテゴリバッジ */}
           <div className="absolute top-3 left-3 z-10">
             <span className="inline-block px-3 py-1 bg-white/90 backdrop-blur-sm rounded-full text-xs font-medium text-gray-700">

@@ -28,7 +28,7 @@ export function OptimizedImage({
 
   // Supabase画像URLをCDN用に最適化
   const optimizedSrc = src.includes('supabase.co') 
-    ? `${src}?quality=80&format=webp`
+    ? `${src}?quality=80&format=webp&resize=contain&width=${width}&height=${height}`
     : src
 
   if (error) {

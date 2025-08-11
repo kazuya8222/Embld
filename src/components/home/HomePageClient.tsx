@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useMemo, useEffect } from 'react'
 import { MessageCircle, Search, Lightbulb, Users, ChevronRight, DollarSign } from 'lucide-react'
 import { PostIdeaButton } from '@/components/common/PostIdeaButton'
+import { OptimizedImage } from '@/components/common/OptimizedImage'
 import { CATEGORIES } from '@/types'
 import { useRouter } from 'next/navigation'
 
@@ -72,20 +73,24 @@ export default function HomePageClient({ ideasWithCounts, searchParams }: HomePa
                     {/* サムネイル画像 */}
                     <div className="w-full h-48 relative">
                       {idea.sketch_urls && idea.sketch_urls.length > 0 ? (
-                        <img
+                        <OptimizedImage
                           src={idea.sketch_urls[0]}
                           alt={idea.title}
+                          width={320}
+                          height={192}
                           className="w-full h-full object-cover"
-                          onError={(e) => {
-                            e.currentTarget.style.display = 'none';
-                            e.currentTarget.nextElementSibling?.classList.remove('hidden');
-                          }}
+                          priority={true}
+                          fallback={
+                            <div className="w-full h-full bg-gradient-to-br from-blue-400 to-purple-600 flex items-center justify-center">
+                              <Lightbulb className="w-16 h-16 text-white opacity-50" />
+                            </div>
+                          }
                         />
-                      ) : null}
-                      {/* フォールバック用のプレースホルダー */}
-                      <div className={`w-full h-full bg-gradient-to-br from-blue-400 to-purple-600 absolute inset-0 flex items-center justify-center ${idea.sketch_urls && idea.sketch_urls.length > 0 ? 'hidden' : ''}`}>
-                        <Lightbulb className="w-16 h-16 text-white opacity-50" />
-                      </div>
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-blue-400 to-purple-600 flex items-center justify-center">
+                          <Lightbulb className="w-16 h-16 text-white opacity-50" />
+                        </div>
+                      )}
                     </div>
                     <div className="p-4 flex flex-col flex-1">
                       <h3 className="font-bold text-gray-900 line-clamp-2 group-hover:text-blue-600 transition-colors min-h-[3rem]">
@@ -157,20 +162,23 @@ export default function HomePageClient({ ideasWithCounts, searchParams }: HomePa
                         {/* サムネイル画像 */}
                         <div className="w-full h-40 relative">
                           {idea.sketch_urls && idea.sketch_urls.length > 0 ? (
-                            <img
+                            <OptimizedImage
                               src={idea.sketch_urls[0]}
                               alt={idea.title}
+                              width={300}
+                              height={160}
                               className="w-full h-full object-cover"
-                              onError={(e) => {
-                                e.currentTarget.style.display = 'none';
-                                e.currentTarget.nextElementSibling?.classList.remove('hidden');
-                              }}
+                              fallback={
+                                <div className="w-full h-full bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center">
+                                  <Lightbulb className="w-12 h-12 text-white opacity-50" />
+                                </div>
+                              }
                             />
-                          ) : null}
-                          {/* フォールバック用のプレースホルダー */}
-                          <div className={`w-full h-full bg-gradient-to-br from-green-400 to-blue-500 absolute inset-0 flex items-center justify-center ${idea.sketch_urls && idea.sketch_urls.length > 0 ? 'hidden' : ''}`}>
-                            <Lightbulb className="w-12 h-12 text-white opacity-50" />
-                          </div>
+                          ) : (
+                            <div className="w-full h-full bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center">
+                              <Lightbulb className="w-12 h-12 text-white opacity-50" />
+                            </div>
+                          )}
                           {/* カテゴリラベル */}
                           <span className="absolute top-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded z-10">
                             {idea.category}
