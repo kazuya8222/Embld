@@ -2,40 +2,63 @@
 
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
+
+// ユーザーキャッシュ（wantPost.tsと同様）
+let cachedUser: { id: string; timestamp: number } | null = null
 
 export const addComment = async (ideaId: string, content: string) => {
   const supabase = createSupabaseServerClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) {
-    redirect('/auth/login')
+  
+  // キャッシュされたユーザー情報を使用
+  let userId: string
+  if (cachedUser && Date.now() - cachedUser.timestamp < 5000) {
+    userId = cachedUser.id
+  } else {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      redirect('/auth/login')
+    }
+    cachedUser = { id: user.id, timestamp: Date.now() }
+    userId = user.id
   }
 
   if (!content.trim()) {
     throw new Error('コメント内容を入力してください')
   }
 
-  const { data, error } = await supabase
-    .from('comments')
-    .insert({
-      idea_id: ideaId,
-      user_id: user.id,
-      content: content.trim(),
-    })
-    .select(`
-      *,
-      user:users(username, avatar_url)
-    `)
-    .single()
+  // 挿入とプロファイル取得を並列実行
+  const [insertResult, profileResult] = await Promise.all([
+    supabase
+      .from('comments')
+      .insert({
+        idea_id: ideaId,
+        user_id: userId,
+        content: content.trim(),
+      })
+      .select()
+      .single(),
+    supabase
+      .from('users')
+      .select('username, avatar_url')
+      .eq('id', userId)
+      .single()
+  ])
 
-  if (error) {
-    console.error('Comment insert error:', error)
-    throw new Error(`コメントの投稿に失敗しました: ${error.message}`)
+  if (insertResult.error) {
+    console.error('Comment insert error:', insertResult.error)
+    throw new Error(`コメントの投稿に失敗しました: ${insertResult.error.message}`)
   }
 
-  // ページを再検証して最新のコメントを表示
-  revalidatePath(`/ideas/${ideaId}`)
+  // データを結合
+  const data = {
+    ...insertResult.data,
+    user: profileResult.data
+  }
+
+  // キャッシュを無効化（タグベース）
+  revalidateTag('ideas')
+  revalidateTag(`idea-${ideaId}`)
   
   return data
 }

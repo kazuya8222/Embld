@@ -1,10 +1,11 @@
 'use client'
 
 import Link from 'next/link'
-import { useMemo } from 'react'
+import { useMemo, useEffect } from 'react'
 import { MessageCircle, Search, Lightbulb, Users, ChevronRight, DollarSign } from 'lucide-react'
 import { PostIdeaButton } from '@/components/common/PostIdeaButton'
 import { CATEGORIES } from '@/types'
+import { useRouter } from 'next/navigation'
 
 interface HomePageIdea {
   id: string
@@ -34,6 +35,16 @@ interface HomePageClientProps {
 }
 
 export default function HomePageClient({ ideasWithCounts, searchParams }: HomePageClientProps) {
+  const router = useRouter()
+  
+  // リンクのプリフェッチ（表示されたアイデアのページを事前取得）
+  useEffect(() => {
+    // 表示されているアイデアのリンクを事前取得
+    ideasWithCounts.slice(0, 9).forEach(idea => {
+      router.prefetch(`/ideas/${idea.id}`)
+    })
+  }, [ideasWithCounts, router])
+  
   // useMemo で計算結果をキャッシュ（レンダリング最適化）
   const { topRevenueIdeas, latestIdeas } = useMemo(() => {
     return {

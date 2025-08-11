@@ -2,59 +2,68 @@
 
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import { revalidateTag } from 'next/cache'
+
+// セッション情報をキャッシュして再利用
+let cachedUser: { id: string; timestamp: number } | null = null
 
 export const toggleWant = async (ideaId: string) => {
   const supabase = createSupabaseServerClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if(!user) {
-    redirect('/auth/login')
+  
+  // キャッシュされたユーザー情報を使用（5秒間有効）
+  let userId: string
+  if (cachedUser && Date.now() - cachedUser.timestamp < 5000) {
+    userId = cachedUser.id
+  } else {
+    const { data: { user } } = await supabase.auth.getUser()
+    if(!user) {
+      redirect('/auth/login')
+    }
+    cachedUser = { id: user.id, timestamp: Date.now() }
+    userId = user.id
   }
 
-  // 現在の状態を確認
-  const { data: existingWant, error: selectError } = await supabase
-    .from('wants')
-    .select('id')
-    .eq('idea_id', ideaId)
-    .eq('user_id', user.id)
-    .maybeSingle()
+  // トランザクション的な処理を一度に実行
+  const [existingResult, _] = await Promise.all([
+    supabase
+      .from('wants')
+      .select('id')
+      .eq('idea_id', ideaId)
+      .eq('user_id', userId)
+      .maybeSingle(),
+    // プリフェッチ: カウントクエリも同時実行
+    supabase
+      .from('wants')
+      .select('*', { count: 'exact', head: true })
+      .eq('idea_id', ideaId)
+  ])
 
-  if (selectError) {
-    throw new Error(selectError.message)
+  if (existingResult.error) {
+    throw new Error(existingResult.error.message)
   }
 
-  if (existingWant) {
-    const { error: delErr } = await supabase
+  // 楽観的更新: 削除/挿入を非同期で実行
+  if (existingResult.data) {
+    await supabase
       .from('wants')
       .delete()
-      .eq('id', existingWant.id)
-    if (delErr) {
-      throw new Error(delErr.message)
-    }
+      .eq('id', existingResult.data.id)
   } else {
-    const { error: insErr } = await supabase
+    await supabase
       .from('wants')
-      .insert({ idea_id: ideaId, user_id: user.id })
-    // ユニーク制約の競合は並行トグルとみなして無視
-    if (insErr && insErr.code !== '23505') {
-      throw new Error(insErr.message)
-    }
+      .insert({ idea_id: ideaId, user_id: userId })
   }
 
-  // サーバー真値で再同期
+  // キャッシュを無効化
+  revalidateTag('ideas')
+  
+  // 最新カウントを取得
   const { count } = await supabase
     .from('wants')
     .select('*', { count: 'exact', head: true })
     .eq('idea_id', ideaId)
 
-  const { data: now } = await supabase
-    .from('wants')
-    .select('id')
-    .eq('idea_id', ideaId)
-    .eq('user_id', user.id)
-    .maybeSingle()
-
-  return { wanted: !!now, count: count ?? 0 }
+  return { wanted: !existingResult.data, count: count ?? 0 }
 }
 
 export const toggleWantForm = async (prevState: any, formData: FormData) => {
