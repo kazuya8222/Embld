@@ -14,7 +14,7 @@ interface Message {
   timestamp: Date
 }
 
-type ChatStep = 'service_overview' | 'persona' | 'problem' | 'solution' | 'confirmation' | 'revise' | 'generate_plan' | 'plan_confirmation' | 'plan_revision' | 'completed'
+type ChatStep = 'service_overview' | 'persona' | 'problem' | 'solution' | 'confirmation' | 'revise' | 'generate_plan' | 'completed'
 
 interface IdeaChatFormProps {
   initialData?: any
@@ -25,9 +25,6 @@ export function IdeaChatForm({ initialData, ideaId }: IdeaChatFormProps) {
   const { user } = useAuth()
   const router = useRouter()
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  
-  // ユーザー状態をデバッグ
-  console.log('Current auth user in component:', user)
   
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -51,13 +48,7 @@ export function IdeaChatForm({ initialData, ideaId }: IdeaChatFormProps) {
     scrollToBottom()
   }, [messages])
 
-  // ステップ変更を監視
-  useEffect(() => {
-    console.log('Step changed to:', currentStep)
-    console.log('Generated plan exists:', !!generatedPlan)
-  }, [currentStep, generatedPlan])
-
-  const sendMessage = async (messageContent: string, overrideStep?: ChatStep) => {
+  const sendMessage = async (messageContent: string) => {
     if (!messageContent.trim() || isLoading) return
 
     const userMessage: Message = {
@@ -71,40 +62,26 @@ export function IdeaChatForm({ initialData, ideaId }: IdeaChatFormProps) {
     setInput('')
     setIsLoading(true)
 
-    // ステップのオーバーライドがある場合はそれを使用、なければ現在のステップを使用
-    const stepToUse = overrideStep || currentStep
-
     try {
-      const requestBody = {
-        messages: [...messages, userMessage].map(msg => ({
-          role: msg.role,
-          content: msg.content
-        })),
-        step: stepToUse
-      }
-      
-      console.log('Sending API request:', {
-        step: stepToUse,
-        currentStep: currentStep,
-        messagesCount: requestBody.messages.length,
-        lastMessage: requestBody.messages[requestBody.messages.length - 1]
-      })
-
       const response = await fetch('/api/idea-chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(requestBody),
+        body: JSON.stringify({
+          messages: [...messages, userMessage].map(msg => ({
+            role: msg.role,
+            content: msg.content
+          })),
+          step: currentStep
+        }),
       })
 
       if (!response.ok) {
-        console.error('API request failed:', response.status, response.statusText)
-        throw new Error(`API request failed: ${response.status}`)
+        throw new Error('API request failed')
       }
 
       const data = await response.json()
-      console.log('API Response:', data)
       
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -116,53 +93,30 @@ export function IdeaChatForm({ initialData, ideaId }: IdeaChatFormProps) {
       setMessages(prev => [...prev, assistantMessage])
 
       // ステップの進行を管理
-      console.log('Processing step transition from:', stepToUse)
-      switch (stepToUse) {
+      switch (currentStep) {
         case 'service_overview':
-          console.log('Moving to persona step')
           setCurrentStep('persona')
           break
         case 'persona':
-          console.log('Moving to problem step')
           setCurrentStep('problem')
           break
         case 'problem':
-          console.log('Moving to solution step')
           setCurrentStep('solution')
           break
         case 'solution':
-          console.log('Moving to confirmation step')
           setCurrentStep('confirmation')
           break
         case 'confirmation':
-          console.log('Staying in confirmation step - waiting for user choice')
           // ペルソナ/課題/解決策の確認段階 - 2択ボタンで処理
           break
         case 'revise':
-          console.log('Moving back to confirmation step')
           setCurrentStep('confirmation')
           break
         case 'generate_plan':
-          console.log('Plan generated, moving to plan_confirmation step')
-          console.log('Generated plan length:', data.response?.length)
-          console.log('Generated plan content:', data.response?.substring(0, 100) + '...')
-          if (data.response) {
-            setGeneratedPlan(data.response)
-            setCurrentStep('plan_confirmation')
-          } else {
-            console.error('No response content received from API')
-          }
-          break
-        case 'plan_revision':
-          console.log('Plan revised, moving to plan_confirmation step')
           setGeneratedPlan(data.response)
-          setCurrentStep('plan_confirmation')
+          setCurrentStep('completed')
           break
       }
-      console.log('Step transition completed, new step should be:', 
-        stepToUse === 'generate_plan' ? 'plan_confirmation' : 
-        stepToUse === 'plan_revision' ? 'plan_confirmation' : 
-        'other')
 
     } catch (error) {
       console.error('Error sending message:', error)
@@ -181,22 +135,10 @@ export function IdeaChatForm({ initialData, ideaId }: IdeaChatFormProps) {
   const handleConfirmation = (isConfirmed: boolean) => {
     if (isConfirmed) {
       setCurrentStep('generate_plan')
-      sendMessage('はい、問題ありません。企画書を生成してください。', 'generate_plan')
+      sendMessage('はい、問題ありません。企画書を生成してください。')
     } else {
       setCurrentStep('revise')
-      sendMessage('いいえ、修正が必要です。どの部分を修正したいか教えてください。', 'revise')
-    }
-  }
-
-  const handlePlanConfirmation = (isConfirmed: boolean) => {
-    console.log('handlePlanConfirmation called with:', isConfirmed)
-    if (isConfirmed) {
-      // 企画書が承認されたので、投稿処理を実行
-      console.log('Calling handleSavePlan...')
-      handleSavePlan()
-    } else {
-      setCurrentStep('plan_revision')
-      sendMessage('修正が必要です。どの部分を修正したいか具体的に教えてください。', 'plan_revision')
+      sendMessage('いいえ、修正が必要です。どの部分を修正したいか教えてください。')
     }
   }
 
@@ -246,93 +188,15 @@ export function IdeaChatForm({ initialData, ideaId }: IdeaChatFormProps) {
   }
 
   const handleSavePlan = async () => {
-    console.log('handleSavePlan called')
-    console.log('User from AuthProvider:', user)
-    console.log('Generated plan exists:', !!generatedPlan)
-    console.log('Generated plan length:', generatedPlan?.length)
-    
-    // ローカルストレージの詳細な状況を確認
-    if (typeof window !== 'undefined') {
-      console.log('=== LocalStorage Debug ===')
-      console.log('All localStorage keys:', Object.keys(localStorage))
-      const supabaseKeys = Object.keys(localStorage).filter(key => key.includes('supabase'))
-      console.log('Supabase related keys:', supabaseKeys)
-      
-      // Supabaseの認証トークンを直接確認
-      supabaseKeys.forEach(key => {
-        const value = localStorage.getItem(key)
-        console.log(`${key}:`, value ? `exists (length: ${value.length})` : 'null')
-      })
-      
-      // セッションストレージも確認
-      console.log('SessionStorage keys:', Object.keys(sessionStorage))
-      console.log('=========================')
-    }
-    
-    // Cookieの状況も確認
-    if (typeof window !== 'undefined') {
-      console.log('Document cookies:', document.cookie)
-      const supabaseCookies = document.cookie.split('; ').filter(c => c.includes('supabase'))
-      console.log('Supabase cookies:', supabaseCookies)
-    }
-    
-    // Supabaseクライアントの認証状態を確認
-    console.log('Checking supabase auth...')
-    
-    // 新しいクライアントインスタンスを作成（強制的に新規作成）
-    const supabase = createClient(true)
-    console.log('Supabase client created')
-    
-    try {
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-      console.log('Supabase session:', { session, sessionError })
-      
-      const { data: { user: currentUser }, error: authError } = await supabase.auth.getUser()
-      console.log('Supabase user:', { currentUser, authError })
-    } catch (error) {
-      console.error('Error getting auth info:', error)
-    }
-    
-    // currentUserが定義されていない可能性があるため、スコープ外で定義
-    let currentUser = null
-    try {
-      const authResult = await supabase.auth.getUser()
-      currentUser = authResult.data.user
-    } catch (error) {
-      console.error('Failed to get current user:', error)
-    }
-    
-    // ユーザーがいない場合は処理を中断
-    if (!currentUser && !user) {
-      console.error('No authenticated user found')
-      const errorMessage: Message = {
-        id: Date.now().toString(),
-        role: 'assistant',
-        content: 'ログインが必要です。ログインしてから再度お試しください。',
-        timestamp: new Date()
-      }
-      setMessages(prev => [...prev, errorMessage])
-      setIsLoading(false)
-      return
-    }
-    
-    if (!generatedPlan) {
-      console.log('No generated plan')
+    if (!user || !generatedPlan) {
       return
     }
 
     setIsLoading(true)
 
     try {
-      // 実際のユーザーIDを使用
-      const actualUserId = currentUser?.id || user?.id
-      console.log('Using user ID:', actualUserId)
-
-      const dataToSubmit = {
-        ...extractDataFromPlan(generatedPlan),
-        user_id: actualUserId // 確実にuser_idを設定
-      }
-      console.log('Data to submit:', dataToSubmit)
+      const supabase = createClient()
+      const dataToSubmit = extractDataFromPlan(generatedPlan)
 
       let result
       if (ideaId) {
@@ -340,7 +204,7 @@ export function IdeaChatForm({ initialData, ideaId }: IdeaChatFormProps) {
           .from('ideas')
           .update(dataToSubmit)
           .eq('id', ideaId)
-          .eq('user_id', actualUserId)
+          .eq('user_id', user.id)
           .select()
           .single()
       } else {
@@ -351,36 +215,17 @@ export function IdeaChatForm({ initialData, ideaId }: IdeaChatFormProps) {
           .single()
       }
 
-      console.log('Database operation result:', result)
-
       if (result.error) {
         console.error('Save error:', result.error)
         // エラーメッセージを表示
-        const errorMessage: Message = {
-          id: Date.now().toString(),
-          role: 'assistant',
-          content: `エラーが発生しました: ${result.error.message}`,
-          timestamp: new Date()
-        }
-        setMessages(prev => [...prev, errorMessage])
       } else {
-        setCurrentStep('completed')
         const targetId = ideaId || result.data?.id
-        setTimeout(() => {
-          if (targetId) {
-            router.push(`/ideas/${targetId}`)
-          }
-        }, 2000) // 2秒後にリダイレクト
+        if (targetId) {
+          router.push(`/ideas/${targetId}`)
+        }
       }
     } catch (error) {
       console.error('Save failed:', error)
-      const errorMessage: Message = {
-        id: Date.now().toString(),
-        role: 'assistant',
-        content: `予期しないエラーが発生しました: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        timestamp: new Date()
-      }
-      setMessages(prev => [...prev, errorMessage])
     } finally {
       setIsLoading(false)
     }
@@ -407,26 +252,16 @@ export function IdeaChatForm({ initialData, ideaId }: IdeaChatFormProps) {
         return '内容の修正'
       case 'generate_plan':
         return '企画書生成中'
-      case 'plan_confirmation':
-        return '企画書の確認'
-      case 'plan_revision':
-        return '企画書の修正'
       case 'completed':
-        return 'アイデア投稿完了'
+        return '企画書完成'
       default:
         return 'アイデア作成中'
     }
   }
 
   const isConfirmationStep = currentStep === 'confirmation'
-  const isPlanConfirmationStep = currentStep === 'plan_confirmation'
   const isGeneratingPlan = currentStep === 'generate_plan'
   const isCompleted = currentStep === 'completed'
-
-  // デバッグ用
-  console.log('Current step:', currentStep)
-  console.log('isPlanConfirmationStep:', isPlanConfirmationStep)
-  console.log('generatedPlan exists:', !!generatedPlan)
 
   return (
     <div className="max-w-4xl mx-auto h-[80vh] flex flex-col">
@@ -491,7 +326,7 @@ export function IdeaChatForm({ initialData, ideaId }: IdeaChatFormProps) {
             </div>
           ))}
           
-          {/* 最初の確認ボタン */}
+          {/* 確認ボタン */}
           {isConfirmationStep && !isLoading && (
             <div className="flex justify-center gap-4 pt-4">
               <button
@@ -510,27 +345,8 @@ export function IdeaChatForm({ initialData, ideaId }: IdeaChatFormProps) {
             </div>
           )}
 
-          {/* 企画書確認ボタン */}
-          {(isPlanConfirmationStep || (generatedPlan && (currentStep === 'generate_plan' || currentStep === 'plan_revision'))) && !isLoading && generatedPlan && (
-            <div className="flex justify-center gap-4 pt-4">
-              <button
-                onClick={() => handlePlanConfirmation(true)}
-                className="flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-              >
-                <CheckCircle className="w-5 h-5" />
-                この内容で投稿する
-              </button>
-              <button
-                onClick={() => handlePlanConfirmation(false)}
-                className="flex items-center gap-2 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                修正が必要です
-              </button>
-            </div>
-          )}
-
           {/* 企画書表示 */}
-          {(isPlanConfirmationStep || currentStep === 'plan_revision') && generatedPlan && (
+          {isCompleted && generatedPlan && (
             <div className="mt-6 p-6 bg-blue-50 border border-blue-200 rounded-lg">
               <div className="flex items-center gap-2 mb-4">
                 <FileText className="w-6 h-6 text-blue-600" />
@@ -539,19 +355,27 @@ export function IdeaChatForm({ initialData, ideaId }: IdeaChatFormProps) {
               <div className="prose prose-sm max-w-none">
                 <div className="whitespace-pre-wrap text-gray-800">{generatedPlan}</div>
               </div>
-            </div>
-          )}
-
-          {/* 投稿完了メッセージ */}
-          {isCompleted && (
-            <div className="mt-6 p-6 bg-green-50 border border-green-200 rounded-lg">
-              <div className="flex items-center gap-2 mb-4">
-                <CheckCircle className="w-6 h-6 text-green-600" />
-                <h3 className="text-lg font-semibold text-green-900">アイデアの投稿が完了しました！</h3>
+              <div className="mt-6 flex gap-4">
+                <button
+                  onClick={handleSavePlan}
+                  disabled={isLoading}
+                  className={cn(
+                    "px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors",
+                    isLoading && "opacity-50 cursor-not-allowed"
+                  )}
+                >
+                  {isLoading ? '保存中...' : 'この企画書で投稿する'}
+                </button>
+                <button
+                  onClick={() => {
+                    setCurrentStep('solution')
+                    setGeneratedPlan('')
+                  }}
+                  className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  修正する
+                </button>
               </div>
-              <p className="text-green-800">
-                企画書が正常に投稿されました。2秒後にアイデア詳細ページにリダイレクトします。
-              </p>
             </div>
           )}
           
@@ -570,7 +394,7 @@ export function IdeaChatForm({ initialData, ideaId }: IdeaChatFormProps) {
         </div>
 
         {/* 入力エリア */}
-        {!isCompleted && !isConfirmationStep && !isPlanConfirmationStep && (
+        {!isCompleted && !isConfirmationStep && (
           <div className="p-6 border-t bg-gray-50">
             <form onSubmit={handleSubmit} className="flex gap-3">
               <input
