@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { useMemo } from 'react'
 import { MessageCircle, Search, Lightbulb, Users, ChevronRight, DollarSign } from 'lucide-react'
 import { PostIdeaButton } from '@/components/common/PostIdeaButton'
 import { CATEGORIES } from '@/types'
@@ -33,24 +34,18 @@ interface HomePageClientProps {
 }
 
 export default function HomePageClient({ ideasWithCounts, searchParams }: HomePageClientProps) {
-  // トップ収益のアイデア
-  const topRevenueIdeas = [...ideasWithCounts]
-    .sort((a, b) => (b.revenue || 0) - (a.revenue || 0))
-    .slice(0, 3)
-
-  // 注目のアイデア（Wants数とコメント数の合計でソート）
-  const hotIdeas = [...ideasWithCounts]
-    .sort((a, b) => {
-      const scoreA = a.wants_count + a.comments_count
-      const scoreB = b.wants_count + b.comments_count
-      return scoreB - scoreA
-    })
-    .slice(0, 5)
-
-  // 最新のアイデア
-  const latestIdeas = [...ideasWithCounts]
-    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-    .slice(0, 5)
+  // useMemo で計算結果をキャッシュ（レンダリング最適化）
+  const { topRevenueIdeas, latestIdeas } = useMemo(() => {
+    return {
+      topRevenueIdeas: ideasWithCounts
+        .filter(idea => (idea.revenue || 0) > 0)
+        .sort((a, b) => (b.revenue || 0) - (a.revenue || 0))
+        .slice(0, 4),
+      latestIdeas: ideasWithCounts
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        .slice(0, 9) // 3x3グリッド
+    }
+  }, [ideasWithCounts])
 
   return (
     <div className="bg-gray-50">
@@ -60,7 +55,7 @@ export default function HomePageClient({ ideasWithCounts, searchParams }: HomePa
           <h2 className="text-2xl font-bold text-gray-900 mb-8">プロジェクト開発事例</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {topRevenueIdeas.length > 0 ? (
-              topRevenueIdeas.slice(0, 4).map((idea) => (
+              topRevenueIdeas.map((idea) => (
                 <Link key={idea.id} href={`/ideas/${idea.id}`} className="group block h-full">
                   <div className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow overflow-hidden h-full flex flex-col">
                     {/* サムネイル画像 */}

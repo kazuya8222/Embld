@@ -30,14 +30,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
   const router = useRouter()
 
-  // プロフィール情報を再取得する関数
+  // プロフィール情報を再取得する関数（必要な場合のみ実行）
   const refreshProfile = async () => {
-    if (!user) return
+    if (!user || userProfile) return // 既にプロフィールがある場合はスキップ
     
     try {
       const { data: profile } = await supabase
         .from('users')
-        .select('*')
+        .select('username, avatar_url, google_avatar_url') // 必要な項目のみ
         .eq('id', user.id)
         .single()
       
@@ -99,10 +99,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } else if (user) {
           setUser(user)
           
-          // ユーザープロフィールを取得
+          // ユーザープロフィールを取得（必要な項目のみ）
           const { data: profile, error: profileError } = await supabase
             .from('users')
-            .select('*')
+            .select('username, avatar_url, google_avatar_url')
             .eq('id', user.id)
             .single()
           
@@ -141,10 +141,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } else if (session?.user) {
           setUser(session.user)
           
-          // ユーザープロフィールを取得
+          // ユーザープロフィールを取得（必要な項目のみ）
           const { data: profile, error: profileError } = await supabase
             .from('users')
-            .select('*')
+            .select('username, avatar_url, google_avatar_url')
             .eq('id', session.user.id)
             .single()
           

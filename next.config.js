@@ -1,5 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  experimental: {
+    optimizePackageImports: ['lucide-react', '@supabase/supabase-js'],
+  },
   images: {
     remotePatterns: [
       {
@@ -16,6 +19,10 @@ const nextConfig = {
       },
     ],
   },
+  // パフォーマンス最適化
+  poweredByHeader: false,
+  compress: true,
+  swcMinify: true,
 }
 
 module.exports = nextConfig

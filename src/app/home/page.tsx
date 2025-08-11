@@ -33,6 +33,7 @@ export default async function HomePage({
   const supabase = createSupabaseServerClient()
   const { data: { session } } = await supabase.auth.getSession()
   
+  // 単一クエリでカウントも同時取得（パフォーマンス向上）
   let query = supabase
     .from('ideas')
     .select(`
@@ -45,9 +46,12 @@ export default async function HomePage({
       tags,
       sketch_urls,
       revenue,
-      user:users(username, avatar_url)
+      user:users(username, avatar_url),
+      wants:wants(count),
+      comments:comments(count),
+      user_wants:wants!wants_user_id_fkey(user_id)
     `)
-    .limit(50)
+    .limit(20) // 50→20に削減
 
   if (searchParams.category) {
     query = query.eq('category', searchParams.category)
@@ -66,45 +70,14 @@ export default async function HomePage({
     return <div>アイデアの取得に失敗しました</div>
   }
 
-  const ideaIds = ideas?.map(idea => idea.id) || []
-  
-  const [wantsResult, commentsResult, userWantsResult] = await Promise.all([
-    supabase
-      .from('wants')
-      .select('idea_id')
-      .in('idea_id', ideaIds),
-    
-    supabase
-      .from('comments')
-      .select('idea_id')
-      .in('idea_id', ideaIds),
-    
-    session?.user?.id ? supabase
-      .from('wants')
-      .select('idea_id')
-      .eq('user_id', session.user.id)
-      .in('idea_id', ideaIds) : Promise.resolve({ data: [] })
-  ])
-
-  const wantsCounts: Record<string, number> = {}
-  const commentsCounts: Record<string, number> = {}
-  
-  wantsResult.data?.forEach(want => {
-    wantsCounts[want.idea_id] = (wantsCounts[want.idea_id] || 0) + 1
-  })
-  
-  commentsResult.data?.forEach(comment => {
-    commentsCounts[comment.idea_id] = (commentsCounts[comment.idea_id] || 0) + 1
-  })
-
-  const userWants = userWantsResult.data?.map(want => want.idea_id) || []
-
-  let ideasWithCounts = ideas?.map(idea => ({
+  // データ変換を最適化
+  const ideasWithCounts = ideas?.map(idea => ({
     ...idea,
     user: Array.isArray(idea.user) ? idea.user[0] : idea.user,
-    wants_count: wantsCounts[idea.id] || 0,
-    comments_count: commentsCounts[idea.id] || 0,
-    user_has_wanted: userWants.includes(idea.id),
+    wants_count: Array.isArray(idea.wants) ? idea.wants.length : 0,
+    comments_count: Array.isArray(idea.comments) ? idea.comments.length : 0,
+    user_has_wanted: session?.user?.id ? 
+      Array.isArray(idea.user_wants) && idea.user_wants.some((want: any) => want.user_id === session.user.id) : false,
   }) as HomePageIdea) || []
 
   return (
