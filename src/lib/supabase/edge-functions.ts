@@ -30,29 +30,40 @@ export async function fetchIdeasFromEdge(params: {
   return response.json()
 }
 
-// コメント投稿を高速化
+// コメント投稿を高速化（Instagram風）
 export async function postCommentViaEdge(ideaId: string, content: string) {
-  const supabase = createClient()
-  const { data: { session } } = await supabase.auth.getSession()
+  // セッション取得を省略してトークンを直接使用
+  const token = typeof window !== 'undefined' 
+    ? localStorage.getItem('supabase.auth.token') 
+    : null
   
-  if (!session) {
-    throw new Error('Unauthorized')
+  const accessToken = token ? JSON.parse(token).currentSession?.access_token : null
+  
+  if (!accessToken) {
+    // フォールバック：通常のセッション取得
+    const supabase = createClient()
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) throw new Error('Unauthorized')
+    
+    return fetch(`${EDGE_FUNCTION_URL}/fast-comment-post`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`,
+        'apikey': process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      },
+      body: JSON.stringify({ ideaId, content }),
+    }).then(res => res.ok ? res.json() : Promise.reject(res))
   }
 
-  const response = await fetch(`${EDGE_FUNCTION_URL}/fast-comment-post`, {
+  // 高速パス：既存トークンを使用
+  return fetch(`${EDGE_FUNCTION_URL}/fast-comment-post`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${session.access_token}`,
+      'Authorization': `Bearer ${accessToken}`,
       'apikey': process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     },
     body: JSON.stringify({ ideaId, content }),
-  })
-
-  if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.error || 'Failed to post comment')
-  }
-
-  return response.json()
+  }).then(res => res.ok ? res.json() : Promise.reject(res))
 }

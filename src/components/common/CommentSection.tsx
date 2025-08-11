@@ -5,8 +5,7 @@ import { useAuth } from '@/components/auth/AuthProvider'
 import { Comment } from '@/types'
 import { cn } from '@/lib/utils/cn'
 import { MessageCircle, Send, User, Heart } from 'lucide-react'
-import { addCommentForm } from '@/app/actions/comment'
-import { postCommentViaEdge } from '@/lib/supabase/edge-functions'
+import { postCommentInstant } from '@/lib/supabase/fast-comment'
 
 
 interface CommentSectionProps {
@@ -26,9 +25,10 @@ export function CommentSection({ ideaId, initialComments }: CommentSectionProps)
     const content = newComment.trim()
     if (!content || !user) return
 
-    // 即座にコメントを表示（TikTok風）
+    // 即座にコメントを表示（Instagram風）
+    const tempId = `temp-${Date.now()}`
     const optimisticComment = {
-      id: `temp-${Date.now()}`,
+      id: tempId,
       idea_id: ideaId,
       user_id: user.id,
       content,
@@ -37,23 +37,32 @@ export function CommentSection({ ideaId, initialComments }: CommentSectionProps)
         username: userProfile?.username || user.email?.split('@')[0] || 'You',
         avatar_url: userProfile?.avatar_url || userProfile?.google_avatar_url,
       },
-      isOptimistic: true, // 投稿中フラグ
+      isOptimistic: true,
     } as Comment & { user: { username: string; avatar_url?: string }; isOptimistic?: boolean }
 
+    // UIを即座に更新
     setComments(prev => [optimisticComment, ...prev])
     setNewComment('')
     
-    // フォーカスを維持してスムーズな連続投稿を可能に
-    inputRef.current?.focus()
+    // 入力フィールドをアクティブに保つ
+    setTimeout(() => inputRef.current?.focus(), 0)
 
-    // Edge Functionで高速投稿（CDN経由）
-    startTransition(() => {
-      postCommentViaEdge(ideaId, content).catch(error => {
-        console.error('Error posting comment:', error)
-        // エラー時のみ該当コメントを削除
-        setComments(prev => prev.filter(c => c.id !== optimisticComment.id))
+    // Instagram風の超高速投稿
+    postCommentInstant(ideaId, content)
+      .then(savedComment => {
+        // 成功時はスムーズに置き換え（チラつき防止）
+        requestAnimationFrame(() => {
+          setComments(prev => prev.map(c => 
+            c.id === tempId ? { ...savedComment, isOptimistic: false } : c
+          ))
+        })
       })
-    })
+      .catch(error => {
+        console.error('Comment error:', error)
+        // エラー時のみ削除（アニメーション付き）
+        setComments(prev => prev.filter(c => c.id !== tempId))
+        // エラートースト表示する場合はここに追加
+      })
   }
 
   const formatDate = (dateString: string) => {
@@ -98,13 +107,15 @@ export function CommentSection({ ideaId, initialComments }: CommentSectionProps)
                 onChange={(e) => setNewComment(e.target.value)}
                 placeholder="コメントを追加..."
                 rows={1}
-                className="w-full px-4 py-3 bg-gray-50 border-0 rounded-full resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all duration-200 text-sm"
+                className="w-full px-4 py-3 bg-gray-50 border-0 rounded-full resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all duration-100 text-sm"
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault()
                     handleSubmit(e)
                   }
                 }}
+                autoComplete="off"
+                spellCheck={false}
               />
               <button
                 type="submit"
@@ -175,11 +186,7 @@ export function CommentSection({ ideaId, initialComments }: CommentSectionProps)
                         {comment.user.username}
                       </span>
                       {isOptimistic && (
-                        <div className="flex items-center gap-1">
-                          <div className="w-1 h-1 bg-blue-500 rounded-full animate-pulse"></div>
-                          <div className="w-1 h-1 bg-blue-500 rounded-full animate-pulse" style={{animationDelay: '0.2s'}}></div>
-                          <div className="w-1 h-1 bg-blue-500 rounded-full animate-pulse" style={{animationDelay: '0.4s'}}></div>
-                        </div>
+                        <span className="text-xs text-blue-500 animate-pulse">送信中</span>
                       )}
                     </div>
                     <p className="text-gray-800 text-sm leading-relaxed">
