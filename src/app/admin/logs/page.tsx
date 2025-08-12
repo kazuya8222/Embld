@@ -6,6 +6,7 @@ interface SearchParams {
   action?: string
   target_type?: string
   page?: string
+  [key: string]: string | undefined
 }
 
 export default async function LogsPage({

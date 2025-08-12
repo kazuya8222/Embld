@@ -44,11 +44,29 @@ export default async function AnalyticsPage() {
         id,
         title,
         created_at,
-        users(username, email)
+        user_id
       `)
       .order('created_at', { ascending: false })
       .limit(10)
   ])
+
+  // 最近のアクティビティのユーザー情報を取得
+  const recentActivitiesWithUsers = await Promise.all(
+    (recentActivities || []).map(async (activity: any) => {
+      const { data: userData } = await supabase
+        .from('users')
+        .select('username, email')
+        .eq('id', activity.user_id)
+        .single()
+      
+      return {
+        id: activity.id,
+        title: activity.title,
+        created_at: activity.created_at,
+        users: userData || { username: null, email: 'Unknown' }
+      }
+    })
+  )
 
   // データ処理
   const processedData = {
@@ -79,7 +97,7 @@ export default async function AnalyticsPage() {
     }, {}) || {},
     monthlyUsers: monthlyUsers || [],
     monthlyIdeas: monthlyIdeas || [],
-    recentActivities: recentActivities || []
+    recentActivities: recentActivitiesWithUsers
   }
 
   return (

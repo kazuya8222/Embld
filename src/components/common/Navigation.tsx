@@ -17,7 +17,8 @@ import {
   Bell,
   MessageSquare,
   Home,
-  Package
+  Package,
+  Shield
 } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 
@@ -152,6 +153,19 @@ export function Navigation() {
                         >
                           設定
                         </Link>
+                        {userProfile?.is_admin && (
+                          <>
+                            <hr className="my-1" />
+                            <Link
+                              href="/admin"
+                              className="block px-4 py-2 text-sm text-red-700 hover:bg-red-50 font-medium"
+                              onClick={() => setIsUserMenuOpen(false)}
+                            >
+                              <Shield className="inline h-4 w-4 mr-2" />
+                              管理者画面
+                            </Link>
+                          </>
+                        )}
                         <hr className="my-1" />
                         <button
                           onClick={handleSignOut}
@@ -252,6 +266,16 @@ export function Navigation() {
                     <User className="inline h-4 w-4 mr-2" />
                     マイページ
                   </Link>
+                  {userProfile?.is_admin && (
+                    <Link
+                      href="/admin"
+                      className="block px-3 py-2 text-base font-medium text-red-400 hover:text-red-200 hover:bg-gray-800 rounded-md"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <Shield className="inline h-4 w-4 mr-2" />
+                      管理者画面
+                    </Link>
+                  )}
                   <button
                     onClick={handleSignOut}
                     className="w-full text-left px-3 py-2 text-base font-medium text-gray-400 hover:text-white hover:bg-gray-800 rounded-md"

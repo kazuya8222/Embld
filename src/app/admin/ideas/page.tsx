@@ -7,6 +7,7 @@ interface SearchParams {
   status?: string
   approval?: string
   page?: string
+  [key: string]: string | undefined
 }
 
 export default async function IdeasPage({

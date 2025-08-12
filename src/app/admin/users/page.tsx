@@ -6,6 +6,7 @@ interface SearchParams {
   search?: string
   status?: string
   page?: string
+  [key: string]: string | undefined
 }
 
 export default async function UsersPage({
