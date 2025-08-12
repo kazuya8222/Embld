@@ -58,23 +58,19 @@ export default async function ViolationsPage({
     return <div>エラーが発生しました: {error.message}</div>
   }
 
-  // 各違反のユーザー情報と作成者情報を個別に取得
+  // 各違反のユーザー情報を個別に取得
   const violationsWithUserData = await Promise.all(
     (violations || []).map(async (violation) => {
-      const [
-        { data: userData },
-        { data: creatorData }
-      ] = await Promise.all([
-        supabase.from('users').select('id, username, email').eq('id', violation.user_id).single(),
-        violation.created_by ? 
-          supabase.from('users').select('id, username, email').eq('id', violation.created_by).single() :
-          Promise.resolve({ data: null })
-      ])
+      const { data: userData } = await supabase
+        .from('users')
+        .select('id, username, email')
+        .eq('id', violation.user_id)
+        .single()
       
       return {
         ...violation,
         user: userData || { id: violation.user_id, username: null, email: 'Unknown' },
-        created_by_user: creatorData || null
+        created_by_user: null // created_byフィールドは現在のスキーマに存在しない
       }
     })
   )
@@ -98,7 +94,11 @@ export default async function ViolationsPage({
           violations={violationsWithUserData || []}
           currentPage={page}
           totalPages={totalPages}
-          searchParams={searchParams}
+          searchParams={{
+            search: searchParams.search,
+            type: searchParams.type,
+            action: searchParams.action
+          }}
         />
       </Suspense>
     </div>

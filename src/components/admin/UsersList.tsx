@@ -34,7 +34,7 @@ export function UsersList({ users, currentPage, totalPages, searchParams }: User
   const [modalType, setModalType] = useState<'view' | 'edit' | 'status' | null>(null)
 
   const handleSearch = () => {
-    const params = new URLSearchParams(urlSearchParams)
+    const params = new URLSearchParams(urlSearchParams.toString())
     if (searchTerm) {
       params.set('search', searchTerm)
     } else {
@@ -45,7 +45,7 @@ export function UsersList({ users, currentPage, totalPages, searchParams }: User
   }
 
   const handleStatusFilter = (status: string) => {
-    const params = new URLSearchParams(urlSearchParams)
+    const params = new URLSearchParams(urlSearchParams.toString())
     if (status) {
       params.set('status', status)
     } else {
@@ -57,7 +57,7 @@ export function UsersList({ users, currentPage, totalPages, searchParams }: User
   }
 
   const handlePageChange = (page: number) => {
-    const params = new URLSearchParams(urlSearchParams)
+    const params = new URLSearchParams(urlSearchParams.toString())
     params.set('page', page.toString())
     router.push(`/admin/users?${params.toString()}`)
   }

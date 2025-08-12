@@ -47,7 +47,7 @@ export function ViolationsList({ violations, currentPage, totalPages, searchPara
   const [showNewModal, setShowNewModal] = useState(false)
 
   const handleSearch = () => {
-    const params = new URLSearchParams(urlSearchParams)
+    const params = new URLSearchParams(urlSearchParams.toString())
     if (searchTerm) {
       params.set('search', searchTerm)
     } else {
@@ -58,7 +58,7 @@ export function ViolationsList({ violations, currentPage, totalPages, searchPara
   }
 
   const handleTypeFilter = (type: string) => {
-    const params = new URLSearchParams(urlSearchParams)
+    const params = new URLSearchParams(urlSearchParams.toString())
     if (type) {
       params.set('type', type)
     } else {
@@ -70,7 +70,7 @@ export function ViolationsList({ violations, currentPage, totalPages, searchPara
   }
 
   const handleActionFilter = (action: string) => {
-    const params = new URLSearchParams(urlSearchParams)
+    const params = new URLSearchParams(urlSearchParams.toString())
     if (action) {
       params.set('action', action)
     } else {
@@ -82,7 +82,7 @@ export function ViolationsList({ violations, currentPage, totalPages, searchPara
   }
 
   const handlePageChange = (page: number) => {
-    const params = new URLSearchParams(urlSearchParams)
+    const params = new URLSearchParams(urlSearchParams.toString())
     params.set('page', page.toString())
     router.push(`/admin/violations?${params.toString()}`)
   }

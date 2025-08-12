@@ -42,7 +42,7 @@ export function IdeasList({ ideas, currentPage, totalPages, searchParams }: Idea
   const [modalType, setModalType] = useState<'view' | 'edit' | 'approve' | null>(null)
 
   const handleSearch = () => {
-    const params = new URLSearchParams(urlSearchParams)
+    const params = new URLSearchParams(urlSearchParams.toString())
     if (searchTerm) {
       params.set('search', searchTerm)
     } else {
@@ -53,7 +53,7 @@ export function IdeasList({ ideas, currentPage, totalPages, searchParams }: Idea
   }
 
   const handleStatusFilter = (status: string) => {
-    const params = new URLSearchParams(urlSearchParams)
+    const params = new URLSearchParams(urlSearchParams.toString())
     if (status) {
       params.set('status', status)
     } else {
@@ -65,7 +65,7 @@ export function IdeasList({ ideas, currentPage, totalPages, searchParams }: Idea
   }
 
   const handleApprovalFilter = (approval: string) => {
-    const params = new URLSearchParams(urlSearchParams)
+    const params = new URLSearchParams(urlSearchParams.toString())
     if (approval) {
       params.set('approval', approval)
     } else {
@@ -77,7 +77,7 @@ export function IdeasList({ ideas, currentPage, totalPages, searchParams }: Idea
   }
 
   const handlePageChange = (page: number) => {
-    const params = new URLSearchParams(urlSearchParams)
+    const params = new URLSearchParams(urlSearchParams.toString())
     params.set('page', page.toString())
     router.push(`/admin/ideas?${params.toString()}`)
   }

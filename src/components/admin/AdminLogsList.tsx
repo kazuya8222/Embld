@@ -34,7 +34,7 @@ export function AdminLogsList({ logs, currentPage, totalPages, searchParams }: A
   const [selectedLog, setSelectedLog] = useState<AdminLog | null>(null)
 
   const handleActionFilter = (action: string) => {
-    const params = new URLSearchParams(urlSearchParams)
+    const params = new URLSearchParams(urlSearchParams.toString())
     if (action) {
       params.set('action', action)
     } else {
@@ -46,7 +46,7 @@ export function AdminLogsList({ logs, currentPage, totalPages, searchParams }: A
   }
 
   const handleTargetTypeFilter = (targetType: string) => {
-    const params = new URLSearchParams(urlSearchParams)
+    const params = new URLSearchParams(urlSearchParams.toString())
     if (targetType) {
       params.set('target_type', targetType)
     } else {
@@ -58,7 +58,7 @@ export function AdminLogsList({ logs, currentPage, totalPages, searchParams }: A
   }
 
   const handlePageChange = (page: number) => {
-    const params = new URLSearchParams(urlSearchParams)
+    const params = new URLSearchParams(urlSearchParams.toString())
     params.set('page', page.toString())
     router.push(`/admin/logs?${params.toString()}`)
   }
