@@ -39,36 +39,55 @@ export default async function IdeaDetailPage({
   const supabase = createSupabaseServerClient()
   const { data: { session } } = await supabase.auth.getSession()
 
+  // Debug logging for server component
+  console.log('IdeaDetailPage: Starting data fetch for ID:', params.id)
+  console.log('IdeaDetailPage: Session available:', !!session)
+  console.log('IdeaDetailPage: User ID:', session?.user?.id)
+
+  // First try to get just the basic idea data
   const { data: idea, error } = await supabase
     .from('ideas')
-    .select(`
-      *,
-      user:users(username, avatar_url, google_avatar_url),
-      wants(user_id),
-      comments(
-        *,
-        user:users(username, avatar_url, google_avatar_url),
-        comment_likes(user_id)
-      ),
-      completed_apps(
-        *,
-        developer:users(username, avatar_url, google_avatar_url),
-        reviews(rating)
-      )
-    `)
+    .select('*')
     .eq('id', params.id)
-    .order('created_at', { ascending: false, referencedTable: 'comments' })
     .single()
 
   if (error || !idea) {
+    console.error('IdeaDetailPage: Basic query failed:', error)
     notFound()
   }
 
-  const wantsCount = idea.wants?.length || 0
-  const userHasWanted = session ? idea.wants?.some((want: any) => want.user_id === session.user.id) || false : false
+  // Then get related data separately
+  const [userResult, wantsResult, commentsResult, appsResult] = await Promise.all([
+    supabase.from('users').select('username, avatar_url, google_avatar_url').eq('id', idea.user_id).single(),
+    supabase.from('wants').select('user_id').eq('idea_id', idea.id),
+    supabase.from('comments').select(`
+      *,
+      user:users(username, avatar_url, google_avatar_url),
+      comment_likes(user_id)
+    `).eq('idea_id', idea.id).order('created_at', { ascending: false }),
+    supabase.from('completed_apps').select(`
+      *,
+      developer:users(username, avatar_url, google_avatar_url),
+      reviews(rating)
+    `).eq('idea_id', idea.id)
+  ])
+
+  // Combine the data
+  const ideaWithRelations = {
+    ...idea,
+    user: userResult.data,
+    wants: wantsResult.data || [],
+    comments: commentsResult.data || [],
+    completed_apps: appsResult.data || []
+  }
+
+  console.log('IdeaDetailPage: Final idea data assembled')
+
+  const wantsCount = ideaWithRelations.wants?.length || 0
+  const userHasWanted = session ? ideaWithRelations.wants?.some((want: any) => want.user_id === session.user.id) || false : false
   
   // コメントにいいね情報を追加
-  const comments = (idea.comments || []).map((comment: any) => ({
+  const comments = (ideaWithRelations.comments || []).map((comment: any) => ({
     ...comment,
     user_has_liked: session ? comment.comment_likes?.some((like: any) => like.user_id === session.user.id) || false : false
   }))
@@ -81,12 +100,12 @@ export default async function IdeaDetailPage({
     })
   }
 
-  const isOwner = session?.user?.id === idea.user_id
+  const isOwner = session?.user?.id === ideaWithRelations.user_id
 
   // 企画書フォーマットの項目が入力されているかチェック
-  const hasProjectPlan = idea.service_name || idea.catch_copy || idea.service_description ||
-    idea.background_problem || idea.main_target || idea.value_proposition ||
-    idea.core_features?.length > 0
+  const hasProjectPlan = ideaWithRelations.service_name || ideaWithRelations.catch_copy || ideaWithRelations.service_description ||
+    ideaWithRelations.background_problem || ideaWithRelations.main_target || ideaWithRelations.value_proposition ||
+    ideaWithRelations.core_features?.length > 0
 
   return (
     <div className="max-w-6xl mx-auto space-y-8">
@@ -101,7 +120,7 @@ export default async function IdeaDetailPage({
         
         {isOwner && (
           <Link
-            href={`/ideas/${idea.id}/edit`}
+            href={`/ideas/${ideaWithRelations.id}/edit`}
             className="flex items-center gap-2 text-primary-600 hover:text-primary-700 transition-colors"
           >
             <Edit className="w-4 h-4" />
@@ -114,25 +133,25 @@ export default async function IdeaDetailPage({
       <div className="bg-white rounded-lg shadow-sm p-8">
         <div className="flex items-center gap-3 mb-4">
           <span className="inline-block px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full">
-            {idea.category}
+            {ideaWithRelations.category}
           </span>
           <span className={`inline-block px-3 py-1 text-sm rounded-full ${
-            idea.status === 'open' ? 'bg-green-100 text-green-700' :
-            idea.status === 'in_development' ? 'bg-yellow-100 text-yellow-700' :
+            ideaWithRelations.status === 'open' ? 'bg-green-100 text-green-700' :
+            ideaWithRelations.status === 'in_development' ? 'bg-yellow-100 text-yellow-700' :
             'bg-blue-100 text-blue-700'
           }`}>
-            {idea.status === 'open' ? '募集中' :
-             idea.status === 'in_development' ? '開発中' : '完成'}
+            {ideaWithRelations.status === 'open' ? '募集中' :
+             ideaWithRelations.status === 'in_development' ? '開発中' : '完成'}
           </span>
         </div>
 
         <h1 className="text-4xl font-bold text-gray-900 mb-4">
-          {idea.service_name || idea.title}
+          {ideaWithRelations.service_name || ideaWithRelations.title}
         </h1>
 
-        {idea.catch_copy && (
+        {ideaWithRelations.catch_copy && (
           <p className="text-xl text-gray-600 italic mb-6">
-            &ldquo;{idea.catch_copy}&rdquo;
+            &ldquo;{ideaWithRelations.catch_copy}&rdquo;
           </p>
         )}
 
@@ -140,22 +159,22 @@ export default async function IdeaDetailPage({
           <div className="flex items-center gap-6 text-sm text-gray-600">
             <div className="flex items-center gap-2">
               <User className="w-4 h-4" />
-              <span>{idea.user.username}</span>
+              <span>{ideaWithRelations.user.username}</span>
             </div>
             <div className="flex items-center gap-2">
               <Calendar className="w-4 h-4" />
-              <span>{formatDate(idea.created_at)}</span>
+              <span>{formatDate(ideaWithRelations.created_at)}</span>
             </div>
-            {idea.revenue && idea.revenue > 0 && (
+            {ideaWithRelations.revenue && ideaWithRelations.revenue > 0 && (
               <div className="flex items-center gap-2 text-green-600 font-semibold">
                 <DollarSign className="w-4 h-4" />
-                <span>{idea.revenue}円</span>
+                <span>{ideaWithRelations.revenue}円</span>
               </div>
             )}
           </div>
 
           <WantButton
-            ideaId={idea.id}
+            ideaId={ideaWithRelations.id}
             initialWanted={userHasWanted}
             initialCount={wantsCount}
             className="text-base px-6 py-3"
@@ -175,24 +194,24 @@ export default async function IdeaDetailPage({
             <div className="bg-green-50 rounded-lg p-4">
               <div className="flex justify-between items-center mb-2">
                 <span className="text-sm text-gray-600">累計収益</span>
-                <span className="text-lg font-bold text-green-600">{idea.revenue}円</span>
+                <span className="text-lg font-bold text-green-600">{ideaWithRelations.revenue}円</span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2">
-                <div className="bg-green-600 h-2 rounded-full" style={{width: `${Math.min((idea.revenue || 0) / 100000000 * 100, 100)}%`}}></div>
+                <div className="bg-green-600 h-2 rounded-full" style={{width: `${Math.min((ideaWithRelations.revenue || 0) / 100000000 * 100, 100)}%`}}></div>
               </div>
             </div>
             
-            {idea.monetization_method && (
+            {ideaWithRelations.monetization_method && (
               <div>
                 <h3 className="font-semibold text-gray-700 mb-2">マネタイズ方法</h3>
-                <p className="text-gray-600 text-sm">{idea.monetization_method}</p>
+                <p className="text-gray-600 text-sm">{ideaWithRelations.monetization_method}</p>
               </div>
             )}
             
-            {idea.price_range && (
+            {ideaWithRelations.price_range && (
               <div>
                 <h3 className="font-semibold text-gray-700 mb-2">想定価格帯</h3>
-                <p className="text-gray-600 text-sm">{idea.price_range}</p>
+                <p className="text-gray-600 text-sm">{ideaWithRelations.price_range}</p>
               </div>
             )}
             
@@ -222,14 +241,14 @@ export default async function IdeaDetailPage({
                 <User className="w-5 h-5 text-blue-600" />
               </div>
               <div>
-                <div className="font-medium text-gray-900">{idea.user.username}</div>
+                <div className="font-medium text-gray-900">{ideaWithRelations.user.username}</div>
                 <div className="text-sm text-blue-600">プロジェクトオーナー</div>
               </div>
             </div>
             
             {/* 開発チーム */}
-            {idea.completed_apps && idea.completed_apps.length > 0 ? (
-              idea.completed_apps.map((app: any) => (
+            {ideaWithRelations.completed_apps && ideaWithRelations.completed_apps.length > 0 ? (
+              ideaWithRelations.completed_apps.map((app: any) => (
                 <div key={app.id} className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
                   <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
                     <Code className="w-5 h-5 text-green-600" />
@@ -260,25 +279,25 @@ export default async function IdeaDetailPage({
           </h2>
           <div className="space-y-8">
           {/* 1. サービス概要 */}
-          {(idea.service_description || idea.tags?.length > 0) && (
+          {(ideaWithRelations.service_description || ideaWithRelations.tags?.length > 0) && (
             <div className="bg-white rounded-lg shadow-sm p-8">
               <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
                 <FileText className="w-6 h-6 text-primary-600" />
                 サービス概要
               </h2>
               
-              {idea.service_description && (
+              {ideaWithRelations.service_description && (
                 <div className="mb-6">
                   <h3 className="font-semibold text-gray-700 mb-2">サービスの説明</h3>
-                  <p className="text-gray-600 whitespace-pre-wrap">{idea.service_description}</p>
+                  <p className="text-gray-600 whitespace-pre-wrap">{ideaWithRelations.service_description}</p>
                 </div>
               )}
 
-              {idea.tags && idea.tags.length > 0 && (
+              {ideaWithRelations.tags && ideaWithRelations.tags.length > 0 && (
                 <div>
                   <h3 className="font-semibold text-gray-700 mb-2">タグ</h3>
                   <div className="flex flex-wrap gap-2">
-                    {idea.tags.map((tag: string, index: number) => (
+                    {ideaWithRelations.tags.map((tag: string, index: number) => (
                       <span
                         key={index}
                         className="inline-block px-3 py-1 bg-primary-50 text-primary-700 text-sm rounded-full"
@@ -293,96 +312,96 @@ export default async function IdeaDetailPage({
           )}
 
           {/* 2. 背景・課題 */}
-          {(idea.background_problem || idea.current_solution_problems || idea.problem) && (
+          {(ideaWithRelations.background_problem || ideaWithRelations.current_solution_problems || ideaWithRelations.problem) && (
             <div className="bg-white rounded-lg shadow-sm p-8">
               <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
                 <AlertCircle className="w-6 h-6 text-red-600" />
                 背景・課題
               </h2>
               
-              {(idea.background_problem || idea.problem) && (
+              {(ideaWithRelations.background_problem || ideaWithRelations.problem) && (
                 <div className="mb-6">
                   <h3 className="font-semibold text-gray-700 mb-2">解決したい問題</h3>
                   <p className="text-gray-600 whitespace-pre-wrap">
-                    {idea.background_problem || idea.problem}
+                    {ideaWithRelations.background_problem || ideaWithRelations.problem}
                   </p>
                 </div>
               )}
 
-              {idea.current_solution_problems && (
+              {ideaWithRelations.current_solution_problems && (
                 <div>
                   <h3 className="font-semibold text-gray-700 mb-2">現状の解決方法とその問題点</h3>
-                  <p className="text-gray-600 whitespace-pre-wrap">{idea.current_solution_problems}</p>
+                  <p className="text-gray-600 whitespace-pre-wrap">{ideaWithRelations.current_solution_problems}</p>
                 </div>
               )}
             </div>
           )}
 
           {/* 3. ターゲットユーザー */}
-          {(idea.main_target || idea.usage_scene || idea.target_users) && (
+          {(ideaWithRelations.main_target || ideaWithRelations.usage_scene || ideaWithRelations.target_users) && (
             <div className="bg-white rounded-lg shadow-sm p-8">
               <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
                 <Users className="w-6 h-6 text-blue-600" />
                 ターゲットユーザー
               </h2>
               
-              {(idea.main_target || idea.target_users) && (
+              {(ideaWithRelations.main_target || ideaWithRelations.target_users) && (
                 <div className="mb-6">
                   <h3 className="font-semibold text-gray-700 mb-2">メインターゲット</h3>
                   <p className="text-gray-600 whitespace-pre-wrap">
-                    {idea.main_target || idea.target_users}
+                    {ideaWithRelations.main_target || ideaWithRelations.target_users}
                   </p>
                 </div>
               )}
 
-              {idea.usage_scene && (
+              {ideaWithRelations.usage_scene && (
                 <div>
                   <h3 className="font-semibold text-gray-700 mb-2">想定利用シーン</h3>
-                  <p className="text-gray-600 whitespace-pre-wrap">{idea.usage_scene}</p>
+                  <p className="text-gray-600 whitespace-pre-wrap">{ideaWithRelations.usage_scene}</p>
                 </div>
               )}
             </div>
           )}
 
           {/* 4. 提供価値 */}
-          {(idea.value_proposition || idea.differentiators || idea.solution) && (
+          {(ideaWithRelations.value_proposition || ideaWithRelations.differentiators || ideaWithRelations.solution) && (
             <div className="bg-white rounded-lg shadow-sm p-8">
               <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
                 <Lightbulb className="w-6 h-6 text-yellow-600" />
                 提供価値
               </h2>
               
-              {(idea.value_proposition || idea.solution) && (
+              {(ideaWithRelations.value_proposition || ideaWithRelations.solution) && (
                 <div className="mb-6">
                   <h3 className="font-semibold text-gray-700 mb-2">このサービスで実現したいこと</h3>
                   <p className="text-gray-600 whitespace-pre-wrap">
-                    {idea.value_proposition || idea.solution}
+                    {ideaWithRelations.value_proposition || ideaWithRelations.solution}
                   </p>
                 </div>
               )}
 
-              {idea.differentiators && (
+              {ideaWithRelations.differentiators && (
                 <div>
                   <h3 className="font-semibold text-gray-700 mb-2">既存サービスとの違い</h3>
-                  <p className="text-gray-600 whitespace-pre-wrap">{idea.differentiators}</p>
+                  <p className="text-gray-600 whitespace-pre-wrap">{ideaWithRelations.differentiators}</p>
                 </div>
               )}
             </div>
           )}
 
           {/* 5. 主要機能 */}
-          {(idea.core_features?.length > 0 || idea.nice_to_have_features) && (
+          {(ideaWithRelations.core_features?.length > 0 || ideaWithRelations.nice_to_have_features) && (
             <div className="bg-white rounded-lg shadow-sm p-8">
               <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
                 <Zap className="w-6 h-6 text-purple-600" />
                 主要機能
               </h2>
               
-              {idea.core_features && idea.core_features.length > 0 && (
+              {ideaWithRelations.core_features && ideaWithRelations.core_features.length > 0 && (
                 <div className="mb-6">
                   <h3 className="font-semibold text-gray-700 mb-4">核となる機能</h3>
                   <div className="space-y-4">
-                    {(idea.core_features as CoreFeature[]).map((feature, index) => (
+                    {(ideaWithRelations.core_features as CoreFeature[]).map((feature, index) => (
                       <div key={index} className="bg-gray-50 rounded-lg p-4">
                         <h4 className="font-medium text-gray-900 mb-1">
                           {index + 1}. {feature.title}
@@ -394,97 +413,97 @@ export default async function IdeaDetailPage({
                 </div>
               )}
 
-              {idea.nice_to_have_features && (
+              {ideaWithRelations.nice_to_have_features && (
                 <div>
                   <h3 className="font-semibold text-gray-700 mb-2">あったらいいなと思う機能</h3>
-                  <p className="text-gray-600 whitespace-pre-wrap">{idea.nice_to_have_features}</p>
+                  <p className="text-gray-600 whitespace-pre-wrap">{ideaWithRelations.nice_to_have_features}</p>
                 </div>
               )}
             </div>
           )}
 
           {/* 5.5 利用フロー */}
-          {(idea.initial_flow || idea.important_operations) && (
+          {(ideaWithRelations.initial_flow || ideaWithRelations.important_operations) && (
             <div className="bg-white rounded-lg shadow-sm p-8">
               <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
                 <Clock className="w-6 h-6 text-green-600" />
                 利用フロー
               </h2>
               
-              {idea.initial_flow && (
+              {ideaWithRelations.initial_flow && (
                 <div className="mb-6">
                   <h3 className="font-semibold text-gray-700 mb-2">初回利用時の流れ</h3>
-                  <p className="text-gray-600 whitespace-pre-wrap">{idea.initial_flow}</p>
+                  <p className="text-gray-600 whitespace-pre-wrap">{ideaWithRelations.initial_flow}</p>
                 </div>
               )}
 
-              {idea.important_operations && (
+              {ideaWithRelations.important_operations && (
                 <div>
                   <h3 className="font-semibold text-gray-700 mb-2">最も重要な操作の手順</h3>
-                  <p className="text-gray-600 whitespace-pre-wrap">{idea.important_operations}</p>
+                  <p className="text-gray-600 whitespace-pre-wrap">{ideaWithRelations.important_operations}</p>
                 </div>
               )}
             </div>
           )}
 
           {/* 6. 収益モデル */}
-          {(idea.monetization_method || idea.price_range || idea.free_paid_boundary) && (
+          {(ideaWithRelations.monetization_method || ideaWithRelations.price_range || ideaWithRelations.free_paid_boundary) && (
             <div className="bg-white rounded-lg shadow-sm p-8">
               <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
                 <DollarSign className="w-6 h-6 text-green-600" />
                 収益モデル
               </h2>
               
-              {idea.monetization_method && (
+              {ideaWithRelations.monetization_method && (
                 <div className="mb-6">
                   <h3 className="font-semibold text-gray-700 mb-2">マネタイズ方法</h3>
-                  <p className="text-gray-600 whitespace-pre-wrap">{idea.monetization_method}</p>
+                  <p className="text-gray-600 whitespace-pre-wrap">{ideaWithRelations.monetization_method}</p>
                 </div>
               )}
 
-              {idea.price_range && (
+              {ideaWithRelations.price_range && (
                 <div className="mb-6">
                   <h3 className="font-semibold text-gray-700 mb-2">想定価格帯</h3>
-                  <p className="text-gray-600 whitespace-pre-wrap">{idea.price_range}</p>
+                  <p className="text-gray-600 whitespace-pre-wrap">{ideaWithRelations.price_range}</p>
                 </div>
               )}
 
-              {idea.free_paid_boundary && (
+              {ideaWithRelations.free_paid_boundary && (
                 <div>
                   <h3 className="font-semibold text-gray-700 mb-2">無料/有料の境界線</h3>
-                  <p className="text-gray-600 whitespace-pre-wrap">{idea.free_paid_boundary}</p>
+                  <p className="text-gray-600 whitespace-pre-wrap">{ideaWithRelations.free_paid_boundary}</p>
                 </div>
               )}
             </div>
           )}
 
           {/* 7. 参考イメージ */}
-          {(idea.similar_services || idea.design_atmosphere || idea.reference_urls) && (
+          {(ideaWithRelations.similar_services || ideaWithRelations.design_atmosphere || ideaWithRelations.reference_urls) && (
             <div className="bg-white rounded-lg shadow-sm p-8">
               <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
                 <Palette className="w-6 h-6 text-pink-600" />
                 参考イメージ
               </h2>
               
-              {idea.similar_services && (
+              {ideaWithRelations.similar_services && (
                 <div className="mb-6">
                   <h3 className="font-semibold text-gray-700 mb-2">似ているサービス・アプリ</h3>
-                  <p className="text-gray-600 whitespace-pre-wrap">{idea.similar_services}</p>
+                  <p className="text-gray-600 whitespace-pre-wrap">{ideaWithRelations.similar_services}</p>
                 </div>
               )}
 
-              {idea.design_atmosphere && (
+              {ideaWithRelations.design_atmosphere && (
                 <div className="mb-6">
                   <h3 className="font-semibold text-gray-700 mb-2">デザインの雰囲気</h3>
-                  <p className="text-gray-600 whitespace-pre-wrap">{idea.design_atmosphere}</p>
+                  <p className="text-gray-600 whitespace-pre-wrap">{ideaWithRelations.design_atmosphere}</p>
                 </div>
               )}
 
-              {idea.reference_urls && (
+              {ideaWithRelations.reference_urls && (
                 <div>
                   <h3 className="font-semibold text-gray-700 mb-2">参考URL</h3>
                   <div className="space-y-2">
-                    {idea.reference_urls.split('\n').filter((url: string) => url.trim()).map((url: string, index: number) => (
+                    {ideaWithRelations.reference_urls.split('\n').filter((url: string) => url.trim()).map((url: string, index: number) => (
                       <a
                         key={index}
                         href={url.trim()}
@@ -503,72 +522,72 @@ export default async function IdeaDetailPage({
           )}
 
           {/* 8. その他 */}
-          {(idea.expected_release || idea.priority_points) && (
+          {(ideaWithRelations.expected_release || ideaWithRelations.priority_points) && (
             <div className="bg-white rounded-lg shadow-sm p-8">
               <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
                 <CheckCircle className="w-6 h-6 text-gray-600" />
                 その他
               </h2>
               
-              {idea.expected_release && (
+              {ideaWithRelations.expected_release && (
                 <div className="mb-6">
                   <h3 className="font-semibold text-gray-700 mb-2">想定リリース時期</h3>
-                  <p className="text-gray-600 whitespace-pre-wrap">{idea.expected_release}</p>
+                  <p className="text-gray-600 whitespace-pre-wrap">{ideaWithRelations.expected_release}</p>
                 </div>
               )}
 
-              {idea.priority_points && (
+              {ideaWithRelations.priority_points && (
                 <div>
                   <h3 className="font-semibold text-gray-700 mb-2">特に重視したいポイント</h3>
-                  <p className="text-gray-600 whitespace-pre-wrap">{idea.priority_points}</p>
+                  <p className="text-gray-600 whitespace-pre-wrap">{ideaWithRelations.priority_points}</p>
                 </div>
               )}
             </div>
           )}
 
           {/* 9. 技術的な希望 */}
-          {(idea.device_type || idea.external_services) && (
+          {(ideaWithRelations.device_type || ideaWithRelations.external_services) && (
             <div className="bg-white rounded-lg shadow-sm p-8">
               <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
                 <Smartphone className="w-6 h-6 text-indigo-600" />
                 技術的な希望
               </h2>
               
-              {idea.device_type && (
+              {ideaWithRelations.device_type && (
                 <div className="mb-6">
                   <h3 className="font-semibold text-gray-700 mb-2">使用デバイス</h3>
-                  <p className="text-gray-600 whitespace-pre-wrap">{idea.device_type}</p>
+                  <p className="text-gray-600 whitespace-pre-wrap">{ideaWithRelations.device_type}</p>
                 </div>
               )}
 
-              {idea.external_services && (
+              {ideaWithRelations.external_services && (
                 <div>
                   <h3 className="font-semibold text-gray-700 mb-2">必要な外部サービス</h3>
-                  <p className="text-gray-600 whitespace-pre-wrap">{idea.external_services}</p>
+                  <p className="text-gray-600 whitespace-pre-wrap">{ideaWithRelations.external_services}</p>
                 </div>
               )}
             </div>
           )}
 
           {/* 10. 成功イメージ */}
-          {(idea.one_month_goal || idea.success_metrics) && (
+          {(ideaWithRelations.one_month_goal || ideaWithRelations.success_metrics) && (
             <div className="bg-white rounded-lg shadow-sm p-8">
               <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
                 <TrendingUp className="w-6 h-6 text-teal-600" />
                 成功イメージ
               </h2>
               
-              {idea.one_month_goal && (
+              {ideaWithRelations.one_month_goal && (
                 <div className="mb-6">
                   <h3 className="font-semibold text-gray-700 mb-2">リリース後1ヶ月の理想的な状態</h3>
-                  <p className="text-gray-600 whitespace-pre-wrap">{idea.one_month_goal}</p>
+                  <p className="text-gray-600 whitespace-pre-wrap">{ideaWithRelations.one_month_goal}</p>
                 </div>
               )}
 
-              {idea.success_metrics && (
+              {ideaWithRelations.success_metrics && (
                 <div>
                   <h3 className="font-semibold text-gray-700 mb-2">数値目標</h3>
-                  <p className="text-gray-600 whitespace-pre-wrap">{idea.success_metrics}</p>
+                  <p className="text-gray-600 whitespace-pre-wrap">{ideaWithRelations.success_metrics}</p>
                 </div>
               )}
             </div>
@@ -589,7 +608,7 @@ export default async function IdeaDetailPage({
                   <h3 className="text-lg font-semibold text-gray-900">解決したい問題</h3>
                 </div>
                 <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
-                  {idea.problem}
+                  {ideaWithRelations.problem}
                 </p>
               </div>
 
@@ -599,32 +618,32 @@ export default async function IdeaDetailPage({
                   <h3 className="text-lg font-semibold text-gray-900">解決策・アイデア</h3>
                 </div>
                 <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
-                  {idea.solution}
+                  {ideaWithRelations.solution}
                 </p>
               </div>
 
-              {idea.target_users && (
+              {ideaWithRelations.target_users && (
                 <div className="space-y-3">
                   <div className="flex items-center gap-2">
                     <Target className="w-5 h-5 text-blue-600" />
                     <h3 className="text-lg font-semibold text-gray-900">ターゲットユーザー</h3>
                   </div>
                   <p className="text-gray-700 leading-relaxed">
-                    {idea.target_users}
+                    {ideaWithRelations.target_users}
                   </p>
                 </div>
               )}
             </div>
 
             <div className="space-y-6">
-              {idea.tags && idea.tags.length > 0 && (
+              {ideaWithRelations.tags && ideaWithRelations.tags.length > 0 && (
                 <div className="space-y-3">
                   <div className="flex items-center gap-2">
                     <Tag className="w-5 h-5 text-purple-600" />
                     <h3 className="text-lg font-semibold text-gray-900">タグ</h3>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    {idea.tags.map((tag: string, index: number) => (
+                    {ideaWithRelations.tags.map((tag: string, index: number) => (
                       <span
                         key={index}
                         className="inline-block px-3 py-1 bg-primary-50 text-primary-700 text-sm rounded-full"
@@ -642,7 +661,7 @@ export default async function IdeaDetailPage({
 
 
       {/* 完成アプリ情報 */}
-      {idea.completed_apps && idea.completed_apps.length > 0 && (
+      {ideaWithRelations.completed_apps && ideaWithRelations.completed_apps.length > 0 && (
         <div className="bg-gradient-to-br from-green-50 to-blue-50 rounded-lg shadow-sm p-8 border-2 border-green-200">
           <div className="flex items-center gap-2 mb-6">
             <Rocket className="w-6 h-6 text-green-600" />
@@ -650,7 +669,7 @@ export default async function IdeaDetailPage({
           </div>
           
           <div className="space-y-4">
-            {idea.completed_apps.map((app: any) => {
+            {ideaWithRelations.completed_apps.map((app: any) => {
               const avgRating = app.reviews?.length > 0
                 ? app.reviews.reduce((sum: number, review: any) => sum + review.rating, 0) / app.reviews.length
                 : 0
@@ -707,7 +726,7 @@ export default async function IdeaDetailPage({
       )}
 
       {/* 開発準備中メッセージ */}
-      {(!idea.completed_apps || idea.completed_apps.length === 0) && (
+      {(!ideaWithRelations.completed_apps || ideaWithRelations.completed_apps.length === 0) && (
         <div className="bg-gradient-to-br from-primary-50 to-blue-50 rounded-lg p-8 border-2 border-dashed border-primary-200">
           <div className="text-center">
             <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -731,7 +750,7 @@ export default async function IdeaDetailPage({
           コメント
         </h2>
         <CommentSection
-          ideaId={idea.id}
+          ideaId={ideaWithRelations.id}
           initialComments={comments}
         />
       </div>
