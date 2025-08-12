@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react'
 import type { User } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
@@ -30,6 +30,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [userProfile, setUserProfile] = useState<any | null>(null)
   const [loading, setLoading] = useState(true)
+  const hasInitialized = useRef(false)
+  const isFetchingProfile = useRef(false)
   const router = useRouter()
 
   // 即座にローカルストレージからプロフィールを復元（最速表示）
@@ -157,125 +159,90 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  useEffect(() => {
-    // ユーザープロフィール取得の共通関数（高速化版）
-    const fetchUserProfile = async (user: any, retryCount = 0) => {
-      const timeoutMs = 3000 // 3秒タイムアウト（高速化）
+  // ユーザープロフィール取得の共通関数
+  const fetchUserProfile = useCallback(async (user: any) => {
+    // 既に取得中の場合はスキップ
+    if (isFetchingProfile.current) {
+      console.log('AuthProvider: Already fetching profile, skipping')
+      return
+    }
+
+    // 既にプロフィールがある場合はスキップ
+    if (userProfile && userProfile.email === user.email) {
+      console.log('AuthProvider: Profile already loaded for this user')
+      return
+    }
+
+    isFetchingProfile.current = true
+    
+    try {
+      console.log('AuthProvider: Fetching profile for user:', user.email)
       
-      try {
-        if (retryCount > 0) {
-          console.log(`AuthProvider: Retrying profile fetch for user ${user.id} (attempt ${retryCount + 1})`)
-        }
-        
-        // タイムアウト付きでプロフィール取得
-        const timeoutPromise = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('Profile fetch timeout')), timeoutMs)
-        )
-        
-        const fetchPromise = supabase
-          .from('users')
-          .select('username, avatar_url, google_avatar_url, email, created_at')
-          .eq('id', user.id)
-          .single()
-        
-        const result = await Promise.race([fetchPromise, timeoutPromise])
-        const { data: profile, error: profileError } = result as any
-        
-        if (profileError) {
-          console.error('AuthProvider: Profile fetch error:', profileError.message || profileError)
-          
-          // リトライ（最大3回）
-          if (retryCount < 2) {
-            setTimeout(() => fetchUserProfile(user, retryCount + 1), (retryCount + 1) * 1000)
-            return
-          }
-          
-          // 最終的にエラーの場合、emailベースのフォールバック
-          console.warn('AuthProvider: Using email fallback due to persistent error')
-          setUserProfile({
-            username: user.email?.split('@')[0] || 'User',
-            avatar_url: null,
-            google_avatar_url: null,
-            email: user.email
-          })
-          return
-        }
-        
-        if (!profile) {
-          console.warn('AuthProvider: Profile is null, using email fallback')
-          setUserProfile({
-            username: user.email?.split('@')[0] || 'User',
-            avatar_url: null,
-            google_avatar_url: null,
-            email: user.email
-          })
-          return
-        }
-        
-        // 初回のみ成功ログを表示
-        if (retryCount === 0) {
-          console.log('AuthProvider: Profile loaded successfully:', profile.username)
-        }
+      const { data: profile, error } = await supabase
+        .from('users')
+        .select('username, avatar_url, google_avatar_url, email, created_at')
+        .eq('id', user.id)
+        .single()
+      
+      if (error || !profile) {
+        console.warn('AuthProvider: Profile fetch failed, using fallback')
+        setUserProfile({
+          username: user.email?.split('@')[0] || 'User',
+          avatar_url: null,
+          google_avatar_url: null,
+          email: user.email
+        })
+      } else {
+        console.log('AuthProvider: Profile loaded successfully:', profile.username)
         
         // プロフィールをローカルストレージにキャッシュ（24時間）
         if (typeof window !== 'undefined') {
           const cacheData = {
             data: profile,
-            expires: Date.now() + (24 * 60 * 60 * 1000) // 24時間後
+            expires: Date.now() + (24 * 60 * 60 * 1000)
           }
           localStorage.setItem('embld_user_profile', JSON.stringify(cacheData))
         }
         
         setUserProfile(profile)
-        
-      } catch (error) {
-        console.error('AuthProvider: Exception during profile fetch:', error)
-        
-        // 例外が発生した場合もリトライ
-        if (retryCount < 2) {
-          setTimeout(() => fetchUserProfile(user, retryCount + 1), (retryCount + 1) * 1000)
-        } else {
-          // 最終的にエラーの場合、emailベースのフォールバック
-          console.warn('AuthProvider: Using email fallback due to persistent exception')
-          const fallbackProfile = {
-            username: user.email?.split('@')[0] || 'User',
-            avatar_url: null,
-            google_avatar_url: null,
-            email: user.email
-          }
-          
-          // フォールバックもキャッシュ（1時間）
-          if (typeof window !== 'undefined') {
-            const cacheData = {
-              data: fallbackProfile,
-              expires: Date.now() + (60 * 60 * 1000) // 1時間後
-            }
-            localStorage.setItem('embld_user_profile', JSON.stringify(cacheData))
-          }
-          
-          setUserProfile(fallbackProfile)
-        }
       }
+    } catch (error) {
+      console.error('AuthProvider: Exception during profile fetch:', error)
+      setUserProfile({
+        username: user.email?.split('@')[0] || 'User',
+        avatar_url: null,
+        google_avatar_url: null,
+        email: user.email
+      })
+    } finally {
+      isFetchingProfile.current = false
+    }
+  }, [userProfile])
+
+  useEffect(() => {
+    // 既に初期化済みの場合はスキップ
+    if (hasInitialized.current) {
+      return
     }
 
-    // 初期セッション取得の高速化
+    // 初期セッション取得
     const getInitialSession = async () => {
+      hasInitialized.current = true
+      
       try {
-        // ローディング状態をできるだけ早く解除
-        setTimeout(() => setLoading(false), 100)
-        
-        const { data: { user }, error } = await supabase.auth.getUser()
+        // getSession()を使用（APIコールを削減）
+        const { data: { session }, error } = await supabase.auth.getSession()
         
         if (error) {
-          console.error('AuthProvider: Error getting user:', error)
+          console.error('AuthProvider: Error getting session:', error)
           setUser(null)
           setUserProfile(null)
-        } else if (user) {
-          setUser(user)
+        } else if (session?.user) {
+          setUser(session.user)
           
-          // キャッシュされたプロフィールが既にあるかチェック
+          // プロフィールがまだ無い場合のみ取得
           if (!userProfile) {
-            await fetchUserProfile(user)
+            await fetchUserProfile(session.user)
           }
         } else {
           setUser(null)
@@ -295,20 +262,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // 認証状態の変更を監視
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event: any, session: any) => {
+        console.log('Auth state change:', event)
+        
         if (event === 'SIGNED_OUT') {
           setUser(null)
           setUserProfile(null)
+          isFetchingProfile.current = false
           
-          // ローカルストレージもクリア（プロフィールキャッシュも含む）
+          // ローカルストレージもクリア
           if (typeof window !== 'undefined') {
             localStorage.removeItem('supabase.auth.token')
             localStorage.removeItem('embld_user_profile')
             sessionStorage.clear()
           }
-        } else if (session?.user) {
+        } else if (event === 'SIGNED_IN' && session?.user) {
+          // SIGNED_INイベントの場合のみプロフィールを取得
           setUser(session.user)
           await fetchUserProfile(session.user)
-        } else {
+        } else if (event === 'TOKEN_REFRESHED' && session?.user) {
+          // トークン更新時はユーザー情報のみ更新（プロフィール取得しない）
+          setUser(session.user)
+        } else if (event === 'INITIAL_SESSION') {
+          // 初期セッションは既に処理済みなのでスキップ
+          return
+        } else if (!session) {
           setUser(null)
           setUserProfile(null)
         }
@@ -320,7 +297,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => {
       subscription.unsubscribe()
     }
-  }, [userProfile])
+  }, [fetchUserProfile, userProfile])
 
   return (
     <AuthContext.Provider value={{ user, userProfile, loading, signOut, refreshProfile, updateProfileOptimistic }}>
