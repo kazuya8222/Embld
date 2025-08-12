@@ -3,6 +3,19 @@ const nextConfig = {
   experimental: {
     optimizePackageImports: ['lucide-react', '@supabase/supabase-js'],
   },
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      // Realtime WebSocket関連のモジュールをクライアント側で無効化
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        ws: false,
+        net: false,
+        tls: false,
+        fs: false,
+      }
+    }
+    return config
+  },
   images: {
     // Next.js Image最適化でCDN配信
     loader: 'default',
