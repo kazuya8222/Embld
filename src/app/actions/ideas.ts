@@ -12,7 +12,7 @@ export async function saveIdeaFromAI(payload: IdeaPayload, ideaId?: string) {
     return { ok: false, id: null, error: 'UNAUTHENTICATED' }
   }
 
-  const dataToSave = { ...payload, user_id: user.id }
+  const dataToSave = { ...payload, user_id: user.id, approval_status: 'pending' }
 
   if (ideaId) {
     // 自分のアイデアのみ更新

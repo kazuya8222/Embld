@@ -64,8 +64,7 @@ const getCachedIdeas = unstable_cache(
       { data: users, error: usersError },
       { data: wantsCounts, error: wantsError },
       { data: commentsCounts, error: commentsError },
-      { data: userWants, error: userWantsError },
-      { data: completedApps, error: appsError }
+      { data: userWants, error: userWantsError }
     ] = await Promise.all([
       ideaQuery,
       
@@ -106,24 +105,7 @@ const getCachedIdeas = unstable_cache(
         .select('idea_id')
         .eq('user_id', userId)
         .then(({ data }) => ({ data: new Set(data?.map(w => w.idea_id)), error: null }))
-        : Promise.resolve({ data: new Set(), error: null }),
-      
-      // 完成アプリ取得
-      supabase
-        .from('completed_apps')
-        .select(`
-          id,
-          app_name,
-          description,
-          app_url,
-          store_urls,
-          screenshots,
-          created_at,
-          idea:ideas(id, title, revenue),
-          reviews(rating)
-        `)
-        .order('created_at', { ascending: false })
-        .limit(4)
+        : Promise.resolve({ data: new Set(), error: null })
     ])
 
     if (ideasError) throw ideasError
@@ -140,8 +122,7 @@ const getCachedIdeas = unstable_cache(
     })) || []
 
     return {
-      ideas: formattedIdeas,
-      completedApps: completedApps || []
+      ideas: formattedIdeas
     }
   },
   ['ideas-optimized'],
@@ -162,7 +143,7 @@ export default async function HomePage({
   const { data: { session } } = await supabase.auth.getSession()
   
   // 最適化されたアイデア取得（ユーザーIDを含む）
-  const { ideas, completedApps } = await getCachedIdeas(
+  const { ideas } = await getCachedIdeas(
     searchParams.category, 
     searchParams.search,
     session?.user?.id
@@ -171,7 +152,7 @@ export default async function HomePage({
   return (
     <HomePageClient 
       ideasWithCounts={ideas} 
-      completedApps={completedApps}
+      completedApps={[]}
       searchParams={searchParams}
     />
   )

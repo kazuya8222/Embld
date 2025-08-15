@@ -18,7 +18,8 @@ import {
   MessageSquare,
   Home,
   Package,
-  Shield
+  Shield,
+  Lightbulb
 } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 
@@ -73,15 +74,15 @@ export function Navigation() {
                 ホーム
               </Link>
               <Link
-                href="/apps"
+                href="/owners"
                 className={`flex items-center gap-2 pb-1 border-b-2 transition-all font-medium ${
-                  pathname === '/apps'
+                  pathname.startsWith('/owners')
                     ? 'text-white border-white'
                     : 'text-gray-400 border-transparent hover:text-white'
                 }`}
               >
-                <Package className="w-4 h-4" />
-                完成アプリ
+                <Grid3X3 className="w-4 h-4" />
+                プロダクトを探す
               </Link>
             </nav>
 
@@ -241,12 +242,12 @@ export function Navigation() {
                 ホーム
               </Link>
               <Link
-                href="/apps"
+                href="/owners"
                 className="block px-3 py-2 text-base font-medium text-gray-400 hover:text-white hover:bg-gray-800 rounded-md"
                 onClick={() => setIsMenuOpen(false)}
               >
-                <Package className="inline h-4 w-4 mr-2" />
-                完成アプリ
+                <Grid3X3 className="inline h-4 w-4 mr-2" />
+                プロダクトを探す
               </Link>
               {user ? (
                 <>
@@ -287,7 +288,7 @@ export function Navigation() {
               ) : (
                 <>
                   <Link
-                    href="/auth/login"
+                    href="/ideas/new"
                     className="block px-3 py-2 text-base font-medium text-gray-400 hover:text-white hover:bg-gray-800 rounded-md"
                     onClick={() => setIsMenuOpen(false)}
                   >

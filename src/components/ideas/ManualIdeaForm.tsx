@@ -38,6 +38,7 @@ export function ManualIdeaForm() {
   const [category, setCategory] = useState<string>('その他')
   const [tags, setTags] = useState<string[]>([])
   const [newTag, setNewTag] = useState('')
+  const [isPublic, setIsPublic] = useState(true)
   
   // 詳細企画書フィールド
   const [serviceName, setServiceName] = useState('')
@@ -135,6 +136,7 @@ export function ManualIdeaForm() {
       external_services: externalServices.trim(),
       one_month_goal: oneMonthGoal.trim(),
       success_metrics: successMetrics.trim(),
+      is_public: isPublic,
     }
 
     startTransition(async () => {
@@ -293,6 +295,21 @@ export function ManualIdeaForm() {
                   </span>
                 ))}
               </div>
+            </div>
+
+            {/* 公開設定 */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                公開設定
+              </label>
+              <select
+                value={isPublic.toString()}
+                onChange={(e) => setIsPublic(e.target.value === 'true')}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+              >
+                <option value="true">公開</option>
+                <option value="false">非公開</option>
+              </select>
             </div>
           </div>
 
