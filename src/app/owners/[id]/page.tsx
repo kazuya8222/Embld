@@ -1,5 +1,8 @@
+'use client';
+
 import { createClient } from '@/lib/supabase/server';
 import { notFound } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { OwnersHeader } from '@/components/owners/OwnersHeader';
 import { OwnerPostDetail } from '@/components/owners/OwnerPostDetail';
 import { OwnerPostComments } from '@/components/owners/OwnerPostComments';
@@ -10,6 +13,7 @@ interface PageProps {
 }
 
 export default async function OwnerPostPage({ params }: PageProps) {
+  const router = useRouter();
   const supabase = await createClient();
   
   const { data: post, error } = await supabase
@@ -55,6 +59,19 @@ export default async function OwnerPostPage({ params }: PageProps) {
       
       {/* メインコンテンツエリア */}
       <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* トップページに戻るボタン */}
+        <div className="mb-6">
+          <button
+            onClick={() => router.push('/owners')}
+            className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            プロダクト一覧に戻る
+          </button>
+        </div>
+        
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* 左側：メイン画像エリア */}
           <div className="space-y-4">
@@ -105,17 +122,6 @@ export default async function OwnerPostPage({ params }: PageProps) {
               )}
             </div>
 
-            {/* 投稿者の場合のみ編集ボタンを表示 */}
-            {currentUser && currentUser.id === post.user_id && (
-              <div className="flex gap-4">
-                <button className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-lg font-medium hover:bg-gray-200 transition-colors">
-                  投稿を編集
-                </button>
-                <button className="flex-1 bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors">
-                  トップページに戻る
-                </button>
-              </div>
-            )}
           </div>
 
           {/* 右側：サイドバー情報 */}
