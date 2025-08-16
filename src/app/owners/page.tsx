@@ -145,6 +145,11 @@ export default async function OwnersPage({
       {/* 検索バーとカテゴリ、タブセクション */}
       <section className="bg-gray-900 py-8">
         <div className="max-w-5xl mx-auto px-4">
+          {/* 検索タイトル */}
+          <div className="text-center mb-4">
+            <h2 className="text-xl font-medium text-gray-300">個人開発プロダクトを検索</h2>
+          </div>
+
           {/* 検索バー */}
           <div className="flex justify-center mb-6">
             <form method="GET" className="w-full max-w-2xl">

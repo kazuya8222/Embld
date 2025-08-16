@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { User } from '@supabase/supabase-js';
 import { NotificationDropdown } from './NotificationDropdown';
 import { getUnreadNotificationCount } from '@/app/actions/notifications';
+import { signout } from '@/app/auth/actions';
 
 interface OwnersHeaderProps {
   user: User | null;
@@ -111,9 +112,9 @@ export function OwnersHeader({ user, userProfile }: OwnersHeaderProps) {
                       </Link>
                       <hr className="my-1" />
                       <button
-                        onClick={() => {
+                        onClick={async () => {
                           setIsUserMenuOpen(false);
-                          // ログアウト処理
+                          await signout();
                         }}
                         className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                       >
@@ -169,7 +170,10 @@ export function OwnersHeader({ user, userProfile }: OwnersHeaderProps) {
                   マイページ
                 </Link>
                 <button
-                  onClick={() => setIsMenuOpen(false)}
+                  onClick={async () => {
+                    setIsMenuOpen(false);
+                    await signout();
+                  }}
                   className="w-full text-left px-3 py-2 text-base font-medium text-gray-400 hover:text-white hover:bg-gray-800 rounded-md"
                 >
                   <LogOut className="inline h-4 w-4 mr-2" />
