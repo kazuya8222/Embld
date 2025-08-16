@@ -190,7 +190,7 @@ export default async function OwnersPage({
                       : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
                   }`}
                 >
-                  {category.icon} {category.name}
+                  {category.name}
                 </Link>
               ))}
             </div>
@@ -198,40 +198,51 @@ export default async function OwnersPage({
 
           {/* タブボタン */}
           <div className="flex justify-center">
-            <div className="inline-flex bg-gray-800 rounded-full p-1">
-              <Link
-                href={`/owners${searchParams.category ? `?category=${searchParams.category}` : ''}`}
-                className={`flex items-center gap-2 px-6 py-2 rounded-full text-sm font-medium transition-colors ${
-                  !searchParams.tab || searchParams.tab === 'latest'
-                    ? 'bg-gray-700 text-white'
-                    : 'text-gray-400 hover:text-white'
-                }`}
-              >
-                <Clock className="w-4 h-4" />
-                最新
-              </Link>
-              <Link
-                href={`/owners?tab=following${searchParams.category ? `&category=${searchParams.category}` : ''}`}
-                className={`flex items-center gap-2 px-6 py-2 rounded-full text-sm font-medium transition-colors ${
-                  searchParams.tab === 'following'
-                    ? 'bg-gray-700 text-white'
-                    : 'text-gray-400 hover:text-white'
-                }`}
-              >
-                <Users className="w-4 h-4" />
-                フォロー中
-              </Link>
-              <Link
-                href={`/owners?tab=trending${searchParams.category ? `&category=${searchParams.category}` : ''}`}
-                className={`flex items-center gap-2 px-6 py-2 rounded-full text-sm font-medium transition-colors ${
-                  searchParams.tab === 'trending'
-                    ? 'bg-gray-700 text-white'
-                    : 'text-gray-400 hover:text-white'
-                }`}
-              >
-                <TrendingUp className="w-4 h-4" />
-                トレンド
-              </Link>
+            <div className="relative bg-gray-800 rounded-full p-1">
+              <div className="flex">
+                {/* スライドインジケーター */}
+                <div className={`absolute inset-1 w-1/3 bg-gray-700 rounded-full transition-transform duration-300 ease-in-out ${
+                  searchParams.tab === 'following' 
+                    ? 'translate-x-full' 
+                    : searchParams.tab === 'trending'
+                    ? 'translate-x-[200%]'
+                    : 'translate-x-0'
+                }`}></div>
+                
+                <Link
+                  href={`/owners${searchParams.category ? `?category=${searchParams.category}` : ''}`}
+                  className={`relative z-10 flex items-center justify-center gap-2 w-32 py-2 rounded-full text-sm font-medium transition-colors ${
+                    !searchParams.tab || searchParams.tab === 'latest'
+                      ? 'text-white'
+                      : 'text-gray-400 hover:text-white'
+                  }`}
+                >
+                  <Clock className="w-4 h-4" />
+                  最新
+                </Link>
+                <Link
+                  href={`/owners?tab=following${searchParams.category ? `&category=${searchParams.category}` : ''}`}
+                  className={`relative z-10 flex items-center justify-center gap-2 w-32 py-2 rounded-full text-sm font-medium transition-colors ${
+                    searchParams.tab === 'following'
+                      ? 'text-white'
+                      : 'text-gray-400 hover:text-white'
+                  }`}
+                >
+                  <Users className="w-4 h-4" />
+                  フォロー中
+                </Link>
+                <Link
+                  href={`/owners?tab=trending${searchParams.category ? `&category=${searchParams.category}` : ''}`}
+                  className={`relative z-10 flex items-center justify-center gap-2 w-32 py-2 rounded-full text-sm font-medium transition-colors ${
+                    searchParams.tab === 'trending'
+                      ? 'text-white'
+                      : 'text-gray-400 hover:text-white'
+                  }`}
+                >
+                  <TrendingUp className="w-4 h-4" />
+                  トレンド
+                </Link>
+              </div>
             </div>
           </div>
         </div>
@@ -251,22 +262,44 @@ export default async function OwnersPage({
           </h3>
           
           <Suspense fallback={
-            <div className="flex justify-center items-center h-64">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="bg-white rounded-xl shadow-sm overflow-hidden h-full flex flex-col animate-pulse">
+                  <div className="w-full h-64 bg-gray-200"></div>
+                  <div className="p-6 flex flex-col flex-1">
+                    <div className="h-6 bg-gray-200 rounded mb-3"></div>
+                    <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                    <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                    <div className="h-4 bg-gray-200 rounded w-3/4 mb-6"></div>
+                    <div className="flex items-center justify-between mt-auto">
+                      <div className="flex items-center gap-4">
+                        <div className="h-4 bg-gray-200 rounded w-12"></div>
+                        <div className="h-4 bg-gray-200 rounded w-12"></div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
+                        <div className="h-4 bg-gray-200 rounded w-20"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           }>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {posts && posts.length > 0 ? (
                 posts.map((post) => (
                   <Link key={post.id} href={`/owners/${post.id}`} className="group block h-full">
-                          <div className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow overflow-hidden h-full flex flex-col">
+                          <div className="bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden h-full flex flex-col transform hover:scale-[1.02]">
                             {/* サムネイル画像 */}
-                            <div className="w-full h-48 relative">
+                            <div className="w-full h-64 relative">
                               {post.images && post.images.length > 0 ? (
                                 <img
                                   src={post.images[0]}
                                   alt={post.title}
                                   className="w-full h-full object-cover"
+                                  loading="lazy"
+                                  decoding="async"
                                 />
                               ) : (
                                 <div className="w-full h-full bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center">
@@ -278,28 +311,40 @@ export default async function OwnersPage({
                                 {post.category}
                               </span>
                             </div>
-                            <div className="p-4 flex flex-col flex-1">
-                              <h3 className="font-bold text-gray-900 line-clamp-2 group-hover:text-purple-600 transition-colors min-h-[3rem]">
+                            <div className="p-6 flex flex-col flex-1">
+                              <h3 className="text-xl font-bold text-gray-900 line-clamp-2 group-hover:text-purple-600 transition-colors min-h-[3.5rem] mb-3">
                                 {post.title}
                               </h3>
-                              <p className="text-gray-600 text-sm mt-2 line-clamp-2 min-h-[2.5rem]">
+                              <p className="text-gray-600 mt-2 line-clamp-3 min-h-[4.5rem]">
                                 {post.description}
                               </p>
-                              <div className="flex items-center justify-between mt-auto pt-4">
-                                <div className="flex items-center gap-4 text-sm text-gray-500">
-                                  <span>👁 {post.view_count}</span>
-                                  <span>❤️ {post.like_count}</span>
+                              <div className="flex items-center justify-between mt-auto pt-6">
+                                <div className="flex items-center gap-4 text-gray-500">
+                                  <span className="flex items-center gap-1">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                    </svg>
+                                    {post.view_count}
+                                  </span>
+                                  <span className="flex items-center gap-1">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                    </svg>
+                                    {post.like_count}
+                                  </span>
                                 </div>
                                 <Link 
                                   href={`/owners/profile/${post.user?.username || post.user?.id}`}
-                                  className="flex items-center gap-1 hover:opacity-80 transition-opacity"
+                                  className="flex items-center gap-2 hover:opacity-80 transition-opacity"
                                 >
                                   <img
                                     src={post.user?.avatar_url || '/default-avatar.png'}
                                     alt={post.user?.username || 'User'}
-                                    className="w-6 h-6 rounded-full"
+                                    className="w-8 h-8 rounded-full"
+                                    loading="lazy"
                                   />
-                                  <span className="text-xs text-gray-500 hover:text-purple-600">{post.user?.username}</span>
+                                  <span className="text-sm font-medium text-gray-700 hover:text-purple-600">{post.user?.username}</span>
                                 </Link>
                               </div>
                             </div>
