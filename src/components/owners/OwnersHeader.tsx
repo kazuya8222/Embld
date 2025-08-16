@@ -27,7 +27,7 @@ export function OwnersHeader({ user, userProfile }: OwnersHeaderProps) {
     if (user) {
       getUnreadNotificationCount(user.id).then(result => {
         if (result.success) {
-          setUnreadCount(result.count);
+          setUnreadCount(result.count || 0);
         }
       });
     }
