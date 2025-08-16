@@ -5,6 +5,10 @@ import { OwnerPostDetail } from '@/components/owners/OwnerPostDetail';
 import { OwnerPostComments } from '@/components/owners/OwnerPostComments';
 import { BackButton } from '@/components/owners/BackButton';
 import { incrementViewCount } from '@/app/actions/ownerPosts';
+import Link from 'next/link';
+import { Heart, MessageCircle, Share2, UserPlus, User as UserIcon } from 'lucide-react';
+import { FollowButton } from '@/components/owners/FollowButton';
+import { LikeButton } from '@/components/owners/LikeButton';
 
 interface PageProps {
   params: { id: string };
@@ -37,6 +41,15 @@ export default async function OwnerPostPage({ params }: PageProps) {
   // Increment view count
   await incrementViewCount(params.id);
 
+  // Get follower count for post creator
+  const { data: followers } = await supabase
+    .from('owner_follows')
+    .select('id')
+    .eq('following_id', post.user.id);
+
+  // Check if current user follows the post creator
+  let isFollowing = false;
+
   const { data: { user: currentUser } } = await supabase.auth.getUser();
   
   // ユーザープロファイル情報を取得
@@ -48,7 +61,22 @@ export default async function OwnerPostPage({ params }: PageProps) {
       .eq('id', currentUser.id)
       .single();
     userProfile = profile;
+    
+    // Check if user follows the post creator
+    if (currentUser.id !== post.user.id) {
+      const { data: followData } = await supabase
+        .from('owner_follows')
+        .select('id')
+        .eq('follower_id', currentUser.id)
+        .eq('following_id', post.user.id)
+        .single();
+      
+      isFollowing = !!followData;
+    }
   }
+
+  // Check if current user liked this post
+  const isLiked = currentUser ? post.likes?.some((like: any) => like.user_id === currentUser.id) : false;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -113,16 +141,87 @@ export default async function OwnerPostPage({ params }: PageProps) {
 
           {/* 右側：サイドバー情報 */}
           <div className="space-y-6">
-            {/* AIによるサービス紹介改善表示 */}
+            {/* 作成者情報（TikTok風） */}
             <div className="bg-white rounded-lg shadow-sm p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">AIによるサービス紹介改善表示</h3>
-              <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg p-4 border border-purple-200">
-                <p className="text-gray-700 text-sm">
-                  AIがあなたのプロジェクトをより魅力的に紹介するための改善提案を表示します。
-                </p>
-                <button className="mt-3 text-purple-600 text-sm font-medium hover:text-purple-700">
-                  改善提案を見る →
-                </button>
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex items-center gap-4">
+                  <Link 
+                    href={`/owners/profile/${post.user?.username || post.user?.id}`}
+                    className="block"
+                  >
+                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center text-white text-2xl font-bold overflow-hidden">
+                      {post.user?.avatar_url ? (
+                        <img 
+                          src={post.user.avatar_url} 
+                          alt={post.user.username} 
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        post.user?.username?.charAt(0).toUpperCase() || 'U'
+                      )}
+                    </div>
+                  </Link>
+                  <div>
+                    <Link 
+                      href={`/owners/profile/${post.user?.username || post.user?.id}`}
+                      className="font-bold text-lg text-gray-900 hover:underline"
+                    >
+                      {post.user?.username || 'Anonymous'}
+                    </Link>
+                    <p className="text-sm text-gray-500">
+                      {followers?.length || 0} フォロワー
+                    </p>
+                  </div>
+                </div>
+              </div>
+              
+              {/* アクションボタン */}
+              <div className="space-y-3">
+                {currentUser?.id !== post.user.id && (
+                  <>
+                    <FollowButton 
+                      userId={post.user.id}
+                      isFollowing={isFollowing}
+                      currentUser={currentUser}
+                    />
+                    <Link
+                      href={`/owners/profile/${post.user?.username || post.user?.id}`}
+                      className="w-full flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                    >
+                      <UserIcon className="w-4 h-4" />
+                      プロフィールを見る
+                    </Link>
+                  </>
+                )}
+                {currentUser?.id === post.user.id && (
+                  <Link
+                    href="/owners/profile/edit"
+                    className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                  >
+                    <UserIcon className="w-4 h-4" />
+                    プロフィールを編集
+                  </Link>
+                )}
+              </div>
+              
+              {/* いいね・コメント・シェアボタン */}
+              <div className="mt-6 pt-6 border-t">
+                <div className="flex justify-around">
+                  <LikeButton 
+                    postId={post.id}
+                    isLiked={isLiked}
+                    likeCount={post.like_count}
+                    currentUser={currentUser}
+                  />
+                  <button className="flex flex-col items-center gap-1 text-gray-600 hover:text-gray-900 transition-colors">
+                    <MessageCircle className="w-6 h-6" />
+                    <span className="text-xs">{post.comments?.length || 0}</span>
+                  </button>
+                  <button className="flex flex-col items-center gap-1 text-gray-600 hover:text-gray-900 transition-colors">
+                    <Share2 className="w-6 h-6" />
+                    <span className="text-xs">シェア</span>
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -174,29 +273,7 @@ export default async function OwnerPostPage({ params }: PageProps) {
                   </div>
                 )}
 
-                <div>
-                  <dt className="text-sm font-medium text-gray-500">統計</dt>
-                  <dd className="mt-1 text-gray-900">
-                    <div className="flex gap-4 text-sm">
-                      <span>👁 {post.view_count} views</span>
-                      <span>❤️ {post.like_count} likes</span>
-                    </div>
-                  </dd>
-                </div>
 
-                <div>
-                  <dt className="text-sm font-medium text-gray-500">作成者</dt>
-                  <dd className="mt-1">
-                    <div className="flex items-center gap-2">
-                      <img
-                        src={post.user?.avatar_url || '/default-avatar.png'}
-                        alt={post.user?.username || 'User'}
-                        className="w-6 h-6 rounded-full"
-                      />
-                      <span className="text-gray-900">{post.user?.username}</span>
-                    </div>
-                  </dd>
-                </div>
               </div>
             </div>
 

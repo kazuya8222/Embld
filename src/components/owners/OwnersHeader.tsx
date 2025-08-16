@@ -1,8 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Search, User as UserIcon, ChevronDown, LogOut, Settings, Home, Lightbulb, Bell, MessageSquare, Menu, X } from 'lucide-react';
+import { User as UserIcon, ChevronDown, LogOut, Settings, Bell, Menu, X } from 'lucide-react';
 import Link from 'next/link';
 import { User } from '@supabase/supabase-js';
 
@@ -17,19 +16,9 @@ interface OwnersHeaderProps {
 }
 
 export function OwnersHeader({ user, userProfile }: OwnersHeaderProps) {
-  const router = useRouter();
-  const [searchQuery, setSearchQuery] = useState('');
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      router.push(`/owners?search=${encodeURIComponent(searchQuery.trim())}`);
-    } else {
-      router.push('/owners');
-    }
-  };
 
   return (
     <header className="bg-gray-900 border-b border-gray-800 shadow-sm">
@@ -50,39 +39,7 @@ export function OwnersHeader({ user, userProfile }: OwnersHeaderProps) {
             </Link>
           </div>
 
-          {/* デスクトップナビゲーション */}
-          <nav className="hidden md:flex items-center space-x-8">
-            <Link
-              href="/owners"
-              className="flex items-center gap-2 pb-1 border-b-2 border-transparent text-gray-400 hover:text-white transition-all font-medium"
-            >
-              <Home className="w-4 h-4" />
-              ホーム
-            </Link>
-            <Link
-              href="/home"
-              className="flex items-center gap-2 pb-1 border-b-2 border-transparent text-gray-400 hover:text-white transition-all font-medium"
-            >
-              <Lightbulb className="w-4 h-4" />
-              アイデアを探す
-            </Link>
-          </nav>
 
-          {/* 検索バー */}
-          <div className="hidden md:block flex-1 max-w-md mx-8">
-            <form onSubmit={handleSearch}>
-              <div className="relative">
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="プロジェクトを検索..."
-                  className="w-full pl-10 pr-4 py-2 bg-gray-800 border border-gray-700 rounded-full text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
-                />
-                <Search className="absolute left-3 top-2.5 w-5 h-5 text-gray-400" />
-              </div>
-            </form>
-          </div>
 
           {/* 右側のアクション */}
           <div className="hidden md:flex items-center space-x-4">
@@ -91,10 +48,6 @@ export function OwnersHeader({ user, userProfile }: OwnersHeaderProps) {
                 {/* 通知・メッセージアイコン */}
                 <button className="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-full transition-colors">
                   <Bell className="h-5 w-5" />
-                </button>
-                
-                <button className="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-full transition-colors">
-                  <MessageSquare className="h-5 w-5" />
                 </button>
 
                 {/* ユーザーメニュー */}
@@ -145,15 +98,6 @@ export function OwnersHeader({ user, userProfile }: OwnersHeaderProps) {
                         設定
                       </Link>
                       <hr className="my-1" />
-                      <Link
-                        href="/home"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                        onClick={() => setIsUserMenuOpen(false)}
-                      >
-                        <Lightbulb className="inline h-4 w-4 mr-2" />
-                        アイデアを探す
-                      </Link>
-                      <hr className="my-1" />
                       <button
                         onClick={() => {
                           setIsUserMenuOpen(false);
@@ -172,10 +116,6 @@ export function OwnersHeader({ user, userProfile }: OwnersHeaderProps) {
               <>
                 <button className="p-2 text-gray-400 opacity-50 cursor-not-allowed rounded-full">
                   <Bell className="h-5 w-5" />
-                </button>
-                
-                <button className="p-2 text-gray-400 opacity-50 cursor-not-allowed rounded-full">
-                  <MessageSquare className="h-5 w-5" />
                 </button>
 
                 <Link
@@ -204,39 +144,7 @@ export function OwnersHeader({ user, userProfile }: OwnersHeaderProps) {
       {isMenuOpen && (
         <div className="md:hidden bg-gray-900 border-t border-gray-800">
           <div className="px-2 pt-2 pb-3 space-y-1">
-            {/* モバイル検索 */}
-            <div className="px-3 py-2">
-              <form onSubmit={handleSearch}>
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="プロジェクトを検索..."
-                    className="w-full pl-10 pr-4 py-2 bg-gray-800 border border-gray-700 rounded-full text-white placeholder-gray-400 focus:outline-none focus:border-purple-500"
-                  />
-                  <Search className="absolute left-3 top-2.5 w-5 h-5 text-gray-400" />
-                </div>
-              </form>
-            </div>
 
-            <Link
-              href="/owners"
-              className="block px-3 py-2 text-base font-medium text-gray-400 hover:text-white hover:bg-gray-800 rounded-md"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              <Home className="inline h-4 w-4 mr-2" />
-              ホーム
-            </Link>
-            
-            <Link
-              href="/home"
-              className="block px-3 py-2 text-base font-medium text-gray-400 hover:text-white hover:bg-gray-800 rounded-md"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              <Lightbulb className="inline h-4 w-4 mr-2" />
-              アイデアを探す
-            </Link>
 
             {user ? (
               <>
