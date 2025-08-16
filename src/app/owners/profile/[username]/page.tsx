@@ -87,7 +87,7 @@ export default async function OwnerProfilePage({ params }: PageProps) {
   }
 
   // Get saved posts if viewing own profile
-  let savedPosts = [];
+  let savedPosts: any[] = [];
   if (currentUser?.id === user.id) {
     const { data: saves } = await supabase
       .from('owner_post_saves')

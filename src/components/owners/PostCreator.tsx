@@ -36,7 +36,7 @@ export function PostCreator({ userId }: PostCreatorProps) {
         <div className="mt-4 space-y-3">
           <div className="flex space-x-2">
             <button className="flex items-center space-x-2 px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100 rounded-lg">
-              <Image className="w-4 h-4" />
+              <Image className="w-4 h-4" aria-label="画像を追加" />
               <span>画像</span>
             </button>
             <button className="flex items-center space-x-2 px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100 rounded-lg">
