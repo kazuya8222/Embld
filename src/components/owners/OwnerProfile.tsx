@@ -81,7 +81,7 @@ export function OwnerProfile({
                     <>
                       <button
                         onClick={() => router.push('/owners/new')}
-                        className="flex items-center px-6 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all transform hover:scale-105 shadow-lg"
+                        className="flex items-center px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors shadow-sm"
                       >
                         <Plus className="w-5 h-5 mr-2" />
                         新規投稿
@@ -177,7 +177,7 @@ export function OwnerProfile({
                           href={`https://instagram.com/${user.instagram_account}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center gap-1 px-3 py-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs rounded-full hover:from-purple-600 hover:to-pink-600 transition-all"
+                          className="flex items-center gap-1 px-3 py-1 bg-purple-600 text-white text-xs rounded-full hover:bg-purple-700 transition-colors"
                         >
                           <span>📷</span>
                           <span>@{user.instagram_account}</span>

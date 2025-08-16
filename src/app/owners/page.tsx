@@ -201,12 +201,18 @@ export default async function OwnersPage({
             </div>
           </div>
 
+        </div>
+      </section>
+
+      {/* プロダクト一覧 */}
+      <section className="py-12 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4">
           {/* タブボタン */}
-          <div className="flex justify-center">
-            <div className="relative bg-gray-800 rounded-full p-1">
+          <div className="flex justify-center mb-8">
+            <div className="relative bg-gray-100 rounded-full p-1">
               <div className="flex">
                 {/* スライドインジケーター */}
-                <div className={`absolute inset-1 w-1/3 bg-gray-700 rounded-full transition-transform duration-300 ease-in-out ${
+                <div className={`absolute inset-1 w-1/3 bg-white rounded-full shadow-sm transition-transform duration-300 ease-in-out ${
                   searchParams.tab === 'following' 
                     ? 'translate-x-full' 
                     : searchParams.tab === 'trending'
@@ -216,10 +222,11 @@ export default async function OwnersPage({
                 
                 <Link
                   href={`/owners${searchParams.category ? `?category=${searchParams.category}` : ''}`}
+                  scroll={false}
                   className={`relative z-10 flex items-center justify-center gap-2 w-32 py-2 rounded-full text-sm font-medium transition-colors ${
                     !searchParams.tab || searchParams.tab === 'latest'
-                      ? 'text-white'
-                      : 'text-gray-400 hover:text-white'
+                      ? 'text-gray-900'
+                      : 'text-gray-600 hover:text-gray-900'
                   }`}
                 >
                   <Clock className="w-4 h-4" />
@@ -227,10 +234,11 @@ export default async function OwnersPage({
                 </Link>
                 <Link
                   href={`/owners?tab=following${searchParams.category ? `&category=${searchParams.category}` : ''}`}
+                  scroll={false}
                   className={`relative z-10 flex items-center justify-center gap-2 w-32 py-2 rounded-full text-sm font-medium transition-colors ${
                     searchParams.tab === 'following'
-                      ? 'text-white'
-                      : 'text-gray-400 hover:text-white'
+                      ? 'text-gray-900'
+                      : 'text-gray-600 hover:text-gray-900'
                   }`}
                 >
                   <Users className="w-4 h-4" />
@@ -238,10 +246,11 @@ export default async function OwnersPage({
                 </Link>
                 <Link
                   href={`/owners?tab=trending${searchParams.category ? `&category=${searchParams.category}` : ''}`}
+                  scroll={false}
                   className={`relative z-10 flex items-center justify-center gap-2 w-32 py-2 rounded-full text-sm font-medium transition-colors ${
                     searchParams.tab === 'trending'
-                      ? 'text-white'
-                      : 'text-gray-400 hover:text-white'
+                      ? 'text-gray-900'
+                      : 'text-gray-600 hover:text-gray-900'
                   }`}
                 >
                   <TrendingUp className="w-4 h-4" />
@@ -250,12 +259,6 @@ export default async function OwnersPage({
               </div>
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* プロダクト一覧 */}
-      <section className="py-12 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4">
           <h3 className="text-2xl font-bold mb-6 text-gray-900">
             {searchParams.search 
               ? `「${searchParams.search}」の検索結果`
