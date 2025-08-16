@@ -4,15 +4,17 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Bookmark } from 'lucide-react';
 import { User } from '@supabase/supabase-js';
+import { saveOwnerPost } from '@/app/actions/ownerPosts';
 
 interface SaveButtonProps {
   postId: string;
   currentUser: User | null;
+  isSaved?: boolean;
 }
 
-export function SaveButton({ postId, currentUser }: SaveButtonProps) {
+export function SaveButton({ postId, currentUser, isSaved: initialIsSaved = false }: SaveButtonProps) {
   const router = useRouter();
-  const [isSaved, setIsSaved] = useState(false);
+  const [isSaved, setIsSaved] = useState(initialIsSaved);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSave = async () => {
@@ -22,9 +24,17 @@ export function SaveButton({ postId, currentUser }: SaveButtonProps) {
     }
 
     setIsLoading(true);
-    // TODO: Implement save/unsave functionality
     setIsSaved(!isSaved);
+    
+    const result = await saveOwnerPost(postId, currentUser.id);
+    
+    if (!result.success) {
+      // Revert on error
+      setIsSaved(isSaved);
+    }
+    
     setIsLoading(false);
+    router.refresh();
   };
 
   return (

@@ -90,12 +90,12 @@ export function OwnersHeader({ user, userProfile }: OwnersHeaderProps) {
                         マイページ
                       </Link>
                       <Link
-                        href="/profile/settings"
+                        href="/owners/profile/edit"
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                         onClick={() => setIsUserMenuOpen(false)}
                       >
                         <Settings className="inline h-4 w-4 mr-2" />
-                        設定
+                        プロフィール設定
                       </Link>
                       <hr className="my-1" />
                       <button

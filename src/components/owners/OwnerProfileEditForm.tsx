@@ -13,6 +13,11 @@ interface OwnerProfileEditFormProps {
     bio: string | null;
     location: string | null;
     website: string | null;
+    one_liner: string | null;
+    x_account: string | null;
+    instagram_account: string | null;
+    tiktok_account: string | null;
+    youtube_account: string | null;
   };
 }
 
@@ -21,9 +26,14 @@ export function OwnerProfileEditForm({ userProfile }: OwnerProfileEditFormProps)
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     username: userProfile.username || '',
+    one_liner: userProfile.one_liner || '',
     bio: userProfile.bio || '個人開発者として様々なプロジェクトに取り組んでいます。',
     location: userProfile.location || '',
     website: userProfile.website || '',
+    x_account: userProfile.x_account || '',
+    instagram_account: userProfile.instagram_account || '',
+    tiktok_account: userProfile.tiktok_account || '',
+    youtube_account: userProfile.youtube_account || '',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -109,6 +119,26 @@ export function OwnerProfileEditForm({ userProfile }: OwnerProfileEditFormProps)
           />
         </div>
 
+        {/* ひとこと */}
+        <div>
+          <label htmlFor="one_liner" className="block text-sm font-medium text-gray-700 mb-2">
+            💬 ひとこと
+          </label>
+          <input
+            type="text"
+            id="one_liner"
+            name="one_liner"
+            value={formData.one_liner}
+            onChange={handleChange}
+            maxLength={100}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            placeholder="今の気持ちやステータスを一言で..."
+          />
+          <p className="text-sm text-gray-500 mt-1">
+            現在の気持ちや状況を一言で表現してください（100文字以内）
+          </p>
+        </div>
+
         {/* 自己紹介 */}
         <div>
           <label htmlFor="bio" className="block text-sm font-medium text-gray-700 mb-2">
@@ -161,6 +191,92 @@ export function OwnerProfileEditForm({ userProfile }: OwnerProfileEditFormProps)
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
             placeholder="https://example.com"
           />
+        </div>
+
+        {/* ソーシャルメディア */}
+        <div>
+          <h3 className="text-lg font-medium text-gray-900 mb-4">ソーシャルメディア</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* X (Twitter) */}
+            <div>
+              <label htmlFor="x_account" className="block text-sm font-medium text-gray-700 mb-2">
+                <span className="inline-block w-4 h-4 mr-1">𝕏</span>
+                X (Twitter)
+              </label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">@</span>
+                <input
+                  type="text"
+                  id="x_account"
+                  name="x_account"
+                  value={formData.x_account}
+                  onChange={handleChange}
+                  className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  placeholder="ユーザー名"
+                />
+              </div>
+            </div>
+
+            {/* Instagram */}
+            <div>
+              <label htmlFor="instagram_account" className="block text-sm font-medium text-gray-700 mb-2">
+                📷 Instagram
+              </label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">@</span>
+                <input
+                  type="text"
+                  id="instagram_account"
+                  name="instagram_account"
+                  value={formData.instagram_account}
+                  onChange={handleChange}
+                  className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  placeholder="ユーザー名"
+                />
+              </div>
+            </div>
+
+            {/* TikTok */}
+            <div>
+              <label htmlFor="tiktok_account" className="block text-sm font-medium text-gray-700 mb-2">
+                🎵 TikTok
+              </label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">@</span>
+                <input
+                  type="text"
+                  id="tiktok_account"
+                  name="tiktok_account"
+                  value={formData.tiktok_account}
+                  onChange={handleChange}
+                  className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  placeholder="ユーザー名"
+                />
+              </div>
+            </div>
+
+            {/* YouTube */}
+            <div>
+              <label htmlFor="youtube_account" className="block text-sm font-medium text-gray-700 mb-2">
+                📺 YouTube
+              </label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">@</span>
+                <input
+                  type="text"
+                  id="youtube_account"
+                  name="youtube_account"
+                  value={formData.youtube_account}
+                  onChange={handleChange}
+                  className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  placeholder="チャンネル名またはハンドル"
+                />
+              </div>
+            </div>
+          </div>
+          <p className="text-sm text-gray-500 mt-2">
+            ユーザー名またはハンドル名のみを入力してください（@マークは自動で追加されます）
+          </p>
         </div>
 
         {/* 送信ボタン */}

@@ -11,16 +11,21 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { username, bio, location, website } = body;
+    const { username, one_liner, bio, location, website, x_account, instagram_account, tiktok_account, youtube_account } = body;
 
     // ユーザープロフィールを更新
     const { error } = await supabase
       .from('users')
       .update({
         username,
+        one_liner,
         bio,
         location,
         website,
+        x_account,
+        instagram_account,
+        tiktok_account,
+        youtube_account,
         updated_at: new Date().toISOString(),
       })
       .eq('id', user.id);

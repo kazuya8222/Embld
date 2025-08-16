@@ -14,7 +14,7 @@ export default async function OwnerProfileEditPage() {
   // ユーザープロファイル情報を取得
   const { data: userProfile } = await supabase
     .from('users')
-    .select('id, username, avatar_url, google_avatar_url, bio, location, website')
+    .select('id, username, avatar_url, google_avatar_url, bio, location, website, one_liner, x_account, instagram_account, tiktok_account, youtube_account')
     .eq('id', user.id)
     .single();
 

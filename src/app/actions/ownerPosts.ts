@@ -123,3 +123,38 @@ export async function incrementViewCount(postId: string) {
 
   return { success: !error };
 }
+
+export async function saveOwnerPost(postId: string, userId: string) {
+  const supabase = await createClient();
+
+  const { data: existingSave } = await supabase
+    .from('owner_post_saves')
+    .select()
+    .eq('post_id', postId)
+    .eq('user_id', userId)
+    .single();
+
+  if (existingSave) {
+    // Unsave
+    const { error } = await supabase
+      .from('owner_post_saves')
+      .delete()
+      .eq('post_id', postId)
+      .eq('user_id', userId);
+
+    revalidatePath('/owners');
+    revalidatePath(`/owners/${postId}`);
+    revalidatePath('/owners/profile');
+    return { success: !error, saved: false };
+  } else {
+    // Save
+    const { error } = await supabase
+      .from('owner_post_saves')
+      .insert({ post_id: postId, user_id: userId });
+
+    revalidatePath('/owners');
+    revalidatePath(`/owners/${postId}`);
+    revalidatePath('/owners/profile');
+    return { success: !error, saved: true };
+  }
+}

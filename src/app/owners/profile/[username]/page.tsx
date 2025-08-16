@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { notFound } from 'next/navigation';
 import { OwnersHeader } from '@/components/owners/OwnersHeader';
 import { OwnerProfile } from '@/components/owners/OwnerProfile';
-import { InstagramPostGrid } from '@/components/owners/InstagramPostGrid';
+import { ProfileContent } from '@/components/owners/ProfileContent';
 
 interface PageProps {
   params: { username: string };
@@ -15,7 +15,7 @@ export default async function OwnerProfilePage({ params }: PageProps) {
   let user;
   const { data: userByUsername } = await supabase
     .from('users')
-    .select('*, bio, location, website')
+    .select('*, bio, location, website, one_liner, x_account, instagram_account, tiktok_account, youtube_account')
     .eq('username', params.username)
     .single();
 
@@ -25,7 +25,7 @@ export default async function OwnerProfilePage({ params }: PageProps) {
     // Try to get by ID if username not found
     const { data: userById } = await supabase
       .from('users')
-      .select('*, bio, location, website')
+      .select('*, bio, location, website, one_liner, x_account, instagram_account, tiktok_account, youtube_account')
       .eq('id', params.username)
       .single();
     
@@ -86,6 +86,26 @@ export default async function OwnerProfilePage({ params }: PageProps) {
     isFollowing = !!followData;
   }
 
+  // Get saved posts if viewing own profile
+  let savedPosts = [];
+  if (currentUser?.id === user.id) {
+    const { data: saves } = await supabase
+      .from('owner_post_saves')
+      .select(`
+        created_at,
+        post:owner_posts(
+          *,
+          likes:owner_post_likes(count),
+          comments:owner_post_comments(count),
+          user:users(id, username, avatar_url)
+        )
+      `)
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
+
+    savedPosts = saves?.map(save => save.post).filter(Boolean) || [];
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <OwnersHeader user={currentUser} userProfile={userProfile} />
@@ -99,9 +119,11 @@ export default async function OwnerProfilePage({ params }: PageProps) {
           isOwnProfile={currentUser?.id === user.id}
         />
         
-        <div className="bg-white">
-          <InstagramPostGrid posts={posts || []} />
-        </div>
+        <ProfileContent 
+          posts={posts || []}
+          savedPosts={savedPosts}
+          isOwnProfile={currentUser?.id === user.id}
+        />
       </div>
     </div>
   );

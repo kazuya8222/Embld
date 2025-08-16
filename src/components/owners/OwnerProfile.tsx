@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { followUser, unfollowUser } from '@/app/actions/ownerFollows';
-import { Settings, Grid, Bookmark, Tag, Plus, ExternalLink, MapPin, Link as LinkIcon, Calendar } from 'lucide-react';
+import { Settings, Plus, MapPin, Link as LinkIcon } from 'lucide-react';
 
 interface OwnerProfileProps {
   user: any;
@@ -26,7 +26,6 @@ export function OwnerProfile({
   const [isFollowing, setIsFollowing] = useState(initialIsFollowing);
   const [followerCount, setFollowerCount] = useState(initialFollowerCount);
   const [isLoading, setIsLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState('posts');
 
   const handleFollow = async () => {
     setIsLoading(true);
@@ -129,31 +128,84 @@ export function OwnerProfile({
 
               {/* Bio */}
               <div className="space-y-2">
+                {user.one_liner && (
+                  <div className="text-purple-600 font-medium italic">
+                    💬 {user.one_liner}
+                  </div>
+                )}
                 <div className="text-gray-700">
                   {user.bio || '個人開発者として様々なプロジェクトに取り組んでいます。'}
                 </div>
                 
-                <div className="flex items-center space-x-4 text-sm text-gray-500">
-                  <div className="flex items-center">
-                    <Calendar className="w-4 h-4 mr-1" />
-                    {new Date(user.created_at).toLocaleDateString('ja-JP')}に参加
+                <div className="space-y-3">
+                  <div className="flex items-center flex-wrap gap-4 text-sm text-gray-500">
+                    {user.location && (
+                      <div className="flex items-center">
+                        <MapPin className="w-4 h-4 mr-1" />
+                        {user.location}
+                      </div>
+                    )}
+                    {user.website && (
+                      <a 
+                        href={user.website}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center hover:text-purple-600 transition-colors"
+                      >
+                        <LinkIcon className="w-4 h-4 mr-1" />
+                        Website
+                      </a>
+                    )}
                   </div>
-                  {user.location && (
-                    <div className="flex items-center">
-                      <MapPin className="w-4 h-4 mr-1" />
-                      {user.location}
+                  
+                  {/* ソーシャルメディアリンク */}
+                  {(user.x_account || user.instagram_account || user.tiktok_account || user.youtube_account) && (
+                    <div className="flex items-center gap-3">
+                      {user.x_account && (
+                        <a
+                          href={`https://x.com/${user.x_account}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1 px-3 py-1 bg-black text-white text-xs rounded-full hover:bg-gray-800 transition-colors"
+                        >
+                          <span>𝕏</span>
+                          <span>@{user.x_account}</span>
+                        </a>
+                      )}
+                      {user.instagram_account && (
+                        <a
+                          href={`https://instagram.com/${user.instagram_account}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1 px-3 py-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs rounded-full hover:from-purple-600 hover:to-pink-600 transition-all"
+                        >
+                          <span>📷</span>
+                          <span>@{user.instagram_account}</span>
+                        </a>
+                      )}
+                      {user.tiktok_account && (
+                        <a
+                          href={`https://tiktok.com/@${user.tiktok_account}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1 px-3 py-1 bg-black text-white text-xs rounded-full hover:bg-gray-800 transition-colors"
+                        >
+                          <span>🎵</span>
+                          <span>@{user.tiktok_account}</span>
+                        </a>
+                      )}
+                      {user.youtube_account && (
+                        <a
+                          href={`https://youtube.com/@${user.youtube_account}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1 px-3 py-1 bg-red-600 text-white text-xs rounded-full hover:bg-red-700 transition-colors"
+                        >
+                          <span>📺</span>
+                          <span>@{user.youtube_account}</span>
+                        </a>
+                      )}
                     </div>
-                  )}
-                  {user.website && (
-                    <a 
-                      href={user.website}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center hover:text-purple-600 transition-colors"
-                    >
-                      <LinkIcon className="w-4 h-4 mr-1" />
-                      Website
-                    </a>
                   )}
                 </div>
               </div>
@@ -161,44 +213,6 @@ export function OwnerProfile({
           </div>
         </div>
 
-        {/* Tabs */}
-        <div className="border-t">
-          <div className="flex">
-            <button
-              onClick={() => setActiveTab('posts')}
-              className={`flex-1 flex items-center justify-center py-3 text-sm font-medium border-t-2 transition-colors ${
-                activeTab === 'posts'
-                  ? 'border-purple-500 text-purple-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              <Grid className="w-4 h-4 mr-2" />
-              投稿
-            </button>
-            <button
-              onClick={() => setActiveTab('saved')}
-              className={`flex-1 flex items-center justify-center py-3 text-sm font-medium border-t-2 transition-colors ${
-                activeTab === 'saved'
-                  ? 'border-purple-500 text-purple-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              <Bookmark className="w-4 h-4 mr-2" />
-              保存済み
-            </button>
-            <button
-              onClick={() => setActiveTab('tagged')}
-              className={`flex-1 flex items-center justify-center py-3 text-sm font-medium border-t-2 transition-colors ${
-                activeTab === 'tagged'
-                  ? 'border-purple-500 text-purple-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              <Tag className="w-4 h-4 mr-2" />
-              タグ付け
-            </button>
-          </div>
-        </div>
       </div>
     </div>
   );

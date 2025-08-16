@@ -78,6 +78,19 @@ export default async function OwnerPostPage({ params }: PageProps) {
   // Check if current user liked this post
   const isLiked = currentUser ? post.likes?.some((like: any) => like.user_id === currentUser.id) : false;
 
+  // Check if current user saved this post
+  let isSaved = false;
+  if (currentUser) {
+    const { data: saveData } = await supabase
+      .from('owner_post_saves')
+      .select('id')
+      .eq('user_id', currentUser.id)
+      .eq('post_id', params.id)
+      .single();
+    
+    isSaved = !!saveData;
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <OwnersHeader user={currentUser} userProfile={userProfile} />
@@ -126,7 +139,7 @@ export default async function OwnerPostPage({ params }: PageProps) {
                       🚀 使う
                     </a>
                   )}
-                  <SaveButton postId={post.id} currentUser={currentUser} />
+                  <SaveButton postId={post.id} currentUser={currentUser} isSaved={isSaved} />
                   <LikeButton 
                     postId={post.id}
                     isLiked={isLiked}

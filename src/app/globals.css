@@ -17,6 +17,12 @@
     letter-spacing: 0.03em;
     color: #333333;
     background-color: #ffffff;
+    /* 上部へのスクロールを防止 */
+    overflow-x: hidden;
+  }
+  
+  html {
+    overflow-x: hidden;
   }
   
   h1, h2, h3, h4, h5, h6 {
