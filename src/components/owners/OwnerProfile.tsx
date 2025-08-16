@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { followUser, unfollowUser } from '@/app/actions/ownerFollows';
 import { Settings, Plus, MapPin, Link as LinkIcon } from 'lucide-react';
+import { FollowListModal } from './FollowListModal';
 
 interface OwnerProfileProps {
   user: any;
@@ -12,6 +13,7 @@ interface OwnerProfileProps {
   followingCount: number;
   isFollowing: boolean;
   isOwnProfile: boolean;
+  currentUserId?: string;
 }
 
 export function OwnerProfile({
@@ -21,11 +23,13 @@ export function OwnerProfile({
   followingCount,
   isFollowing: initialIsFollowing,
   isOwnProfile,
+  currentUserId,
 }: OwnerProfileProps) {
   const router = useRouter();
   const [isFollowing, setIsFollowing] = useState(initialIsFollowing);
   const [followerCount, setFollowerCount] = useState(initialFollowerCount);
   const [isLoading, setIsLoading] = useState(false);
+  const [modalOpen, setModalOpen] = useState<'followers' | 'following' | null>(null);
 
   const handleFollow = async () => {
     setIsLoading(true);
@@ -48,6 +52,7 @@ export function OwnerProfile({
   };
 
   return (
+    <>
     <div className="bg-white">
       {/* Profile Header */}
       <div className="max-w-4xl mx-auto">
@@ -116,11 +121,17 @@ export function OwnerProfile({
                   <div className="text-xl font-bold text-gray-900">{postCount}</div>
                   <div className="text-gray-600 text-sm">投稿</div>
                 </div>
-                <button className="text-center hover:opacity-80 transition-opacity">
+                <button 
+                  onClick={() => setModalOpen('followers')}
+                  className="text-center hover:opacity-80 transition-opacity"
+                >
                   <div className="text-xl font-bold text-gray-900">{followerCount}</div>
                   <div className="text-gray-600 text-sm">フォロワー</div>
                 </button>
-                <button className="text-center hover:opacity-80 transition-opacity">
+                <button 
+                  onClick={() => setModalOpen('following')}
+                  className="text-center hover:opacity-80 transition-opacity"
+                >
                   <div className="text-xl font-bold text-gray-900">{followingCount}</div>
                   <div className="text-gray-600 text-sm">フォロー中</div>
                 </button>
@@ -215,5 +226,15 @@ export function OwnerProfile({
 
       </div>
     </div>
+
+    {/* フォロワー・フォロー中モーダル */}
+    <FollowListModal
+      isOpen={modalOpen !== null}
+      onClose={() => setModalOpen(null)}
+      userId={user.id}
+      currentUserId={currentUserId}
+      type={modalOpen || 'followers'}
+    />
+    </>
   );
 }

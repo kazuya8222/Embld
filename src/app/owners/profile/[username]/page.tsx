@@ -117,6 +117,7 @@ export default async function OwnerProfilePage({ params }: PageProps) {
           followingCount={following?.length || 0}
           isFollowing={isFollowing}
           isOwnProfile={currentUser?.id === user.id}
+          currentUserId={currentUser?.id}
         />
         
         <ProfileContent 
