@@ -9,6 +9,7 @@ import { FollowButton } from '@/components/owners/FollowButton';
 import { LikeButton } from '@/components/owners/LikeButton';
 import { SaveButton } from '@/components/owners/SaveButton';
 import { ShareButton } from '@/components/owners/ShareButton';
+import { VideoPlayer } from '@/components/owners/VideoPlayer';
 
 interface PageProps {
   params: { id: string };
@@ -123,6 +124,14 @@ export default async function OwnerPostPage({ params }: PageProps) {
                 </div>
               </div>
               
+              {/* デモ動画 */}
+              {post.demo_video_url && (
+                <div className="p-6 pt-0">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3">🎬 デモ動画</h3>
+                  <VideoPlayer videoUrl={post.demo_video_url} title={post.title} />
+                </div>
+              )}
+              
               <div className="p-6">
                 <h1 className="text-2xl font-bold text-gray-900 mb-2">{post.title}</h1>
                 <p className="text-gray-600 mb-6">{post.description}</p>
@@ -175,7 +184,7 @@ export default async function OwnerPostPage({ params }: PageProps) {
                   </div>
                   <div className="bg-gray-50 rounded-lg p-4">
                     <p className="text-gray-700">
-                      このプロジェクトを作成した理由は、日々の作業でこのようなツールが必要だと感じたからです。特にユーザーエクスペリエンスとパフォーマンスにこだわって開発しました。みなさんのフィードバックをお待ちしています！
+                      このプロダクトを作成した理由は、日々の作業でこのようなツールが必要だと感じたからです。特にユーザーエクスペリエンスとパフォーマンスにこだわって開発しました。みなさんのフィードバックをお待ちしています！
                     </p>
                   </div>
                 </div>
@@ -331,9 +340,9 @@ export default async function OwnerPostPage({ params }: PageProps) {
               </div>
             </div>
 
-            {/* プロジェクト詳細情報 */}
+            {/* プロダクト詳細情報 */}
             <div className="bg-white rounded-lg shadow-sm p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">プロジェクト詳細</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">プロダクト詳細</h3>
               <div className="space-y-4">
                 <div>
                   <dt className="text-sm font-medium text-gray-500">カテゴリ</dt>

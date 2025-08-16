@@ -11,6 +11,7 @@ export async function createOwnerPost(data: {
   project_url?: string;
   github_url?: string;
   demo_url?: string;
+  demo_video_url?: string;
   tech_stack?: string[];
   tags?: string[];
   images?: string[];

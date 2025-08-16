@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { OwnersHeader } from '@/components/owners/OwnersHeader';
-import { PostModeSelection } from '@/components/owners/PostModeSelection';
+import { ProjectPostForm } from '@/components/owners/ProjectPostForm';
 
 export default async function NewOwnerPostPage() {
   const supabase = await createClient();
@@ -23,13 +23,13 @@ export default async function NewOwnerPostPage() {
       <OwnersHeader user={user} userProfile={userProfile} />
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold">新しいプロジェクトを投稿</h1>
+          <h1 className="text-3xl font-bold">新しいプロダクトを投稿</h1>
           <p className="text-gray-600 mt-2">
-            あなたの個人開発プロジェクトを共有して、フィードバックを得ましょう
+            あなたの個人開発プロダクトを共有して、フィードバックを得ましょう
           </p>
         </div>
         
-        <PostModeSelection userId={user.id} />
+        <ProjectPostForm userId={user.id} />
       </div>
     </div>
   );

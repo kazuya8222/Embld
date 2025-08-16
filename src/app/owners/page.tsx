@@ -248,17 +248,17 @@ export default async function OwnersPage({
         </div>
       </section>
 
-      {/* プロジェクト一覧 */}
+      {/* プロダクト一覧 */}
       <section className="py-12 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4">
           <h3 className="text-2xl font-bold mb-6 text-gray-900">
             {searchParams.search 
               ? `「${searchParams.search}」の検索結果`
               : searchParams.tab === 'following'
-              ? 'フォロー中のプロジェクト'
+              ? 'フォロー中のプロダクト'
               : searchParams.tab === 'trending'
-              ? 'トレンドのプロジェクト'
-              : '最新のプロジェクト'}
+              ? 'トレンドのプロダクト'
+              : '最新のプロダクト'}
           </h3>
           
           <Suspense fallback={
@@ -356,7 +356,7 @@ export default async function OwnersPage({
                   <p className="text-gray-500">
                     {searchParams.tab === 'following' 
                       ? 'フォローしている人の投稿がまだありません。他のユーザーをフォローしてみましょう！' 
-                      : 'まだプロジェクトがありません'}
+                      : 'まだプロダクトがありません'}
                   </p>
                   {searchParams.tab === 'following' && (
                     <Link 
