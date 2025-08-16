@@ -10,6 +10,7 @@ import { LikeButton } from '@/components/owners/LikeButton';
 import { SaveButton } from '@/components/owners/SaveButton';
 import { ShareButton } from '@/components/owners/ShareButton';
 import { VideoPlayer } from '@/components/owners/VideoPlayer';
+import { OwnerCommentSection } from '@/components/owners/OwnerCommentSection';
 
 interface PageProps {
   params: { id: string };
@@ -47,6 +48,13 @@ export default async function OwnerPostPage({ params }: PageProps) {
     .from('owner_follows')
     .select('id')
     .eq('following_id', post.user.id);
+
+  // Get post count for post creator
+  const { data: userPosts } = await supabase
+    .from('owner_posts')
+    .select('id')
+    .eq('user_id', post.user.id)
+    .eq('status', 'published');
 
   // Check if current user follows the post creator
   let isFollowing = false;
@@ -91,6 +99,12 @@ export default async function OwnerPostPage({ params }: PageProps) {
     
     isSaved = !!saveData;
   }
+
+  // Get total saves count for this post
+  const { data: savesData } = await supabase
+    .from('owner_post_saves')
+    .select('id')
+    .eq('post_id', params.id);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -145,17 +159,24 @@ export default async function OwnerPostPage({ params }: PageProps) {
                       rel="noopener noreferrer"
                       className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium"
                     >
-                      🚀 使う
+                      使う
                     </a>
                   )}
-                  <SaveButton postId={post.id} currentUser={currentUser} isSaved={isSaved} />
-                  <LikeButton 
-                    postId={post.id}
-                    isLiked={isLiked}
-                    likeCount={post.like_count}
-                    currentUser={currentUser}
-                  />
-                  <ShareButton postUrl={`${process.env.NEXT_PUBLIC_APP_URL}/owners/${post.id}`} />
+                  <div className="flex items-center gap-4">
+                    <LikeButton 
+                      postId={post.id}
+                      isLiked={isLiked}
+                      likeCount={post.like_count}
+                      currentUser={currentUser}
+                    />
+                    <SaveButton 
+                      postId={post.id} 
+                      currentUser={currentUser} 
+                      isSaved={isSaved}
+                      saveCount={savesData?.length || 0}
+                    />
+                    <ShareButton postUrl={`${process.env.NEXT_PUBLIC_APP_URL}/owners/${post.id}`} />
+                  </div>
                 </div>
 
                 {/* 詳細説明 */}
@@ -193,84 +214,12 @@ export default async function OwnerPostPage({ params }: PageProps) {
 
             {/* コメントセクション */}
             <div className="bg-white rounded-lg shadow-sm p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">💬 コメント ({post.comments?.length || 0})</h3>
-                <button className="text-sm text-purple-600 hover:text-purple-700 font-medium">
-                  新しい順
-                </button>
-              </div>
-              
-              {/* コメント入力 */}
-              {currentUser ? (
-                <div className="mb-6">
-                  <div className="flex gap-3">
-                    <img
-                      src={userProfile?.avatar_url || '/default-avatar.png'}
-                      alt={userProfile?.username || 'User'}
-                      className="w-8 h-8 rounded-full"
-                      loading="lazy"
-                    />
-                    <div className="flex-1">
-                      <textarea
-                        placeholder="コメントを書く..."
-                        className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                        rows={3}
-                      />
-                      <div className="flex justify-between items-center mt-2">
-                        <span className="text-xs text-gray-500">Ctrl + Enter で投稿</span>
-                        <button className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium">
-                          コメントする
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="mb-6 p-4 bg-gray-50 rounded-lg text-center">
-                  <p className="text-gray-600 mb-2">コメントするにはログインが必要です</p>
-                  <Link href="/auth/login" className="text-purple-600 hover:text-purple-700 font-medium">
-                    ログインする
-                  </Link>
-                </div>
-              )}
-              
-              {/* コメント一覧 */}
-              <div className="space-y-4">
-                {post.comments && post.comments.length > 0 ? (
-                  post.comments.map((comment: any) => (
-                    <div key={comment.id} className="flex gap-3">
-                      <img
-                        src={comment.user?.avatar_url || '/default-avatar.png'}
-                        alt={comment.user?.username || 'User'}
-                        className="w-8 h-8 rounded-full"
-                        loading="lazy"
-                      />
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="font-medium text-gray-900">{comment.user?.username}</span>
-                          <span className="text-sm text-gray-500">
-                            {new Date(comment.created_at).toLocaleDateString('ja-JP')}
-                          </span>
-                        </div>
-                        <p className="text-gray-700">{comment.content}</p>
-                        <div className="flex items-center gap-4 mt-2">
-                          <button className="text-sm text-gray-500 hover:text-purple-600 transition-colors">
-                            ❤️ いいね
-                          </button>
-                          <button className="text-sm text-gray-500 hover:text-purple-600 transition-colors">
-                            返信
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="text-center py-8">
-                    <p className="text-gray-500">まだコメントがありません</p>
-                    <p className="text-sm text-gray-400 mt-1">最初のコメントを書いてみませんか？</p>
-                  </div>
-                )}
-              </div>
+              <OwnerCommentSection 
+                postId={post.id}
+                initialComments={post.comments || []}
+                currentUser={currentUser}
+                userProfile={userProfile}
+              />
             </div>
           </div>
 
@@ -303,9 +252,10 @@ export default async function OwnerPostPage({ params }: PageProps) {
                     >
                       {post.user?.username || 'Anonymous'}
                     </Link>
-                    <p className="text-sm text-gray-500">
-                      {followers?.length || 0} フォロワー
-                    </p>
+                    <div className="text-sm text-gray-500">
+                      <p>{followers?.length || 0} フォロワー</p>
+                      <p>{userPosts?.length || 0} 投稿</p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -392,7 +342,7 @@ export default async function OwnerPostPage({ params }: PageProps) {
 
             {/* おすすめアプリ */}
             <div className="bg-white rounded-lg shadow-sm p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">🔥 おすすめアプリ</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">おすすめアプリ</h3>
               <div className="space-y-4">
                 {/* おすすめアプリカード */}
                 <Link href="/owners/sample-1" className="block p-4 border border-gray-200 rounded-lg hover:border-purple-300 hover:shadow-md transition-all">
@@ -441,12 +391,6 @@ export default async function OwnerPostPage({ params }: PageProps) {
                       </div>
                     </div>
                   </div>
-                </Link>
-              </div>
-              
-              <div className="mt-4 pt-4 border-t">
-                <Link href="/owners" className="text-purple-600 text-sm font-medium hover:text-purple-700">
-                  もっと見る →
                 </Link>
               </div>
             </div>

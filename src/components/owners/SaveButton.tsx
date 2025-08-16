@@ -10,11 +10,13 @@ interface SaveButtonProps {
   postId: string;
   currentUser: User | null;
   isSaved?: boolean;
+  saveCount?: number;
 }
 
-export function SaveButton({ postId, currentUser, isSaved: initialIsSaved = false }: SaveButtonProps) {
+export function SaveButton({ postId, currentUser, isSaved: initialIsSaved = false, saveCount: initialSaveCount = 0 }: SaveButtonProps) {
   const router = useRouter();
   const [isSaved, setIsSaved] = useState(initialIsSaved);
+  const [saveCount, setSaveCount] = useState(initialSaveCount);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSave = async () => {
@@ -25,12 +27,14 @@ export function SaveButton({ postId, currentUser, isSaved: initialIsSaved = fals
 
     setIsLoading(true);
     setIsSaved(!isSaved);
+    setSaveCount(isSaved ? saveCount - 1 : saveCount + 1);
     
     const result = await saveOwnerPost(postId, currentUser.id);
     
     if (!result.success) {
       // Revert on error
       setIsSaved(isSaved);
+      setSaveCount(initialSaveCount);
     }
     
     setIsLoading(false);
@@ -38,19 +42,22 @@ export function SaveButton({ postId, currentUser, isSaved: initialIsSaved = fals
   };
 
   return (
-    <button
-      onClick={handleSave}
-      disabled={isLoading}
-      className={`p-3 rounded-lg transition-colors disabled:opacity-50 ${
-        isSaved
-          ? 'bg-purple-100 text-purple-600 hover:bg-purple-200'
-          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-      }`}
-      title="保存"
-    >
-      <Bookmark 
-        className={`w-5 h-5 ${isSaved ? 'fill-current' : ''}`} 
-      />
-    </button>
+    <div className="flex items-center gap-1">
+      <button
+        onClick={handleSave}
+        disabled={isLoading}
+        className={`p-3 rounded-lg transition-colors disabled:opacity-50 ${
+          isSaved
+            ? 'bg-purple-100 text-purple-600 hover:bg-purple-200'
+            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+        }`}
+        title="保存"
+      >
+        <Bookmark 
+          className={`w-5 h-5 ${isSaved ? 'fill-current' : ''}`} 
+        />
+      </button>
+      <span className="text-sm text-gray-600">{saveCount}</span>
+    </div>
   );
 }

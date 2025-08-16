@@ -35,19 +35,22 @@ export function LikeButton({ postId, isLiked: initialIsLiked, likeCount: initial
   };
 
   return (
-    <button
-      onClick={handleLike}
-      disabled={isLoading}
-      className={`p-3 rounded-lg transition-colors disabled:opacity-50 ${
-        isLiked
-          ? 'bg-red-100 text-red-600 hover:bg-red-200'
-          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-      }`}
-      title={`いいね (${likeCount})`}
-    >
-      <Heart 
-        className={`w-5 h-5 ${isLiked ? 'fill-current' : ''}`} 
-      />
-    </button>
+    <div className="flex items-center gap-1">
+      <button
+        onClick={handleLike}
+        disabled={isLoading}
+        className={`p-3 rounded-lg transition-colors disabled:opacity-50 ${
+          isLiked
+            ? 'bg-red-100 text-red-600 hover:bg-red-200'
+            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+        }`}
+        title={`いいね (${likeCount})`}
+      >
+        <Heart 
+          className={`w-5 h-5 ${isLiked ? 'fill-current' : ''}`} 
+        />
+      </button>
+      <span className="text-sm text-gray-600">{likeCount}</span>
+    </div>
   );
 }

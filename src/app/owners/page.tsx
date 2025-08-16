@@ -255,7 +255,7 @@ export default async function OwnersPage({
             {searchParams.search 
               ? `「${searchParams.search}」の検索結果`
               : searchParams.tab === 'following'
-              ? 'フォロー中のプロダクト'
+              ? 'フォロー開発者のプロダクト'
               : searchParams.tab === 'trending'
               ? 'トレンドのプロダクト'
               : '最新のプロダクト'}
@@ -265,12 +265,11 @@ export default async function OwnersPage({
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {[...Array(6)].map((_, i) => (
                 <div key={i} className="bg-white rounded-xl shadow-sm overflow-hidden h-full flex flex-col animate-pulse">
-                  <div className="w-full h-64 bg-gray-200"></div>
-                  <div className="p-6 flex flex-col flex-1">
-                    <div className="h-6 bg-gray-200 rounded mb-3"></div>
-                    <div className="h-4 bg-gray-200 rounded mb-2"></div>
-                    <div className="h-4 bg-gray-200 rounded mb-2"></div>
-                    <div className="h-4 bg-gray-200 rounded w-3/4 mb-6"></div>
+                  <div className="w-full h-80 bg-gray-200"></div>
+                  <div className="p-4 flex flex-col flex-1">
+                    <div className="h-5 bg-gray-200 rounded mb-2"></div>
+                    <div className="h-4 bg-gray-200 rounded mb-1"></div>
+                    <div className="h-4 bg-gray-200 rounded w-3/4 mb-4"></div>
                     <div className="flex items-center justify-between mt-auto">
                       <div className="flex items-center gap-4">
                         <div className="h-4 bg-gray-200 rounded w-12"></div>
@@ -292,7 +291,7 @@ export default async function OwnersPage({
                   <Link key={post.id} href={`/owners/${post.id}`} className="group block h-full">
                           <div className="bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden h-full flex flex-col transform hover:scale-[1.02]">
                             {/* サムネイル画像 */}
-                            <div className="w-full h-64 relative">
+                            <div className="w-full h-80 relative">
                               {post.images && post.images.length > 0 ? (
                                 <img
                                   src={post.images[0]}
@@ -311,14 +310,14 @@ export default async function OwnersPage({
                                 {post.category}
                               </span>
                             </div>
-                            <div className="p-6 flex flex-col flex-1">
-                              <h3 className="text-xl font-bold text-gray-900 line-clamp-2 group-hover:text-purple-600 transition-colors min-h-[3.5rem] mb-3">
+                            <div className="p-4 flex flex-col flex-1">
+                              <h3 className="text-lg font-bold text-gray-900 line-clamp-2 group-hover:text-purple-600 transition-colors min-h-[2.5rem] mb-2">
                                 {post.title}
                               </h3>
-                              <p className="text-gray-600 mt-2 line-clamp-3 min-h-[4.5rem]">
+                              <p className="text-gray-600 mt-1 line-clamp-2 min-h-[3rem]">
                                 {post.description}
                               </p>
-                              <div className="flex items-center justify-between mt-auto pt-6">
+                              <div className="flex items-center justify-between mt-auto pt-4">
                                 <div className="flex items-center gap-4 text-gray-500">
                                   <span className="flex items-center gap-1">
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
