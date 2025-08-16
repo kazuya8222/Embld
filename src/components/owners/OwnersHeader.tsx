@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { User } from '@supabase/supabase-js';
 import { NotificationDropdown } from './NotificationDropdown';
 import { getUnreadNotificationCount } from '@/app/actions/notifications';
-import { signout } from '@/app/auth/actions';
+import { ownersSignout } from '@/app/owners/auth/actions';
 
 interface OwnersHeaderProps {
   user: User | null;
@@ -22,6 +22,7 @@ export function OwnersHeader({ user, userProfile }: OwnersHeaderProps) {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
   // 未読通知数を取得
@@ -126,12 +127,20 @@ export function OwnersHeader({ user, userProfile }: OwnersHeaderProps) {
                       <button
                         onClick={async () => {
                           setIsUserMenuOpen(false);
-                          await signout();
+                          setIsLoggingOut(true);
+                          try {
+                            await ownersSignout();
+                          } catch (error) {
+                            console.error('Logout error:', error);
+                          } finally {
+                            setIsLoggingOut(false);
+                          }
                         }}
-                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        disabled={isLoggingOut}
+                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <LogOut className="inline h-4 w-4 mr-2" />
-                        ログアウト
+                        {isLoggingOut ? 'ログアウト中...' : 'ログアウト'}
                       </button>
                     </div>
                   )}
@@ -144,8 +153,8 @@ export function OwnersHeader({ user, userProfile }: OwnersHeaderProps) {
                 </button>
 
                 <Link
-                  href="/auth/login"
-                  className="bg-purple-600 text-white px-6 py-2 rounded-full hover:bg-purple-700 transition-colors"
+                  href="/owners/auth/login"
+                  className="bg-purple-600 text-white px-6 py-2 rounded-full hover:bg-purple-700 transition-colors inline-flex items-center"
                 >
                   ログイン
                 </Link>
@@ -184,17 +193,25 @@ export function OwnersHeader({ user, userProfile }: OwnersHeaderProps) {
                 <button
                   onClick={async () => {
                     setIsMenuOpen(false);
-                    await signout();
+                    setIsLoggingOut(true);
+                    try {
+                      await ownersSignout();
+                    } catch (error) {
+                      console.error('Logout error:', error);
+                    } finally {
+                      setIsLoggingOut(false);
+                    }
                   }}
-                  className="w-full text-left px-3 py-2 text-base font-medium text-gray-400 hover:text-white hover:bg-gray-800 rounded-md"
+                  disabled={isLoggingOut}
+                  className="w-full text-left px-3 py-2 text-base font-medium text-gray-400 hover:text-white hover:bg-gray-800 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <LogOut className="inline h-4 w-4 mr-2" />
-                  ログアウト
+                  {isLoggingOut ? 'ログアウト中...' : 'ログアウト'}
                 </button>
               </>
             ) : (
               <Link
-                href="/auth/login"
+                href="/owners/auth/login"
                 className="block px-3 py-2 text-base font-medium text-gray-400 hover:text-white hover:bg-gray-800 rounded-md"
                 onClick={() => setIsMenuOpen(false)}
               >

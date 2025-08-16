@@ -130,12 +130,6 @@ export default async function OwnerPostPage({ params }: PageProps) {
                 ) : (
                   <div className="text-white text-6xl">📱</div>
                 )}
-                {/* 公開/非公開ステータス */}
-                <div className="absolute top-4 left-4">
-                  <span className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium">
-                    公開
-                  </span>
-                </div>
               </div>
               
               {/* デモ動画 */}
