@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { User as UserIcon, ChevronDown, LogOut, Settings, Bell, Menu, X } from 'lucide-react';
 import Link from 'next/link';
 import { User } from '@supabase/supabase-js';
@@ -22,6 +22,7 @@ export function OwnersHeader({ user, userProfile }: OwnersHeaderProps) {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const userMenuRef = useRef<HTMLDivElement>(null);
 
   // 未読通知数を取得
   useEffect(() => {
@@ -34,6 +35,17 @@ export function OwnersHeader({ user, userProfile }: OwnersHeaderProps) {
     }
   }, [user]);
 
+  // ユーザーメニューの外側クリックで閉じる
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setIsUserMenuOpen(false);
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   return (
     <header className="bg-gray-900 border-b border-gray-800 shadow-sm">
@@ -64,7 +76,7 @@ export function OwnersHeader({ user, userProfile }: OwnersHeaderProps) {
                 <NotificationDropdown userId={user.id} initialUnreadCount={unreadCount} />
 
                 {/* ユーザーメニュー */}
-                <div className="relative">
+                <div className="relative" ref={userMenuRef}>
                   <button
                     onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                     className="flex items-center space-x-2 text-sm font-medium text-gray-400 hover:text-white transition-colors"
