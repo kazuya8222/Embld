@@ -1,9 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { User as UserIcon, ChevronDown, LogOut, Settings, Bell, Menu, X } from 'lucide-react';
 import Link from 'next/link';
 import { User } from '@supabase/supabase-js';
+import { NotificationDropdown } from './NotificationDropdown';
+import { getUnreadNotificationCount } from '@/app/actions/notifications';
 
 interface OwnersHeaderProps {
   user: User | null;
@@ -18,6 +20,18 @@ interface OwnersHeaderProps {
 export function OwnersHeader({ user, userProfile }: OwnersHeaderProps) {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  // 未読通知数を取得
+  useEffect(() => {
+    if (user) {
+      getUnreadNotificationCount(user.id).then(result => {
+        if (result.success) {
+          setUnreadCount(result.count);
+        }
+      });
+    }
+  }, [user]);
 
 
   return (
@@ -45,10 +59,8 @@ export function OwnersHeader({ user, userProfile }: OwnersHeaderProps) {
           <div className="hidden md:flex items-center space-x-4">
             {user ? (
               <>
-                {/* 通知・メッセージアイコン */}
-                <button className="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-full transition-colors">
-                  <Bell className="h-5 w-5" />
-                </button>
+                {/* 通知ドロップダウン */}
+                <NotificationDropdown userId={user.id} initialUnreadCount={unreadCount} />
 
                 {/* ユーザーメニュー */}
                 <div className="relative">

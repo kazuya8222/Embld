@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
+import { createNotification, deleteNotification } from './notifications';
 
 export async function createOwnerPost(data: {
   user_id: string;
@@ -81,6 +82,17 @@ export async function deleteOwnerPost(postId: string) {
 export async function likeOwnerPost(postId: string, userId: string) {
   const supabase = await createClient();
 
+  // 投稿の作成者情報を取得
+  const { data: post } = await supabase
+    .from('owner_posts')
+    .select('user_id')
+    .eq('id', postId)
+    .single();
+
+  if (!post) {
+    return { success: false, error: 'Post not found' };
+  }
+
   const { data: existingLike } = await supabase
     .from('owner_post_likes')
     .select()
@@ -98,6 +110,14 @@ export async function likeOwnerPost(postId: string, userId: string) {
 
     if (!error) {
       await supabase.rpc('decrement_owner_post_likes', { post_id: postId });
+      
+      // 通知を削除
+      await deleteNotification({
+        recipientId: post.user_id,
+        senderId: userId,
+        postId: postId,
+        type: 'like'
+      });
     }
 
     return { success: !error, liked: false };
@@ -109,6 +129,16 @@ export async function likeOwnerPost(postId: string, userId: string) {
 
     if (!error) {
       await supabase.rpc('increment_owner_post_likes', { post_id: postId });
+      
+      // 通知を作成（自分の投稿でない場合のみ）
+      if (post.user_id !== userId) {
+        await createNotification({
+          recipientId: post.user_id,
+          senderId: userId,
+          postId: postId,
+          type: 'like'
+        });
+      }
     }
 
     return { success: !error, liked: true };
