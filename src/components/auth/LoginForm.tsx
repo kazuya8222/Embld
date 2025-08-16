@@ -1,6 +1,6 @@
 'use client'
 
-import { login, loginWithGoogle } from '@/app/auth/actions'
+import { loginWithGoogle } from '@/app/auth/actions'
 import { cn } from '@/lib/utils/cn'
 import { useSearchParams } from 'next/navigation'
 import { useTransition } from 'react'
@@ -10,14 +10,6 @@ export function LoginForm() {
   const error = searchParams.get('error')
   const message = searchParams.get('message')
   const [isPending, startTransition] = useTransition()
-
-  // クライアントサイドで環境に応じたURLを取得
-  const getRedirectUrl = () => {
-    if (typeof window !== 'undefined') {
-      return `${window.location.origin}/auth/callback`
-    }
-    return `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/auth/callback`
-  }
 
   return (
     <div className="max-w-md mx-auto space-y-6">
@@ -63,56 +55,6 @@ export function LoginForm() {
         </button>
       </form>
 
-      <div className="relative">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-gray-300" />
-        </div>
-        <div className="relative flex justify-center text-sm">
-          <span className="px-2 bg-white text-gray-500">または</span>
-        </div>
-      </div>
-
-      <form action={login} className="space-y-4">
-        <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-            メールアドレス
-          </label>
-          <input
-            id="email"
-            name="email"
-            type="email"
-            required
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
-            placeholder="your@email.com"
-          />
-        </div>
-
-        <div>
-          <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-            パスワード
-          </label>
-          <input
-            id="password"
-            name="password"
-            type="password"
-            required
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
-            placeholder="パスワードを入力"
-          />
-        </div>
-
-        <button
-          type="submit"
-          disabled={isPending}
-          className={cn(
-            "w-full bg-primary-600 text-white py-2 px-4 rounded-md hover:bg-primary-700 transition-colors",
-            isPending && "opacity-50 cursor-not-allowed"
-          )}
-        >
-          {isPending ? 'ログイン中...' : 'ログイン'}
-        </button>
-      </form>
-
       {error && (
         <div className="p-3 rounded-md text-sm bg-red-50 border border-red-200 text-red-600">
           {decodeURIComponent(error)}
@@ -125,17 +67,6 @@ export function LoginForm() {
         </div>
       )}
 
-      <div className="text-center text-sm text-gray-500">
-        <p>現在の環境: {process.env.NODE_ENV}</p>
-        <p>リダイレクト先: {getRedirectUrl()}</p>
-      </div>
-
-      <div className="text-center text-sm">
-        <span className="text-gray-600">アカウントをお持ちでない方は </span>
-        <a href="/auth/register" className="text-primary-600 hover:text-primary-700 font-medium">
-          新規登録
-        </a>
-      </div>
     </div>
   )
 }

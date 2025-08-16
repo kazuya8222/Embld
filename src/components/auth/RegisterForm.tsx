@@ -1,6 +1,6 @@
 'use client'
 
-import { signup, loginWithGoogle } from '@/app/auth/actions'
+import { loginWithGoogle } from '@/app/auth/actions'
 import { cn } from '@/lib/utils/cn'
 import { useSearchParams } from 'next/navigation'
 import { getAppUrl } from '@/lib/utils/env'
@@ -49,55 +49,6 @@ export function RegisterForm() {
           ※ Google認証画面では認証サービス名が表示されますが、EmBldへの登録です
         </p>
       </div>
-
-      <div className="relative">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-gray-300" />
-        </div>
-        <div className="relative flex justify-center text-sm">
-          <span className="px-2 bg-white text-gray-500">または</span>
-        </div>
-      </div>
-
-      <form action={signup} className="space-y-4">
-        <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-            メールアドレス
-          </label>
-          <input
-            id="email"
-            name="email"
-            type="email"
-            required
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
-            placeholder="your@email.com"
-          />
-        </div>
-
-        <div>
-          <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-            パスワード
-          </label>
-          <input
-            id="password"
-            name="password"
-            type="password"
-            required
-            minLength={6}
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
-            placeholder="6文字以上のパスワード"
-          />
-        </div>
-
-        <button
-          type="submit"
-          className={cn(
-            "w-full bg-primary-600 text-white py-2 px-4 rounded-md hover:bg-primary-700 transition-colors"
-          )}
-        >
-          登録
-        </button>
-      </form>
 
       {error && (
         <div className="p-3 border rounded-md text-sm bg-red-50 border-red-200 text-red-600">

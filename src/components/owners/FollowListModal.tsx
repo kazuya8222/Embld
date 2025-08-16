@@ -55,7 +55,7 @@ export function FollowListModal({
             if (user.id !== currentUserId) {
               const followResult = await checkFollowStatus(currentUserId, user.id);
               if (followResult.success) {
-                followStatesMap[user.id] = followResult.isFollowing;
+                followStatesMap[user.id] = followResult.isFollowing || false;
               }
             }
           }

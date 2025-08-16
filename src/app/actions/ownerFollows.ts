@@ -75,13 +75,16 @@ export async function getFollowers(userId: string) {
 
   return { 
     success: true, 
-    data: followers?.map(f => ({
-      id: f.follower.id,
-      username: f.follower.username,
-      avatar_url: f.follower.avatar_url,
-      bio: f.follower.bio,
-      followed_at: f.created_at
-    })) || []
+    data: followers?.map(f => {
+      const follower = Array.isArray(f.follower) ? f.follower[0] : f.follower;
+      return {
+        id: follower?.id,
+        username: follower?.username,
+        avatar_url: follower?.avatar_url,
+        bio: follower?.bio,
+        followed_at: f.created_at
+      };
+    }) || []
   };
 }
 
@@ -110,13 +113,16 @@ export async function getFollowing(userId: string) {
 
   return { 
     success: true, 
-    data: following?.map(f => ({
-      id: f.following.id,
-      username: f.following.username,
-      avatar_url: f.following.avatar_url,
-      bio: f.following.bio,
-      followed_at: f.created_at
-    })) || []
+    data: following?.map(f => {
+      const following = Array.isArray(f.following) ? f.following[0] : f.following;
+      return {
+        id: following?.id,
+        username: following?.username,
+        avatar_url: following?.avatar_url,
+        bio: following?.bio,
+        followed_at: f.created_at
+      };
+    }) || []
   };
 }
 
