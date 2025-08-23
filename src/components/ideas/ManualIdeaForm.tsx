@@ -25,47 +25,52 @@ interface CoreFeature {
   description: string
 }
 
-export function ManualIdeaForm() {
+interface ManualIdeaFormProps {
+  initialData?: any
+  ideaId?: string
+}
+
+export function ManualIdeaForm({ initialData, ideaId }: ManualIdeaFormProps = {}) {
   const { user } = useAuth()
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   
   // 基本情報
-  const [title, setTitle] = useState('')
-  const [problem, setProblem] = useState('')
-  const [solution, setSolution] = useState('')
-  const [targetUsers, setTargetUsers] = useState('')
-  const [category, setCategory] = useState<string>('その他')
-  const [tags, setTags] = useState<string[]>([])
+  const [title, setTitle] = useState(initialData?.title || '')
+  const [problem, setProblem] = useState(initialData?.problem || '')
+  const [solution, setSolution] = useState(initialData?.solution || '')
+  const [targetUsers, setTargetUsers] = useState(initialData?.target_users || '')
+  const [category, setCategory] = useState<string>(initialData?.category || 'その他')
+  const [tags, setTags] = useState<string[]>(initialData?.tags || [])
   const [newTag, setNewTag] = useState('')
-  const [isPublic, setIsPublic] = useState(true)
+  const [isPublic, setIsPublic] = useState(initialData?.is_public ?? true)
   
   // 詳細企画書フィールド
-  const [serviceName, setServiceName] = useState('')
-  const [catchCopy, setCatchCopy] = useState('')
-  const [serviceDescription, setServiceDescription] = useState('')
-  const [backgroundProblem, setBackgroundProblem] = useState('')
-  const [currentSolutionProblems, setCurrentSolutionProblems] = useState('')
-  const [mainTarget, setMainTarget] = useState('')
-  const [usageScene, setUsageScene] = useState('')
-  const [valueProposition, setValueProposition] = useState('')
-  const [differentiators, setDifferentiators] = useState('')
-  const [coreFeatures, setCoreFeatures] = useState<CoreFeature[]>([])
-  const [niceToHaveFeatures, setNiceToHaveFeatures] = useState('')
-  const [initialFlow, setInitialFlow] = useState('')
-  const [importantOperations, setImportantOperations] = useState('')
-  const [monetizationMethod, setMonetizationMethod] = useState('')
-  const [priceRange, setPriceRange] = useState('')
-  const [freePaidBoundary, setFreePaidBoundary] = useState('')
-  const [similarServices, setSimilarServices] = useState('')
-  const [designAtmosphere, setDesignAtmosphere] = useState('')
-  const [referenceUrls, setReferenceUrls] = useState('')
-  const [expectedRelease, setExpectedRelease] = useState('')
-  const [priorityPoints, setPriorityPoints] = useState('')
-  const [deviceType, setDeviceType] = useState('')
-  const [externalServices, setExternalServices] = useState('')
-  const [oneMonthGoal, setOneMonthGoal] = useState('')
-  const [successMetrics, setSuccessMetrics] = useState('')
+  const [serviceName, setServiceName] = useState(initialData?.service_name || '')
+  const [catchCopy, setCatchCopy] = useState(initialData?.catch_copy || '')
+  const [serviceDescription, setServiceDescription] = useState(initialData?.service_description || '')
+  const [backgroundProblem, setBackgroundProblem] = useState(initialData?.background_problem || '')
+  const [currentSolutionProblems, setCurrentSolutionProblems] = useState(initialData?.current_solution_problems || '')
+  const [mainTarget, setMainTarget] = useState(initialData?.main_target || '')
+  const [usageScene, setUsageScene] = useState(initialData?.usage_scene || '')
+  const [valueProposition, setValueProposition] = useState(initialData?.value_proposition || '')
+  const [differentiators, setDifferentiators] = useState(initialData?.differentiators || '')
+  const [coreFeatures, setCoreFeatures] = useState<CoreFeature[]>(initialData?.core_features || [])
+  const [niceToHaveFeatures, setNiceToHaveFeatures] = useState(initialData?.nice_to_have_features || '')
+  const [initialFlow, setInitialFlow] = useState(initialData?.initial_flow || '')
+  const [importantOperations, setImportantOperations] = useState(initialData?.important_operations || '')
+  const [monetizationMethod, setMonetizationMethod] = useState(initialData?.monetization_method || '')
+  const [priceRange, setPriceRange] = useState(initialData?.price_range || '')
+  const [freePaidBoundary, setFreePaidBoundary] = useState(initialData?.free_paid_boundary || '')
+  const [similarServices, setSimilarServices] = useState(initialData?.similar_services || '')
+  const [designAtmosphere, setDesignAtmosphere] = useState(initialData?.design_atmosphere || '')
+  const [referenceUrls, setReferenceUrls] = useState(initialData?.reference_urls || '')
+  const [expectedRelease, setExpectedRelease] = useState(initialData?.expected_release || '')
+  const [priorityPoints, setPriorityPoints] = useState(initialData?.priority_points || '')
+  const [deviceType, setDeviceType] = useState(initialData?.device_type || '')
+  const [externalServices, setExternalServices] = useState(initialData?.external_services || '')
+  const [oneMonthGoal, setOneMonthGoal] = useState(initialData?.one_month_goal || '')
+  const [successMetrics, setSuccessMetrics] = useState(initialData?.success_metrics || '')
 
   const addTag = () => {
     if (newTag.trim() && !tags.includes(newTag.trim())) {
@@ -141,7 +146,7 @@ export function ManualIdeaForm() {
 
     startTransition(async () => {
       try {
-        const result = await saveIdeaFromAI(payload)
+        const result = await saveIdeaFromAI(payload, ideaId)
         if (result.ok && result.id) {
           router.push(`/ideas/${result.id}`)
         } else {
@@ -164,10 +169,10 @@ export function ManualIdeaForm() {
             <span className="text-sm font-medium text-gray-700">手動入力</span>
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            アイデアを詳細に記入
+            {ideaId ? 'アイデアを編集' : 'アイデアを詳細に記入'}
           </h1>
           <p className="text-lg text-gray-600">
-            必要な項目を入力してあなたのアイデアを投稿しましょう
+            {ideaId ? '内容を変更して更新できます' : '必要な項目を入力してあなたのアイデアを投稿しましょう'}
           </p>
         </div>
 
@@ -534,7 +539,7 @@ export function ManualIdeaForm() {
               ) : (
                 <Save className="w-5 h-5" />
               )}
-              {isPending ? '投稿中...' : 'アイデアを投稿'}
+              {isPending ? (ideaId ? '更新中...' : '投稿中...') : (ideaId ? 'アイデアを更新' : 'アイデアを投稿')}
             </button>
           </div>
         </form>

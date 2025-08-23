@@ -65,7 +65,7 @@ ${requirements.join('\n')}
       description: post.description,
       category: post.category,
       image_url: post.image_url,
-      owner_name: post.profiles?.full_name || '不明'
+      owner_name: (post.profiles as any)?.full_name || '不明'
     })) || []
 
     return NextResponse.json({ apps })
