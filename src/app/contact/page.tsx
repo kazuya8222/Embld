@@ -9,10 +9,11 @@ import { submitContact } from '@/app/actions/contact'
 export default function ContactPage() {
   const router = useRouter()
   const [formData, setFormData] = useState({
-    name: '',
+    lastName: '',
+    firstName: '',
     email: '',
     company: '',
-    category: 'general',
+    purpose: '',
     message: ''
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -89,9 +90,6 @@ export default function ContactPage() {
         {/* Page Title */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">お問い合わせ</h1>
-          <p className="text-lg text-gray-600">
-            ご質問・ご要望・ご意見など、お気軽にお問い合わせください
-          </p>
         </div>
 
         {/* Contact Form */}
@@ -105,33 +103,24 @@ export default function ContactPage() {
               
               {/* 確認内容表示 */}
               <div className="space-y-4 bg-gray-50 p-6 rounded-lg">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">お問い合わせ種別</label>
-                    <p className="text-gray-900 bg-white p-2 rounded border">
-                      {formData.category === 'general' && '一般的なお問い合わせ'}
-                      {formData.category === 'idea' && 'アイデア・企画について'}
-                      {formData.category === 'development' && '開発について'}
-                      {formData.category === 'business' && 'ビジネス提携について'}
-                      {formData.category === 'bug' && '不具合報告'}
-                      {formData.category === 'other' && 'その他'}
-                    </p>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">お名前</label>
-                    <p className="text-gray-900 bg-white p-2 rounded border">{formData.name}</p>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">メールアドレス</label>
-                    <p className="text-gray-900 bg-white p-2 rounded border">{formData.email}</p>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">会社名・組織名</label>
-                    <p className="text-gray-900 bg-white p-2 rounded border">{formData.company || '（未記入）'}</p>
-                  </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">お名前</label>
+                  <p className="text-gray-900 bg-white p-2 rounded border">{formData.lastName} {formData.firstName}</p>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">メールアドレス</label>
+                  <p className="text-gray-900 bg-white p-2 rounded border">{formData.email}</p>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">会社名・組織名</label>
+                  <p className="text-gray-900 bg-white p-2 rounded border">{formData.company || '（未記入）'}</p>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">お問い合わせ目的</label>
+                  <p className="text-gray-900 bg-white p-2 rounded border">{formData.purpose}</p>
                 </div>
                 
                 <div>
@@ -165,10 +154,7 @@ export default function ContactPage() {
                       送信中...
                     </>
                   ) : (
-                    <>
-                      <Send className="w-5 h-5" />
-                      送信する
-                    </>
+                    "送信する"
                   )}
                 </button>
               </div>
@@ -203,50 +189,43 @@ export default function ContactPage() {
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Category Selection */}
-              <div>
-                <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">
-                  お問い合わせ種別 <span className="text-red-500">*</span>
-                </label>
-                <select
-                  id="category"
-                  name="category"
-                  value={formData.category}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                >
-                  <option value="general">一般的なお問い合わせ</option>
-                  <option value="idea">アイデア・企画について</option>
-                  <option value="development">開発について</option>
-                  <option value="business">ビジネス提携について</option>
-                  <option value="bug">不具合報告</option>
-                  <option value="other">その他</option>
-                </select>
-              </div>
-
-              {/* Name Field */}
-              <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-                  <User className="inline w-4 h-4 mr-1" />
-                  お名前 <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  id="name"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  required
-                  placeholder="山田 太郎"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                />
+              {/* Name Fields */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-2">
+                    姓 <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="lastName"
+                    name="lastName"
+                    value={formData.lastName}
+                    onChange={handleChange}
+                    required
+                    placeholder="山田"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-2">
+                    名 <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="firstName"
+                    name="firstName"
+                    value={formData.firstName}
+                    onChange={handleChange}
+                    required
+                    placeholder="太郎"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  />
+                </div>
               </div>
 
               {/* Email Field */}
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                  <Mail className="inline w-4 h-4 mr-1" />
                   メールアドレス <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -264,7 +243,6 @@ export default function ContactPage() {
               {/* Company Field (Optional) */}
               <div>
                 <label htmlFor="company" className="block text-sm font-medium text-gray-700 mb-2">
-                  <Building className="inline w-4 h-4 mr-1" />
                   会社名・組織名（任意）
                 </label>
                 <input
@@ -278,10 +256,26 @@ export default function ContactPage() {
                 />
               </div>
 
+              {/* Purpose Field */}
+              <div>
+                <label htmlFor="purpose" className="block text-sm font-medium text-gray-700 mb-2">
+                  お問い合わせ目的 <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  id="purpose"
+                  name="purpose"
+                  value={formData.purpose}
+                  onChange={handleChange}
+                  required
+                  placeholder="例: サービスについての質問、ビジネス提携、不具合報告など"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                />
+              </div>
+
               {/* Message Field */}
               <div>
                 <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
-                  <MessageSquare className="inline w-4 h-4 mr-1" />
                   お問い合わせ内容 <span className="text-red-500">*</span>
                 </label>
                 <textarea
@@ -320,10 +314,7 @@ export default function ContactPage() {
                       送信中...
                     </>
                   ) : (
-                    <>
-                      <Send className="w-5 h-5" />
-                      確認画面へ
-                    </>
+                    "確認画面へ"
                   )}
                 </button>
               </div>
@@ -332,23 +323,11 @@ export default function ContactPage() {
         </div>
 
         {/* Contact Information */}
-        <div className="mt-12 grid md:grid-cols-2 gap-8">
-          <div className="bg-white rounded-xl p-6 border border-gray-200">
-            <h3 className="font-bold text-gray-900 mb-4">営業時間</h3>
-            <p className="text-gray-600">
-              平日: 10:00 - 18:00<br />
-              土日祝日: 休業
-            </p>
-            <p className="text-sm text-gray-500 mt-2">
-              ※お問い合わせへの返信は営業時間内に順次対応いたします
-            </p>
-          </div>
-
+        <div className="mt-12">
           <div className="bg-white rounded-xl p-6 border border-gray-200">
             <h3 className="font-bold text-gray-900 mb-4">よくあるご質問</h3>
             <p className="text-gray-600">
               お問い合わせの前に、<a href="/#faq" onClick={handleFaqClick} className="text-blue-600 hover:underline cursor-pointer">よくある質問</a>をご確認ください。
-              多くのご質問への回答が掲載されています。
             </p>
           </div>
         </div>

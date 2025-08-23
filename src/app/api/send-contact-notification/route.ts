@@ -7,36 +7,27 @@ const ADMIN_EMAIL = process.env.ADMIN_EMAIL!;
 const FROM_EMAIL = process.env.FROM_EMAIL!;
 
 const schema = z.object({
-  name: z.string().min(1).max(100),
+  lastName: z.string().min(1).max(50),
+  firstName: z.string().min(1).max(50),
   email: z.string().email().max(320),
   company: z.string().max(100).optional(),
-  category: z.enum(['general', 'idea', 'development', 'business', 'bug', 'other']),
+  purpose: z.string().min(1).max(200),
   message: z.string().min(1).max(5000),
 });
 
 export async function POST(req: Request) {
   try {
-    const { name, email, company, category, message } = schema.parse(await req.json());
+    const { lastName, firstName, email, company, purpose, message } = schema.parse(await req.json());
 
-    const categoryLabels: { [key: string]: string } = {
-      general: '一般的なお問い合わせ',
-      idea: 'アイデア・企画について',
-      development: '開発について',
-      business: 'ビジネス提携について',
-      bug: '不具合報告',
-      other: 'その他'
-    };
-
-    const categoryLabel = categoryLabels[category] || category;
-
-    const subject = `【EmBld】新しいお問い合わせ: ${categoryLabel}`;
+    const fullName = `${lastName} ${firstName}`;
+    const subject = `【EmBld】新しいお問い合わせ: ${purpose}`;
     const text = [
       "新しいお問い合わせが届きました。",
       "",
-      `名前: ${name}`,
+      `名前: ${fullName}`,
       `メール: ${email}`,
       company ? `会社名: ${company}` : null,
-      `カテゴリ: ${categoryLabel}`,
+      `目的: ${purpose}`,
       `受信時刻: ${new Date().toLocaleString('ja-JP')}`,
       "",
       "----- お問い合わせ内容 -----",

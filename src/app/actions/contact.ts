@@ -4,10 +4,11 @@ import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
 interface ContactFormData {
-  name: string
+  lastName: string
+  firstName: string
   email: string
   company?: string
-  category: string
+  purpose: string
   message: string
 }
 
@@ -19,10 +20,10 @@ export async function submitContact(formData: ContactFormData) {
     const { data, error } = await supabase
       .from('contacts')
       .insert({
-        name: formData.name,
+        name: `${formData.lastName} ${formData.firstName}`,
         email: formData.email,
         company: formData.company || null,
-        category: formData.category,
+        category: formData.purpose, // purposeをcategoryとして保存
         message: formData.message,
         status: 'unread'
       })

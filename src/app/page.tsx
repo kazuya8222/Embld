@@ -516,7 +516,7 @@ export default async function LandingPage() {
           <div className="text-center mt-12">
             <p className="text-gray-600 mb-4">その他のご質問は</p>
             <Link
-              href="#"
+              href="/contact"
               className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium"
             >
               お問い合わせページへ

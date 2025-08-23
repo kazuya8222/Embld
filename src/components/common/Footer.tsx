@@ -49,8 +49,8 @@ export function Footer() {
           <div>
             <h3 className="font-semibold text-white mb-3">サポート</h3>
             <ul className="space-y-2 text-sm">
+              <li><a href="/#faq" onClick={handleFaqClick} className="text-gray-400 hover:text-white transition-colors cursor-pointer">FAQ</a></li>
               <li><Link href="/contact" className="text-gray-400 hover:text-white transition-colors">お問い合わせ</Link></li>
-              <li><a href="/#faq" onClick={handleFaqClick} className="text-gray-400 hover:text-white transition-colors cursor-pointer">よくある質問</a></li>
             </ul>
           </div>
           
@@ -59,8 +59,8 @@ export function Footer() {
             <ul className="space-y-2 text-sm">
               <li><Link href="/legal/privacy" className="text-gray-400 hover:text-white transition-colors">プライバシーポリシー</Link></li>
               <li><Link href="/legal/terms" className="text-gray-400 hover:text-white transition-colors">利用規約</Link></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition-colors">安全とコンテンツポリシー</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Cookieを管理</a></li>
+              <li><Link href="/legal/safety" className="text-gray-400 hover:text-white transition-colors">安全とコンテンツポリシー</Link></li>
+              <li><Link href="/legal/cookies" className="text-gray-400 hover:text-white transition-colors">Cookieを管理</Link></li>
             </ul>
           </div>
         </div>
