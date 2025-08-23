@@ -42,7 +42,7 @@ export async function POST(req: Request) {
       "----- お問い合わせ内容 -----",
       message,
       "",
-      "管理画面で詳細を確認:",
+      "管理画面を確認:",
       `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001'}/admin/contacts`
     ].filter(Boolean).join("\n");
 
