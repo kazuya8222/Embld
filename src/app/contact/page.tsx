@@ -167,7 +167,7 @@ export default function ContactPage() {
               <h2 className="text-2xl font-bold text-gray-900 mb-2">送信完了</h2>
               <p className="text-gray-600">
                 お問い合わせありがとうございます。<br />
-                内容を確認の上、担当者よりご連絡させていただきます。
+                内容を確認の上、3営業日以内に担当者よりご連絡させていただきます。
               </p>
             </div>
           ) : submitStatus === 'error' ? (
