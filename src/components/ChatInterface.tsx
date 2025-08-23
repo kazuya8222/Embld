@@ -6,14 +6,16 @@ import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
-import { Send, Bot, User, Search, ExternalLink, FileText, ArrowRight, Sparkles, CheckCircle, ChevronLeft } from 'lucide-react';
+import { Send, Bot, User, Search, ExternalLink, FileText, ArrowRight, Sparkles, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
 
-interface QuestionScreen {
+interface Message {
   id: string;
-  question: string;
-  userAnswer?: string;
+  content: string;
+  role: 'user' | 'assistant';
   timestamp: Date;
+  suggestedApps?: SuggestedApp[];
+  showPlanButton?: boolean;
 }
 
 interface SuggestedApp {
@@ -41,14 +43,27 @@ const CLARIFYING_QUESTIONS = [
 ];
 
 export function ChatInterface() {
-  const [currentScreen, setCurrentScreen] = useState<'welcome' | 'question' | 'result'>('welcome');
-  const [questions, setQuestions] = useState<QuestionScreen[]>([]);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
+  const [isInitialState, setIsInitialState] = useState(true);
+  const [conversationStep, setConversationStep] = useState<'initial' | 'clarifying' | 'searching' | 'complete'>('initial');
   const [userRequirements, setUserRequirements] = useState<string[]>([]);
-  const [suggestedApps, setSuggestedApps] = useState<SuggestedApp[]>([]);
-  const [isComplete, setIsComplete] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  // 新しいメッセージが追加された時のみスクロール（入力変更時は除外）
+  useEffect(() => {
+    if (messages.length > 0) {
+      // 少し遅延を入れてスムーズにスクロール
+      setTimeout(() => {
+        scrollToBottom();
+      }, 100);
+    }
+  }, [messages.length]); // messages.lengthの変更時のみトリガー
 
   const searchSimilarApps = async (requirements: string[]): Promise<SuggestedApp[]> => {
     try {
@@ -89,82 +104,139 @@ export function ChatInterface() {
     }
   };
 
-  const handleStartChat = async () => {
+  const handleSend = async () => {
     if (input.trim() === '') return;
 
-    setIsLoading(true);
-    const userAnswer = input.trim();
-    setUserRequirements(prev => [...prev, userAnswer]);
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      content: input,
+      role: 'user',
+      timestamp: new Date()
+    };
 
-    // 最初の質問を生成
+    setMessages(prev => [...prev, userMessage]);
+    const currentInput = input;
+    setInput('');
+    setIsTyping(true);
+    setIsInitialState(false);
+
+    // Add current input to requirements
+    setUserRequirements(prev => [...prev, currentInput]);
+
     try {
-      const question = await generateClarifyingQuestion(userAnswer);
-      const firstQuestion: QuestionScreen = {
-        id: Date.now().toString(),
-        question,
-        timestamp: new Date()
-      };
-      
-      setQuestions([firstQuestion]);
-      setCurrentQuestionIndex(0);
-      setCurrentScreen('question');
-      setInput('');
-    } catch (error) {
-      console.error('Error starting chat:', error);
-    }
-    
-    setIsLoading(false);
-  };
-
-  const handleAnswerQuestion = async () => {
-    if (input.trim() === '') return;
-
-    setIsLoading(true);
-    const userAnswer = input.trim();
-    
-    // 現在の質問に答えを追加
-    const updatedQuestions = [...questions];
-    updatedQuestions[currentQuestionIndex].userAnswer = userAnswer;
-    setQuestions(updatedQuestions);
-    setUserRequirements(prev => [...prev, userAnswer]);
-
-    // 十分な情報が集まったかチェック
-    if (userRequirements.length >= 2) { // 初回 + 2回の質問 = 計3回
-      // 結果画面に移動
-      const apps = await searchSimilarApps([...userRequirements, userAnswer]);
-      setSuggestedApps(apps);
-      setIsComplete(true);
-      setCurrentScreen('result');
-    } else {
-      // 次の質問を生成
-      try {
-        const question = await generateClarifyingQuestion(userAnswer);
-        const nextQuestion: QuestionScreen = {
-          id: (Date.now() + 1).toString(),
-          question,
+      if (conversationStep === 'initial') {
+        // Initial message - start clarifying
+        setConversationStep('clarifying');
+        
+        const welcomeMessage: Message = {
+          id: 'welcome',
+          content: '素晴らしいアイデアですね！✨\n\nより具体的な要件を整理するために、いくつか質問させてください。',
+          role: 'assistant',
           timestamp: new Date()
         };
         
-        setQuestions(prev => [...prev, nextQuestion]);
-        setCurrentQuestionIndex(prev => prev + 1);
-      } catch (error) {
-        console.error('Error generating question:', error);
+        setTimeout(async () => {
+          setMessages(prev => [...prev, welcomeMessage]);
+          
+          const question = await generateClarifyingQuestion(currentInput);
+          const questionMessage: Message = {
+            id: (Date.now() + 1).toString(),
+            content: question,
+            role: 'assistant',
+            timestamp: new Date()
+          };
+          
+          setMessages(prev => [...prev, questionMessage]);
+          setIsTyping(false);
+        }, 1000);
+        
+      } else if (conversationStep === 'clarifying') {
+        // Continue clarifying or move to search
+        if (userRequirements.length >= 3) {
+          // Enough information gathered, search for apps
+          setConversationStep('searching');
+          
+          setTimeout(async () => {
+            const searchingMessage: Message = {
+              id: (Date.now() + 1).toString(),
+              content: '要件が整理できました！🎯\n\n類似するアプリを検索しています...',
+              role: 'assistant',
+              timestamp: new Date()
+            };
+            
+            setMessages(prev => [...prev, searchingMessage]);
+            
+            const suggestedApps = await searchSimilarApps(userRequirements);
+            
+            if (suggestedApps.length > 0) {
+              const resultMessage: Message = {
+                id: (Date.now() + 2).toString(),
+                content: `${suggestedApps.length}件の類似アプリを見つけました！\n\n既存のアプリで要件を満たせる場合もありますので、まずは確認してみてください。もし既存アプリでは物足りない場合は、オリジナルの企画書を作成しましょう。`,
+                role: 'assistant',
+                timestamp: new Date(),
+                suggestedApps,
+                showPlanButton: true
+              };
+              
+              setMessages(prev => [...prev, resultMessage]);
+              setConversationStep('complete');
+            } else {
+              const noResultMessage: Message = {
+                id: (Date.now() + 2).toString(),
+                content: '類似するアプリは見つかりませんでした。\n\n素晴らしいアイデアです！既存にない新しいサービスの可能性があります。企画書を作成して、あなたのアイデアを形にしましょう！',
+                role: 'assistant',
+                timestamp: new Date(),
+                showPlanButton: true
+              };
+              
+              setMessages(prev => [...prev, noResultMessage]);
+              setConversationStep('complete');
+            }
+            
+            setIsTyping(false);
+          }, 1000);
+          
+        } else {
+          // Ask another clarifying question
+          setTimeout(async () => {
+            const question = await generateClarifyingQuestion(currentInput);
+            const questionMessage: Message = {
+              id: (Date.now() + 1).toString(),
+              content: question,
+              role: 'assistant',
+              timestamp: new Date()
+            };
+            
+            setMessages(prev => [...prev, questionMessage]);
+            setIsTyping(false);
+          }, 1000);
+        }
+        
+      } else {
+        // Conversation complete, general response
+        setTimeout(() => {
+          const generalMessage: Message = {
+            id: (Date.now() + 1).toString(),
+            content: 'ありがとうございます！他にご質問があれば、お気軽にどうぞ。企画書作成の準備ができましたら、下のボタンからお進みください。',
+            role: 'assistant',
+            timestamp: new Date()
+          };
+          
+          setMessages(prev => [...prev, generalMessage]);
+          setIsTyping(false);
+        }, 1000);
       }
+      
+    } catch (error) {
+      console.error('Chat error:', error);
+      setIsTyping(false);
     }
-    
-    setInput('');
-    setIsLoading(false);
   };
 
-  const handleBack = () => {
-    if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex(prev => prev - 1);
-      setInput(questions[currentQuestionIndex - 1].userAnswer || '');
-    } else {
-      setCurrentScreen('welcome');
-      setQuestions([]);
-      setUserRequirements([]);
-      setInput('');
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
     }
   };
 
@@ -172,304 +244,232 @@ export function ChatInterface() {
     setInput(example);
   };
 
-  // Welcome Screen
-  if (currentScreen === 'welcome') {
+  if (isInitialState) {
     return (
-      <div className="fixed inset-0 bg-gray-50 flex flex-col justify-center">
-        <AnimatePresence>
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-4xl mx-auto px-4 py-16">
           <motion.div
-            key="welcome"
-            initial={{ opacity: 0, y: 50 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -50 }}
-            transition={{ duration: 0.5 }}
-            className="max-w-2xl mx-auto px-6 py-8"
+            transition={{ duration: 0.8, delay: 0.4 }}
+            className="text-center mb-16"
           >
-            <div className="text-center mb-12">
-              <h1 className="text-5xl font-bold text-gray-900 leading-tight mb-6">
-                どんなアプリが
-                <br />
-                <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                  欲しいですか？
-                </span>
-              </h1>
-              <p className="text-xl text-gray-600 mb-8">
-                なんとなくのアイデアでも大丈夫です。
-                <br />
-                AIが質問を通じて要件を整理します。
+            <h2 className="text-5xl font-bold text-gray-900 leading-tight mb-6">
+              どんなアプリが
+              <br />
+              <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                欲しいですか？
+              </span>
+            </h2>
+            <p className="text-xl text-gray-600 mb-12 max-w-2xl mx-auto">
+              なんとなくのアイデアでも大丈夫です。
+              <br />
+              AIが対話を通じて要件を整理し、最適なソリューションをご提案します。
+            </p>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.6 }}
+            className="bg-white rounded-2xl shadow-xl p-8 border border-gray-200"
+          >
+            {/* Example prompts */}
+            <div className="mb-8">
+              <p className="text-sm text-gray-500 mb-4 font-medium">
+                💡 例えばこんな感じで...
               </p>
+              <div className="flex flex-wrap gap-3">
+                {EXAMPLE_PROMPTS.map((prompt, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleExampleClick(prompt)}
+                    className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full text-sm transition-colors border border-gray-200"
+                  >
+                    {prompt}
+                  </button>
+                ))}
+              </div>
             </div>
 
-            <div className="bg-white rounded-2xl shadow-xl p-8">
-              {/* Example prompts */}
-              <div className="mb-6">
-                <p className="text-sm text-gray-500 mb-4 font-medium">
-                  💡 例えばこんな感じで...
+            {/* Input area */}
+            <div className="space-y-4">
+              <Textarea
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="欲しいアプリやサービスについて、自由に話してください..."
+                className="min-h-[120px] text-lg border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 resize-none"
+              />
+              
+              <div className="flex justify-between items-center">
+                <p className="text-xs text-gray-400">
+                  Enter で送信 • Shift + Enter で改行
                 </p>
-                <div className="flex flex-wrap gap-3">
-                  {EXAMPLE_PROMPTS.map((prompt, index) => (
-                    <button
-                      key={index}
-                      onClick={() => handleExampleClick(prompt)}
-                      className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full text-sm transition-colors border border-gray-200"
-                    >
-                      {prompt}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Input area */}
-              <div className="space-y-4">
-                <Textarea
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault();
-                      handleStartChat();
-                    }
-                  }}
-                  placeholder="欲しいアプリやサービスについて、自由に話してください..."
-                  className="min-h-[120px] text-lg border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 resize-none"
-                  disabled={isLoading}
-                />
-                
-                <div className="flex justify-between items-center">
-                  <p className="text-xs text-gray-400">
-                    Enter で送信 • Shift + Enter で改行
-                  </p>
-                  <Button
-                    onClick={handleStartChat}
-                    disabled={!input.trim() || isLoading}
-                    className="h-[60px] px-6 bg-blue-600 hover:bg-blue-700 text-white shadow-md rounded-lg transition-all duration-300 disabled:opacity-50"
-                  >
-                    {isLoading ? (
-                      <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent" />
-                    ) : (
-                      <div className="flex items-center gap-2">
-                        <span className="font-semibold">相談開始</span>
-                        <Send className="w-5 h-5" />
-                      </div>
-                    )}
-                  </Button>
-                </div>
+                <Button
+                  onClick={handleSend}
+                  disabled={!input.trim() || isTyping}
+                  className="h-[60px] px-6 bg-blue-600 hover:bg-blue-700 text-white border-0 shadow-md rounded-lg hover:shadow-lg transition-all duration-300 disabled:opacity-50"
+                >
+                  {isTyping ? (
+                    <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent" />
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold">相談開始</span>
+                      <Send className="w-5 h-5" />
+                    </div>
+                  )}
+                </Button>
               </div>
             </div>
           </motion.div>
-        </AnimatePresence>
-      </div>
-    );
-  }
-
-  // Question Screen
-  if (currentScreen === 'question') {
-    const currentQuestion = questions[currentQuestionIndex];
-    const progress = ((currentQuestionIndex + 1) / 3) * 100;
-
-    return (
-      <div className="fixed inset-0 bg-gray-50 flex flex-col">
-        {/* Header with progress */}
-        <div className="bg-white border-b border-gray-200 px-6 py-4 flex-shrink-0">
-          <div className="max-w-2xl mx-auto">
-            <div className="flex items-center justify-between mb-3">
-              <button
-                onClick={handleBack}
-                className="flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors"
-              >
-                <ChevronLeft className="w-5 h-5" />
-                戻る
-              </button>
-              <span className="text-sm text-gray-500">
-                質問 {currentQuestionIndex + 1} / 3
-              </span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <motion.div
-                className="bg-blue-500 h-2 rounded-full"
-                initial={{ width: 0 }}
-                animate={{ width: `${progress}%` }}
-                transition={{ duration: 0.5 }}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Question Content */}
-        <div className="flex-1 flex items-center justify-center px-6">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentQuestion?.id}
-              initial={{ opacity: 0, y: 50 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -50 }}
-              transition={{ duration: 0.5 }}
-              className="max-w-2xl w-full"
-            >
-              <div className="text-center mb-8">
-                <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <Bot className="w-8 h-8 text-white" />
-                </div>
-                <h2 className="text-3xl font-bold text-gray-900 mb-4 leading-relaxed">
-                  {currentQuestion?.question}
-                </h2>
-                <p className="text-gray-600">
-                  より具体的な要件を把握するための質問です
-                </p>
-              </div>
-
-              <div className="bg-white rounded-2xl shadow-xl p-8">
-                <div className="space-y-4">
-                  <Textarea
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        handleAnswerQuestion();
-                      }
-                    }}
-                    placeholder="こちらに回答を入力してください..."
-                    className="min-h-[120px] text-lg border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 resize-none"
-                    disabled={isLoading}
-                  />
-                  
-                  <div className="flex justify-between items-center">
-                    <p className="text-xs text-gray-400">
-                      Enter で次へ • Shift + Enter で改行
-                    </p>
-                    <Button
-                      onClick={handleAnswerQuestion}
-                      disabled={!input.trim() || isLoading}
-                      className="h-[60px] px-8 bg-blue-600 hover:bg-blue-700 text-white shadow-md rounded-lg transition-all duration-300 disabled:opacity-50"
-                    >
-                      {isLoading ? (
-                        <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent" />
-                      ) : (
-                        <div className="flex items-center gap-2">
-                          <span className="font-semibold">次へ</span>
-                          <ArrowRight className="w-5 h-5" />
-                        </div>
-                      )}
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </AnimatePresence>
         </div>
       </div>
     );
   }
 
-  // Result Screen
   return (
     <div className="fixed inset-0 bg-gray-50 flex flex-col">
-      <div className="flex-1 overflow-y-auto px-6 py-8">
-        <AnimatePresence>
-          <motion.div
-            key="result"
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="max-w-4xl mx-auto"
-          >
-            <div className="text-center mb-8">
-              <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
-                <CheckCircle className="w-8 h-8 text-white" />
-              </div>
-              <h1 className="text-4xl font-bold text-gray-900 mb-4">
-                要件整理が完了しました！
-              </h1>
-              <p className="text-xl text-gray-600">
-                {suggestedApps.length > 0 
-                  ? `${suggestedApps.length}件の類似アプリを発見しました`
-                  : '新しいアイデアの可能性があります！'
-                }
-              </p>
-            </div>
+      {/* Header */}
+      <div className="bg-white border-b border-gray-200 px-6 py-4 flex-shrink-0">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-1">アプリ相談チャット</h1>
+          <p className="text-gray-600">AIがあなたの要望を整理し、最適なソリューションを提案します</p>
+        </div>
+      </div>
 
-            {suggestedApps.length > 0 && (
-              <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">類似アプリ</h2>
-                <div className="space-y-4">
-                  {suggestedApps.map((app) => (
-                    <motion.div
-                      key={app.id}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.3 }}
-                      className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow"
-                    >
-                      <div className="flex items-start gap-4">
-                        {app.image_url && (
-                          <img src={app.image_url} alt={app.title} className="w-16 h-16 rounded-lg object-cover" />
+      {/* Messages */}
+      <div className="flex-1 overflow-hidden">
+        <div className="h-full p-6 overflow-y-auto">
+            <AnimatePresence>
+              {messages.map((message) => (
+                <motion.div
+                  key={message.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className={`mb-6 flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                >
+                  <div className={`max-w-[80%] ${message.role === 'user' ? 'order-2' : 'order-1'}`}>
+                    <div className={`flex items-start gap-3 ${message.role === 'user' ? 'flex-row-reverse' : ''}`}>
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                        message.role === 'user' ? 'bg-blue-500' : 'bg-gray-600'
+                      }`}>
+                        {message.role === 'user' ? (
+                          <User className="w-4 h-4 text-white" />
+                        ) : (
+                          <Bot className="w-4 h-4 text-white" />
                         )}
-                        <div className="flex-1 min-w-0">
-                          <h3 className="text-xl font-semibold text-gray-900 mb-2">{app.title}</h3>
-                          <p className="text-gray-600 mb-3 leading-relaxed">{app.description}</p>
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                              <Badge variant="secondary">{app.category}</Badge>
-                              <span className="text-sm text-gray-500">作成者: {app.owner_name}</span>
-                            </div>
+                      </div>
+                      <div className={`px-4 py-3 rounded-2xl ${
+                        message.role === 'user' 
+                          ? 'bg-blue-500 text-white' 
+                          : 'bg-gray-100 text-gray-900'
+                      }`}>
+                        <div className="whitespace-pre-wrap">{message.content}</div>
+                        
+                        {/* Suggested Apps */}
+                        {message.suggestedApps && message.suggestedApps.length > 0 && (
+                          <div className="mt-4 space-y-3">
+                            {message.suggestedApps.map((app) => (
+                              <div key={app.id} className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
+                                <div className="flex items-start gap-3">
+                                  {app.image_url && (
+                                    <img src={app.image_url} alt={app.title} className="w-12 h-12 rounded-lg object-cover" />
+                                  )}
+                                  <div className="flex-1 min-w-0">
+                                    <h4 className="font-semibold text-gray-900 truncate">{app.title}</h4>
+                                    <p className="text-sm text-gray-600 mb-2 line-clamp-2">{app.description}</p>
+                                    <div className="flex items-center justify-between">
+                                      <div className="flex items-center gap-2">
+                                        <Badge variant="secondary">{app.category}</Badge>
+                                        <span className="text-xs text-gray-500">by {app.owner_name}</span>
+                                      </div>
+                                      <Link 
+                                        href={`/owners/${app.id}`}
+                                        className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-700 text-sm font-medium"
+                                      >
+                                        詳細
+                                        <ExternalLink className="w-3 h-3" />
+                                      </Link>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        
+                        {/* Plan Creation Button */}
+                        {message.showPlanButton && (
+                          <div className="mt-4">
                             <Link 
-                              href={`/owners/${app.id}`}
-                              className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium"
+                              href="/ideas/new"
+                              className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
                             >
-                              詳細を見る
-                              <ExternalLink className="w-4 h-4" />
+                              <FileText className="w-4 h-4" />
+                              企画書を作成する
+                              <ArrowRight className="w-4 h-4" />
                             </Link>
                           </div>
-                        </div>
+                        )}
                       </div>
-                    </motion.div>
-                  ))}
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+            
+            {isTyping && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-6 flex justify-start"
+              >
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center">
+                    <Bot className="w-4 h-4 text-white" />
+                  </div>
+                  <div className="bg-gray-100 px-4 py-3 rounded-2xl">
+                    <div className="flex space-x-1">
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                    </div>
+                  </div>
                 </div>
-              </div>
+              </motion.div>
             )}
+            
+          <div ref={messagesEndRef} />
+        </div>
+      </div>
 
-            <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                {suggestedApps.length > 0 
-                  ? '既存アプリで満足できませんか？'
-                  : 'あなたのアイデアを形にしましょう！'
+      {/* Input area */}
+      <div className="bg-white border-t border-gray-200 p-4 flex-shrink-0">
+        <div className="max-w-4xl mx-auto">
+          <div className="flex gap-3">
+            <Textarea
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSend();
                 }
-              </h2>
-              <p className="text-gray-600 mb-8 max-w-2xl mx-auto leading-relaxed">
-                {suggestedApps.length > 0 
-                  ? '既存のアプリでは物足りない場合は、オリジナルの企画書を作成して、あなたの理想のアプリを実現させましょう。'
-                  : '類似するアプリが見つからないということは、新しい価値を生み出すチャンスです。企画書を作成してアイデアを具体化しましょう。'
-                }
-              </p>
-              
-              <div className="flex gap-4 justify-center">
-                <button
-                  onClick={() => {
-                    setCurrentScreen('welcome');
-                    setQuestions([]);
-                    setUserRequirements([]);
-                    setSuggestedApps([]);
-                    setIsComplete(false);
-                    setInput('');
-                  }}
-                  className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  最初からやり直す
-                </button>
-                
-                <Link 
-                  href="/ideas/new"
-                  className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-medium transition-colors shadow-md"
-                >
-                  <FileText className="w-5 h-5" />
-                  企画書を作成する
-                  <ArrowRight className="w-5 h-5" />
-                </Link>
-              </div>
-            </div>
-          </motion.div>
-        </AnimatePresence>
+              }}
+              placeholder="メッセージを入力..."
+              className="flex-1 min-h-[60px] border-gray-300 focus:border-blue-500 resize-none"
+              disabled={isTyping}
+            />
+            <Button
+              onClick={handleSend}
+              disabled={!input.trim() || isTyping}
+              className="px-6 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50"
+            >
+              <Send className="w-5 h-5" />
+            </Button>
+          </div>
+        </div>
       </div>
     </div>
   );
