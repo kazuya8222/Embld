@@ -203,39 +203,6 @@ export function ChatInterface() {
           className="relative z-10 pt-16 pb-12 px-8"
         >
           <div className="max-w-4xl mx-auto text-center">
-            <motion.div 
-              className="inline-flex items-center gap-6 mb-12"
-              initial={{ scale: 0.9 }}
-              animate={{ scale: 1 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-            >
-              <div className="relative w-16 h-16 rounded-lg bg-gray-900 flex items-center justify-center shadow-xl">
-                <Code2 className="w-8 h-8 text-white" />
-                <div className="absolute inset-0 rounded-lg bg-gradient-to-br from-white/10 to-transparent" />
-              </div>
-              <div className="text-left">
-                <motion.div
-                  className="flex items-center gap-3 mb-2"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.4 }}
-                >
-                  <div className="flex">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="w-4 h-4 text-yellow-500 fill-current" />
-                    ))}
-                  </div>
-                  <Badge className="bg-green-100 text-green-800 border border-green-200">
-                    ✨ 実現可能
-                  </Badge>
-                </motion.div>
-                <h1 className="text-4xl font-bold text-gray-900">
-                  EmBld
-                </h1>
-                <p className="text-lg text-gray-600 mt-1">欲しいが手に入る</p>
-              </div>
-            </motion.div>
-
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
