@@ -16,10 +16,14 @@ export default function ContactPage() {
     message: ''
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle')
+  const [submitStatus, setSubmitStatus] = useState<'idle' | 'confirm' | 'success' | 'error'>('idle')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setSubmitStatus('confirm')
+  }
+
+  const handleConfirmSubmit = async () => {
     setIsSubmitting(true)
     
     try {
@@ -34,18 +38,6 @@ export default function ContactPage() {
 
       setIsSubmitting(false)
       setSubmitStatus('success')
-      
-      // Reset form after 3 seconds
-      setTimeout(() => {
-        setSubmitStatus('idle')
-        setFormData({
-          name: '',
-          email: '',
-          company: '',
-          category: 'general',
-          message: ''
-        })
-      }, 3000)
     } catch (error) {
       console.error('Unexpected error:', error)
       setIsSubmitting(false)
@@ -104,7 +96,84 @@ export default function ContactPage() {
 
         {/* Contact Form */}
         <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-8">
-          {submitStatus === 'success' ? (
+          {submitStatus === 'confirm' ? (
+            <div className="space-y-6">
+              <div className="text-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">送信内容の確認</h2>
+                <p className="text-gray-600">以下の内容で送信いたします。内容をご確認ください。</p>
+              </div>
+              
+              {/* 確認内容表示 */}
+              <div className="space-y-4 bg-gray-50 p-6 rounded-lg">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">お問い合わせ種別</label>
+                    <p className="text-gray-900 bg-white p-2 rounded border">
+                      {formData.category === 'general' && '一般的なお問い合わせ'}
+                      {formData.category === 'idea' && 'アイデア・企画について'}
+                      {formData.category === 'development' && '開発について'}
+                      {formData.category === 'business' && 'ビジネス提携について'}
+                      {formData.category === 'bug' && '不具合報告'}
+                      {formData.category === 'other' && 'その他'}
+                    </p>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">お名前</label>
+                    <p className="text-gray-900 bg-white p-2 rounded border">{formData.name}</p>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">メールアドレス</label>
+                    <p className="text-gray-900 bg-white p-2 rounded border">{formData.email}</p>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">会社名・組織名</label>
+                    <p className="text-gray-900 bg-white p-2 rounded border">{formData.company || '（未記入）'}</p>
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">お問い合わせ内容</label>
+                  <div className="text-gray-900 bg-white p-3 rounded border whitespace-pre-wrap">
+                    {formData.message}
+                  </div>
+                </div>
+              </div>
+
+              {/* 確認画面のボタン */}
+              <div className="flex gap-4 justify-center pt-4">
+                <button
+                  onClick={() => setSubmitStatus('idle')}
+                  className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  内容を修正する
+                </button>
+                <button
+                  onClick={handleConfirmSubmit}
+                  disabled={isSubmitting}
+                  className={`inline-flex items-center gap-2 px-8 py-3 rounded-lg font-bold text-white transition-all ${
+                    isSubmitting 
+                      ? 'bg-gray-400 cursor-not-allowed' 
+                      : 'bg-blue-600 hover:bg-blue-700 hover:shadow-lg'
+                  }`}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      送信中...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-5 h-5" />
+                      送信する
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          ) : submitStatus === 'success' ? (
             <div className="text-center py-12">
               <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Send className="w-10 h-10 text-green-600" />
@@ -253,7 +322,7 @@ export default function ContactPage() {
                   ) : (
                     <>
                       <Send className="w-5 h-5" />
-                      送信する
+                      確認画面へ
                     </>
                   )}
                 </button>
