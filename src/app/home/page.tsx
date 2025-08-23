@@ -1,20 +1,24 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { ChatInterface } from '@/components/ChatInterface'
+import { Navigation } from '@/components/common/Navigation'
+import { Footer } from '@/components/common/Footer'
 
 export default function HomePage() {
   const [currentScreen, setCurrentScreen] = useState<'welcome' | 'question' | 'result'>('welcome')
 
-  // 画面状態に応じてレイアウトの表示/非表示を制御
-  useEffect(() => {
-    const showLayout = currentScreen === 'welcome'
-    
-    // レイアウトの表示状態を親レイアウトに通知
-    window.dispatchEvent(new CustomEvent('toggleHomeLayout', {
-      detail: { show: showLayout }
-    }))
-  }, [currentScreen])
+  // Welcome画面の時だけヘッダー・フッターを表示
+  if (currentScreen === 'welcome') {
+    return (
+      <>
+        <Navigation />
+        <ChatInterface onScreenChange={setCurrentScreen} />
+        <Footer />
+      </>
+    )
+  }
 
+  // 質問・結果画面では全画面表示
   return <ChatInterface onScreenChange={setCurrentScreen} />
 }
