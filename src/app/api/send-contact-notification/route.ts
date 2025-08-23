@@ -51,7 +51,7 @@ export async function POST(req: Request) {
       to: ADMIN_EMAIL,
       subject,
       text,
-      reply_to: email,
+      replyTo: email,
     });
 
     if (error) return NextResponse.json({ ok: false }, { status: 500 });

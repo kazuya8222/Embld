@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { X, User } from 'lucide-react';
 import Link from 'next/link';
 import { getFollowers, getFollowing, checkFollowStatus, followUser, unfollowUser } from '@/app/actions/ownerFollows';
@@ -36,7 +36,7 @@ export function FollowListModal({
   const [followingLoading, setFollowingLoading] = useState<Record<string, boolean>>({});
 
   // ユーザーリストを取得
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     if (!isOpen) return;
     
     setLoading(true);
@@ -66,11 +66,11 @@ export function FollowListModal({
       console.error('Failed to fetch users:', error);
     }
     setLoading(false);
-  };
+  }, [isOpen, userId, type, currentUserId]);
 
   useEffect(() => {
     fetchUsers();
-  }, [isOpen, userId, type, currentUserId]);
+  }, [fetchUsers]);
 
   // フォロー/アンフォロー処理
   const handleFollowToggle = async (targetUserId: string) => {

@@ -190,7 +190,7 @@ export function ChatInterface() {
                 ease: "easeInOut",
               }}
             >
-              {[<Code2 className="w-4 h-4" />, <Terminal className="w-4 h-4" />, <GitBranch className="w-4 h-4" />, <Settings className="w-4 h-4" />, <Cpu className="w-4 h-4" />][i]}
+              {[<Code2 key="code2" className="w-4 h-4" />, <Terminal key="terminal" className="w-4 h-4" />, <GitBranch key="gitbranch" className="w-4 h-4" />, <Settings key="settings" className="w-4 h-4" />, <Cpu key="cpu" className="w-4 h-4" />][i]}
             </motion.div>
           ))}
         </div>
