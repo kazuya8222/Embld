@@ -40,7 +40,11 @@ const CLARIFYING_QUESTIONS = [
   "どのようなデバイスで使いたいですか？"
 ];
 
-export function ChatInterface() {
+interface ChatInterfaceProps {
+  onScreenChange?: (screen: 'welcome' | 'question' | 'result') => void;
+}
+
+export function ChatInterface({ onScreenChange }: ChatInterfaceProps) {
   const [currentScreen, setCurrentScreen] = useState<'welcome' | 'question' | 'result'>('welcome');
   const [questions, setQuestions] = useState<QuestionScreen[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -108,6 +112,7 @@ export function ChatInterface() {
       setQuestions([firstQuestion]);
       setCurrentQuestionIndex(0);
       setCurrentScreen('question');
+      onScreenChange?.('question');
       setInput('');
     } catch (error) {
       console.error('Error starting chat:', error);
@@ -135,6 +140,7 @@ export function ChatInterface() {
       setSuggestedApps(apps);
       setIsComplete(true);
       setCurrentScreen('result');
+      onScreenChange?.('result');
     } else {
       // 次の質問を生成
       try {
@@ -162,6 +168,7 @@ export function ChatInterface() {
       setInput(questions[currentQuestionIndex - 1].userAnswer || '');
     } else {
       setCurrentScreen('welcome');
+      onScreenChange?.('welcome');
       setQuestions([]);
       setUserRequirements([]);
       setInput('');
@@ -175,7 +182,7 @@ export function ChatInterface() {
   // Welcome Screen
   if (currentScreen === 'welcome') {
     return (
-      <div className="fixed inset-0 bg-gray-50 flex flex-col justify-center">
+      <div className="min-h-screen bg-gray-50 py-16">
         <AnimatePresence>
           <motion.div
             key="welcome"
@@ -183,7 +190,7 @@ export function ChatInterface() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -50 }}
             transition={{ duration: 0.5 }}
-            className="max-w-2xl mx-auto px-6 py-8"
+            className="max-w-2xl mx-auto px-6"
           >
             <div className="text-center mb-12">
               <h1 className="text-5xl font-bold text-gray-900 leading-tight mb-6">
@@ -447,6 +454,7 @@ export function ChatInterface() {
                 <button
                   onClick={() => {
                     setCurrentScreen('welcome');
+                    onScreenChange?.('welcome');
                     setQuestions([]);
                     setUserRequirements([]);
                     setSuggestedApps([]);
