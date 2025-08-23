@@ -1,6 +1,24 @@
+'use client'
+
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 export function Footer() {
+  const router = useRouter()
+
+  const handleFaqClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault()
+    // Navigate to home page first, then scroll to FAQ
+    if (window.location.pathname !== '/') {
+      router.push('/?scrollTo=faq')
+    } else {
+      // Already on home page, just scroll
+      const faqSection = document.getElementById('faq')
+      if (faqSection) {
+        faqSection.scrollIntoView({ behavior: 'smooth' })
+      }
+    }
+  }
   return (
     <footer className="bg-gray-900 text-gray-300 py-12">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -23,26 +41,26 @@ export function Footer() {
           <div>
             <h3 className="font-semibold text-white mb-3">サービス</h3>
             <ul className="space-y-2 text-sm">
-              <li><Link href="/ideas/new" className="text-gray-400 hover:text-white transition-colors">アイデア投稿</Link></li>
-              <li><Link href="/apps" className="text-gray-400 hover:text-white transition-colors">完成アプリ一覧</Link></li>
+              <li><Link href="/ideas/new" className="text-gray-400 hover:text-white transition-colors">企画書作成</Link></li>
+              <li><Link href="/owners" className="text-gray-400 hover:text-white transition-colors">プロダクト一覧</Link></li>
             </ul>
           </div>
           
           <div>
             <h3 className="font-semibold text-white mb-3">サポート</h3>
             <ul className="space-y-2 text-sm">
-              <li><a href="#" className="text-gray-400 hover:text-white transition-colors">ヘルプセンター</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition-colors">お問い合わせ</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition-colors">よくある質問</a></li>
+              <li><Link href="/contact" className="text-gray-400 hover:text-white transition-colors">お問い合わせ</Link></li>
+              <li><a href="/#faq" onClick={handleFaqClick} className="text-gray-400 hover:text-white transition-colors cursor-pointer">よくある質問</a></li>
             </ul>
           </div>
           
           <div>
-            <h3 className="font-semibold text-white mb-3">法的情報</h3>
+            <h3 className="font-semibold text-white mb-3">ポリシー</h3>
             <ul className="space-y-2 text-sm">
               <li><Link href="/legal/privacy" className="text-gray-400 hover:text-white transition-colors">プライバシーポリシー</Link></li>
               <li><Link href="/legal/terms" className="text-gray-400 hover:text-white transition-colors">利用規約</Link></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition-colors">特定商取引法</a></li>
+              <li><a href="#" className="text-gray-400 hover:text-white transition-colors">安全とコンテンツポリシー</a></li>
+              <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Cookieを管理</a></li>
             </ul>
           </div>
         </div>

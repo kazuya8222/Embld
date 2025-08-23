@@ -18,10 +18,12 @@ import {
 } from 'lucide-react'
 import { ScrollFadeIn } from '@/components/ScrollFadeIn'
 import { Footer } from '@/components/common/Footer'
+import { ScrollHandler } from '@/components/ScrollHandler'
 
 export default async function LandingPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+      <ScrollHandler />
       {/* 背景の装飾パターン */}
       <div className="fixed inset-0 -z-10 overflow-hidden">
         {/* シンプルな背景要素 */}

@@ -14,12 +14,8 @@ import {
   Plus,
   Grid3X3,
   ChevronDown,
-  Bell,
-  MessageSquare,
   Home,
-  Package,
   Shield,
-  Lightbulb,
   FileText
 } from 'lucide-react'
 import { usePathname } from 'next/navigation'
@@ -102,16 +98,6 @@ export function Navigation() {
             <div className="hidden md:flex items-center space-x-4">
               {user ? (
                 <>
-                  {/* 通知アイコン */}
-                  <button className="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-full transition-colors">
-                    <Bell className="h-5 w-5" />
-                  </button>
-                  
-                  {/* メッセージアイコン */}
-                  <button className="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-full transition-colors">
-                    <MessageSquare className="h-5 w-5" />
-                  </button>
-
                   {/* 企画書作成ボタン */}
                   <Link
                     href="/ideas/new"
@@ -193,16 +179,6 @@ export function Navigation() {
                 </>
               ) : (
                 <>
-                  {/* 通知アイコン（未ログイン時は非表示） */}
-                  <button className="p-2 text-gray-400 opacity-50 cursor-not-allowed rounded-full">
-                    <Bell className="h-5 w-5" />
-                  </button>
-                  
-                  {/* メッセージアイコン（未ログイン時は非表示） */}
-                  <button className="p-2 text-gray-400 opacity-50 cursor-not-allowed rounded-full">
-                    <MessageSquare className="h-5 w-5" />
-                  </button>
-
                   {/* 企画書作成ボタン（未ログイン時はログイン画面に遷移） */}
                   <Link
                     href="/auth/login"

@@ -9,19 +9,25 @@ export default async function AdminDashboard() {
     { count: totalUsers },
     { count: totalIdeas },
     { count: pendingIdeas },
-    { count: activeUsers }
+    { count: activeUsers },
+    { count: totalContacts },
+    { count: unreadContacts }
   ] = await Promise.all([
     supabase.from('users').select('*', { count: 'exact', head: true }),
     supabase.from('ideas').select('*', { count: 'exact', head: true }),
     supabase.from('ideas').select('*', { count: 'exact', head: true }).eq('approval_status', 'pending'),
-    supabase.from('users').select('*', { count: 'exact', head: true }).eq('account_status', 'active')
+    supabase.from('users').select('*', { count: 'exact', head: true }).eq('account_status', 'active'),
+    supabase.from('contacts').select('*', { count: 'exact', head: true }),
+    supabase.from('contacts').select('*', { count: 'exact', head: true }).eq('status', 'unread')
   ])
 
   const stats = {
     totalUsers: totalUsers || 0,
     totalIdeas: totalIdeas || 0,
     pendingIdeas: pendingIdeas || 0,
-    activeUsers: activeUsers || 0
+    activeUsers: activeUsers || 0,
+    totalContacts: totalContacts || 0,
+    unreadContacts: unreadContacts || 0
   }
 
   return (
@@ -45,9 +51,13 @@ export default async function AdminDashboard() {
               <span className="text-sm text-gray-600">新規アイデア投稿</span>
               <span className="text-sm font-medium">12件 (今日)</span>
             </div>
-            <div className="flex items-center justify-between py-2">
+            <div className="flex items-center justify-between py-2 border-b">
               <span className="text-sm text-gray-600">承認待ちアイデア</span>
               <span className="text-sm font-medium text-orange-600">{stats.pendingIdeas}件</span>
+            </div>
+            <div className="flex items-center justify-between py-2">
+              <span className="text-sm text-gray-600">未読お問い合わせ</span>
+              <span className="text-sm font-medium text-red-600">{stats.unreadContacts}件</span>
             </div>
           </div>
         </div>
@@ -68,6 +78,13 @@ export default async function AdminDashboard() {
             >
               <div className="font-medium text-green-900">アイデア管理</div>
               <div className="text-sm text-green-600">投稿の承認・編集</div>
+            </a>
+            <a 
+              href="/admin/contacts" 
+              className="block p-3 rounded-lg bg-orange-50 hover:bg-orange-100 transition-colors"
+            >
+              <div className="font-medium text-orange-900">お問い合わせ管理</div>
+              <div className="text-sm text-orange-600">顧客サポート・問い合わせ対応</div>
             </a>
             <a 
               href="/admin/settings" 
