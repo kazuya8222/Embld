@@ -40,11 +40,7 @@ const CLARIFYING_QUESTIONS = [
   "どのようなデバイスで使いたいですか？"
 ];
 
-interface ChatInterfaceProps {
-  onScreenChange?: (screen: 'welcome' | 'question' | 'result') => void;
-}
-
-export function ChatInterface({ onScreenChange }: ChatInterfaceProps) {
+export function ChatInterface() {
   const [currentScreen, setCurrentScreen] = useState<'welcome' | 'question' | 'result'>('welcome');
   const [questions, setQuestions] = useState<QuestionScreen[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -112,7 +108,6 @@ export function ChatInterface({ onScreenChange }: ChatInterfaceProps) {
       setQuestions([firstQuestion]);
       setCurrentQuestionIndex(0);
       setCurrentScreen('question');
-      onScreenChange?.('question');
       setInput('');
     } catch (error) {
       console.error('Error starting chat:', error);
@@ -140,7 +135,6 @@ export function ChatInterface({ onScreenChange }: ChatInterfaceProps) {
       setSuggestedApps(apps);
       setIsComplete(true);
       setCurrentScreen('result');
-      onScreenChange?.('result');
     } else {
       // 次の質問を生成
       try {
@@ -168,7 +162,6 @@ export function ChatInterface({ onScreenChange }: ChatInterfaceProps) {
       setInput(questions[currentQuestionIndex - 1].userAnswer || '');
     } else {
       setCurrentScreen('welcome');
-      onScreenChange?.('welcome');
       setQuestions([]);
       setUserRequirements([]);
       setInput('');
@@ -182,7 +175,7 @@ export function ChatInterface({ onScreenChange }: ChatInterfaceProps) {
   // Welcome Screen
   if (currentScreen === 'welcome') {
     return (
-      <div className="min-h-screen bg-gray-50 py-16">
+      <div className="fixed inset-0 bg-gray-50 flex flex-col justify-center">
         <AnimatePresence>
           <motion.div
             key="welcome"
@@ -190,7 +183,7 @@ export function ChatInterface({ onScreenChange }: ChatInterfaceProps) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -50 }}
             transition={{ duration: 0.5 }}
-            className="max-w-2xl mx-auto px-6"
+            className="max-w-2xl mx-auto px-6 py-8"
           >
             <div className="text-center mb-12">
               <h1 className="text-5xl font-bold text-gray-900 leading-tight mb-6">
@@ -454,7 +447,6 @@ export function ChatInterface({ onScreenChange }: ChatInterfaceProps) {
                 <button
                   onClick={() => {
                     setCurrentScreen('welcome');
-                    onScreenChange?.('welcome');
                     setQuestions([]);
                     setUserRequirements([]);
                     setSuggestedApps([]);
