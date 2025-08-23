@@ -19,7 +19,8 @@ import {
   Home,
   Package,
   Shield,
-  Lightbulb
+  Lightbulb,
+  FileText
 } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 
@@ -82,7 +83,18 @@ export function Navigation() {
                 }`}
               >
                 <Grid3X3 className="w-4 h-4" />
-                プロダクトを探す
+                プロダクト一覧
+              </Link>
+              <Link
+                href="/articles"
+                className={`flex items-center gap-2 pb-1 border-b-2 transition-all font-medium ${
+                  pathname.startsWith('/articles')
+                    ? 'text-white border-white'
+                    : 'text-gray-400 border-transparent hover:text-white'
+                }`}
+              >
+                <FileText className="w-4 h-4" />
+                記事一覧
               </Link>
             </nav>
 
@@ -100,13 +112,13 @@ export function Navigation() {
                     <MessageSquare className="h-5 w-5" />
                   </button>
 
-                  {/* アイデア投稿ボタン */}
+                  {/* 企画書作成ボタン */}
                   <Link
                     href="/ideas/new"
                     className="inline-flex items-center gap-2 bg-white text-black px-6 py-2.5 rounded-full font-bold hover:shadow-lg transition-all transform hover:scale-105 border border-gray-200"
                   >
                     <Plus className="h-4 w-4" />
-                    アイデア投稿
+                    企画書作成
                   </Link>
 
                   {/* ユーザーメニュー */}
@@ -191,13 +203,13 @@ export function Navigation() {
                     <MessageSquare className="h-5 w-5" />
                   </button>
 
-                  {/* アイデア投稿ボタン（未ログイン時はログイン画面に遷移） */}
+                  {/* 企画書作成ボタン（未ログイン時はログイン画面に遷移） */}
                   <Link
                     href="/auth/login"
                     className="inline-flex items-center gap-2 bg-white text-black px-6 py-2.5 rounded-full font-bold hover:shadow-lg transition-all transform hover:scale-105 border border-gray-200"
                   >
                     <Plus className="h-4 w-4" />
-                    アイデア投稿
+                    企画書作成
                   </Link>
 
                   {/* ログインボタン（アカウント名の場所） */}
@@ -247,7 +259,15 @@ export function Navigation() {
                 onClick={() => setIsMenuOpen(false)}
               >
                 <Grid3X3 className="inline h-4 w-4 mr-2" />
-                プロダクトを探す
+                プロダクト一覧
+              </Link>
+              <Link
+                href="/articles"
+                className="block px-3 py-2 text-base font-medium text-gray-400 hover:text-white hover:bg-gray-800 rounded-md"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <FileText className="inline h-4 w-4 mr-2" />
+                記事一覧
               </Link>
               {user ? (
                 <>
@@ -257,7 +277,7 @@ export function Navigation() {
                     onClick={() => setIsMenuOpen(false)}
                   >
                     <Plus className="inline h-4 w-4 mr-2" />
-                    アイデア投稿
+                    企画書作成
                   </Link>
                   <Link
                     href="/profile"
@@ -293,7 +313,7 @@ export function Navigation() {
                     onClick={() => setIsMenuOpen(false)}
                   >
                     <Plus className="inline h-4 w-4 mr-2" />
-                    アイデア投稿
+                    企画書作成
                   </Link>
                   <Link
                     href="/auth/login"
