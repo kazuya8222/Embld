@@ -35,7 +35,7 @@ export function IdeaSubmissionSelector() {
         {/* ヘッダー */}
         <div className="text-center mb-16">
           <h1 className="text-4xl font-bold text-gray-900 mb-6">
-            アイデアを投稿する
+            企画書を作成する
           </h1>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
             AIエージェントによる要件定義、または手動での入力を選択できます。
