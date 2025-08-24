@@ -136,6 +136,7 @@ export function ServiceBuilderInterface({ initialUserIdea }: ServiceBuilderInter
         
         if (overview) {
           updateServiceItem('overview', overview);
+          setSelectedTab('overview'); // タブも切り替え
           
           const completeMessage: Message = {
             id: 'overview-complete',
@@ -222,15 +223,24 @@ export function ServiceBuilderInterface({ initialUserIdea }: ServiceBuilderInter
         
         if (overview) {
           updateServiceItem('overview', overview);
+          setCurrentStep('overview');
+          setSelectedTab('overview'); // タブも切り替え
           
           const completeMessage: Message = {
-            id: (Date.now() + 2).toString(),
+            id: 'overview-complete-send',
             content: STEP_PROMPTS.overview,
             role: 'assistant',
             timestamp: new Date()
           };
-          setMessages(prev => [...prev, completeMessage]);
-          setCurrentStep('overview');
+          
+          // 同じIDのメッセージがない場合のみ追加
+          setMessages(prev => {
+            const hasMessage = prev.some(msg => msg.content === STEP_PROMPTS.overview);
+            if (hasMessage) {
+              return prev;
+            }
+            return [...prev, completeMessage];
+          });
         }
       } else if (currentStep !== 'review') {
         const currentItemId = currentStep;
@@ -303,6 +313,8 @@ export function ServiceBuilderInterface({ initialUserIdea }: ServiceBuilderInter
       
       if (content) {
         updateServiceItem(nextStep, content);
+        setCurrentStep(nextStep);
+        setSelectedTab(nextStep); // タブも自動で切り替え
         
         const completeMessage: Message = {
           id: (Date.now() + 2).toString(),
@@ -311,7 +323,6 @@ export function ServiceBuilderInterface({ initialUserIdea }: ServiceBuilderInter
           timestamp: new Date()
         };
         setMessages(prev => [...prev, completeMessage]);
-        setCurrentStep(nextStep);
       }
     } else {
       setCurrentStep('review');

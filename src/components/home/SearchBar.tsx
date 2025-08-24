@@ -13,11 +13,13 @@ interface SearchBarProps {
 
 export function SearchBar({ onSubmit, placeholder = "どんなアプリが欲しいですか？" }: SearchBarProps) {
   const [input, setInput] = useState('');
-  const [enterCount, setEnterCount] = useState(0);
+  const [isConfirmed, setIsConfirmed] = useState(false);
+  const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
 
   const handleSubmit = () => {
     if (input.trim()) {
       onSubmit(input.trim());
+      setIsConfirmed(false);
     }
   };
 
@@ -25,14 +27,28 @@ export function SearchBar({ onSubmit, placeholder = "どんなアプリが欲し
     if (e.key === 'Enter' && !e.shiftKey && !e.ctrlKey && !e.metaKey) {
       e.preventDefault();
       
-      if (enterCount === 0) {
+      if (!isConfirmed) {
         // 1回目のEnter：確定
-        setEnterCount(1);
-        setTimeout(() => setEnterCount(0), 2000); // 2秒後にリセット
-      } else if (enterCount === 1) {
+        setIsConfirmed(true);
+        
+        // 既存のタイムアウトをクリア
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+        }
+        
+        // 3秒後にリセット
+        const id = setTimeout(() => {
+          setIsConfirmed(false);
+        }, 3000);
+        setTimeoutId(id);
+      } else {
         // 2回目のEnter：送信
         handleSubmit();
-        setEnterCount(0);
+        setIsConfirmed(false);
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+          setTimeoutId(null);
+        }
       }
     }
   };
@@ -44,13 +60,23 @@ export function SearchBar({ onSubmit, placeholder = "どんなアプリが欲し
       transition={{ duration: 0.6, delay: 0.3 }}
       className="w-full max-w-4xl mx-auto"
     >
-      <div className="bg-gray-800 backdrop-blur-sm rounded-2xl border border-gray-700">
+      <div className={`bg-gray-800 backdrop-blur-sm rounded-2xl border ${isConfirmed ? 'border-blue-500' : 'border-gray-700'} transition-colors duration-200`}>
         <div className="flex items-center gap-3 px-4 py-3">
           <Textarea
             value={input}
-            onChange={(e) => setInput(e.target.value)}
+            onChange={(e) => {
+              setInput(e.target.value);
+              // テキストが変更されたら確定状態をリセット
+              if (isConfirmed) {
+                setIsConfirmed(false);
+                if (timeoutId) {
+                  clearTimeout(timeoutId);
+                  setTimeoutId(null);
+                }
+              }
+            }}
             onKeyDown={handleKeyDown}
-            placeholder={placeholder}
+            placeholder={isConfirmed ? "もう一度Enterキーで送信" : placeholder}
             className="flex-1 min-h-[60px] text-lg bg-transparent border-0 focus:ring-0 focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 resize-none text-white placeholder:text-gray-400"
           />
           
