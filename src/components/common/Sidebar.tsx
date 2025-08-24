@@ -1,20 +1,11 @@
 'use client'
 
 import React, { useState } from 'react';
-import { motion } from 'motion/react';
 import Link from 'next/link';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { usePathname, useRouter } from 'next/navigation';
 import { 
   Home, 
-  Search, 
-  FolderOpen, 
-  Clock, 
-  Users, 
-  Plus,
-  ChevronRight,
-  MessageSquare,
-  Star,
   Grid3X3,
   FileText,
   User,
@@ -40,7 +31,7 @@ const mainMenuItems = [
 ];
 
 export function Sidebar({ className, onLockToggle }: SidebarProps) {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed] = useState(false);
   const { user, userProfile, signOut } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
@@ -101,13 +92,6 @@ export function Sidebar({ className, onLockToggle }: SidebarProps) {
             {!isCollapsed && (
               <>
                 <Link
-                  href="/ideas/new"
-                  className="flex items-center w-full px-3 py-2 text-sm font-medium text-gray-300 rounded-lg hover:text-white hover:bg-gray-800 transition-colors"
-                >
-                  <Plus className="w-4 h-4 mr-3" />
-                  企画書作成
-                </Link>
-                <Link
                   href="/profile"
                   className="flex items-center w-full px-3 py-2 text-sm font-medium text-gray-300 rounded-lg hover:text-white hover:bg-gray-800 transition-colors"
                 >
@@ -141,9 +125,6 @@ export function Sidebar({ className, onLockToggle }: SidebarProps) {
             )}
             {isCollapsed && (
               <div className="flex flex-col space-y-2">
-                <Link href="/ideas/new" className="p-2 text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg transition-colors">
-                  <Plus className="w-4 h-4" />
-                </Link>
                 <Link href="/profile" className="p-2 text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg transition-colors">
                   <User className="w-4 h-4" />
                 </Link>
@@ -158,13 +139,6 @@ export function Sidebar({ className, onLockToggle }: SidebarProps) {
             {!isCollapsed && (
               <>
                 <Link
-                  href="/ideas/new"
-                  className="flex items-center w-full px-3 py-2 text-sm font-medium text-gray-300 rounded-lg hover:text-white hover:bg-gray-800 transition-colors"
-                >
-                  <Plus className="w-4 h-4 mr-3" />
-                  企画書作成
-                </Link>
-                <Link
                   href="/auth/login"
                   className="flex items-center w-full px-3 py-2 text-sm font-medium text-gray-300 rounded-lg hover:text-white hover:bg-gray-800 transition-colors"
                 >
@@ -175,9 +149,6 @@ export function Sidebar({ className, onLockToggle }: SidebarProps) {
             )}
             {isCollapsed && (
               <div className="flex flex-col space-y-2">
-                <Link href="/ideas/new" className="p-2 text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg transition-colors">
-                  <Plus className="w-4 h-4" />
-                </Link>
                 <Link href="/auth/login" className="p-2 text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg transition-colors">
                   <LogIn className="w-4 h-4" />
                 </Link>
