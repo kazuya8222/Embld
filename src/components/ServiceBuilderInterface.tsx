@@ -62,6 +62,8 @@ export function ServiceBuilderInterface({ initialUserIdea }: ServiceBuilderInter
   const [isSidebarHovered, setIsSidebarHovered] = useState(false);
   const [selectedTab, setSelectedTab] = useState('overview');
   const [userModifications, setUserModifications] = useState<Record<string, string[]>>({});
+  const [serviceNameOptions, setServiceNameOptions] = useState<string[]>([]);
+  const [showNameSelection, setShowNameSelection] = useState(false);
   const [serviceItems, setServiceItems] = useState<ServiceItem[]>([
     { id: 'overview', title: 'サービス概要', content: '', completed: false },
     { id: 'problem', title: '課題', content: '', completed: false },
@@ -139,7 +141,7 @@ export function ServiceBuilderInterface({ initialUserIdea }: ServiceBuilderInter
           setSelectedTab('overview'); // タブも切り替え
           
           const completeMessage: Message = {
-            id: 'overview-complete',
+            id: `overview-complete-${Date.now()}`,
             content: STEP_PROMPTS.overview,
             role: 'assistant',
             timestamp: new Date()
@@ -228,7 +230,7 @@ export function ServiceBuilderInterface({ initialUserIdea }: ServiceBuilderInter
           setSelectedTab('overview'); // タブも切り替え
           
           const completeMessage: Message = {
-            id: 'overview-complete-send',
+            id: `overview-complete-send-${Date.now()}`,
             content: STEP_PROMPTS.overview,
             role: 'assistant',
             timestamp: new Date()
@@ -240,37 +242,49 @@ export function ServiceBuilderInterface({ initialUserIdea }: ServiceBuilderInter
         const currentItem = serviceItems.find(item => item.id === currentItemId);
         
         if (currentItem && currentInput.toLowerCase() !== '次へ' && currentInput !== '') {
-          // Store user modifications
-          setUserModifications(prev => ({
-            ...prev,
-            [currentItemId]: [...(prev[currentItemId] || []), currentInput]
-          }));
-          
-          // Regenerate the item with user feedback
-          const assistantMessage: Message = {
-            id: (Date.now() + 1).toString(),
-            content: '修正内容を反映して再生成しています...',
-            role: 'assistant',
-            timestamp: new Date()
-          };
-          setMessages(prev => [...prev, assistantMessage]);
-          
-          const regeneratedContent = await generateServiceItem(currentItemId, {
-            initialIdea,
-            previousItems: serviceItems.filter(item => item.completed),
-            userFeedback: [...(userModifications[currentItemId] || []), currentInput]
-          });
-          
-          if (regeneratedContent) {
-            updateServiceItem(currentItemId, regeneratedContent);
+          if (currentItemId === 'name') {
+            // サービス名の場合は直接設定
+            updateServiceItem('name', currentInput);
             
-            const completeMessage: Message = {
-              id: (Date.now() + 2).toString(),
-              content: '修正を反映しました。他に修正点があれば入力してください。なければ「次へ」ボタンを押してください。',
+            const confirmMessage: Message = {
+              id: (Date.now() + 1).toString(),
+              content: `サービス名を「${currentInput}」に変更しました。`,
               role: 'assistant',
               timestamp: new Date()
             };
-            setMessages(prev => [...prev, completeMessage]);
+            setMessages(prev => [...prev, confirmMessage]);
+          } else {
+            // その他の項目の場合は再生成
+            setUserModifications(prev => ({
+              ...prev,
+              [currentItemId]: [...(prev[currentItemId] || []), currentInput]
+            }));
+            
+            const assistantMessage: Message = {
+              id: (Date.now() + 1).toString(),
+              content: '修正内容を反映して再生成しています...',
+              role: 'assistant',
+              timestamp: new Date()
+            };
+            setMessages(prev => [...prev, assistantMessage]);
+            
+            const regeneratedContent = await generateServiceItem(currentItemId, {
+              initialIdea,
+              previousItems: serviceItems.filter(item => item.completed),
+              userFeedback: [...(userModifications[currentItemId] || []), currentInput]
+            });
+            
+            if (regeneratedContent) {
+              updateServiceItem(currentItemId, regeneratedContent);
+              
+              const completeMessage: Message = {
+                id: (Date.now() + 2).toString(),
+                content: '修正を反映しました。他に修正点があれば入力してください。なければ「次へ」ボタンを押してください。',
+                role: 'assistant',
+                timestamp: new Date()
+              };
+              setMessages(prev => [...prev, completeMessage]);
+            }
           }
         }
       }
@@ -305,17 +319,40 @@ export function ServiceBuilderInterface({ initialUserIdea }: ServiceBuilderInter
       });
       
       if (content) {
-        updateServiceItem(nextStep, content);
-        setCurrentStep(nextStep);
-        setSelectedTab(nextStep); // タブも自動で切り替え
-        
-        const completeMessage: Message = {
-          id: (Date.now() + 2).toString(),
-          content: STEP_PROMPTS[nextStep],
-          role: 'assistant',
-          timestamp: new Date()
-        };
-        setMessages(prev => [...prev, completeMessage]);
+        if (nextStep === 'name') {
+          // サービス名の場合は候補を右側パネルに表示
+          console.log('Generated service names:', content);
+          const names = content.split('\n')
+            .filter((line: string) => line.match(/^\d+\./))
+            .map((line: string) => line.replace(/^\d+\.\s*/, '').trim())
+            .filter((name: string) => name.length > 0);
+          
+          console.log('Parsed names:', names);
+          setServiceNameOptions(names);
+          setShowNameSelection(true);
+          setCurrentStep(nextStep);
+          setSelectedTab(nextStep);
+          
+          const completeMessage: Message = {
+            id: (Date.now() + 2).toString(),
+            content: 'サービス名の候補を生成しました。右側のパネルから一つ選択してください。',
+            role: 'assistant',
+            timestamp: new Date()
+          };
+          setMessages(prev => [...prev, completeMessage]);
+        } else {
+          updateServiceItem(nextStep, content);
+          setCurrentStep(nextStep);
+          setSelectedTab(nextStep); // タブも自動で切り替え
+          
+          const completeMessage: Message = {
+            id: (Date.now() + 2).toString(),
+            content: STEP_PROMPTS[nextStep],
+            role: 'assistant',
+            timestamp: new Date()
+          };
+          setMessages(prev => [...prev, completeMessage]);
+        }
       }
     } else {
       setCurrentStep('review');
@@ -329,6 +366,20 @@ export function ServiceBuilderInterface({ initialUserIdea }: ServiceBuilderInter
     }
     
     setIsLoading(false);
+  };
+
+  const handleNameSelection = (selectedName: string) => {
+    console.log('Name selected:', selectedName);
+    updateServiceItem('name', selectedName);
+    setShowNameSelection(false);
+    
+    const confirmMessage: Message = {
+      id: (Date.now() + 1).toString(),
+      content: `「${selectedName}」を選択しました。修正すべき点はありますか？`,
+      role: 'assistant',
+      timestamp: new Date()
+    };
+    setMessages(prev => [...prev, confirmMessage]);
   };
 
   const handleSubmit = async () => {
@@ -425,6 +476,8 @@ export function ServiceBuilderInterface({ initialUserIdea }: ServiceBuilderInter
                 </div>
               </motion.div>
             )}
+
+            
             <div ref={messagesEndRef} />
           </div>
 
@@ -437,7 +490,7 @@ export function ServiceBuilderInterface({ initialUserIdea }: ServiceBuilderInter
                 placeholder="Embld にメッセージを送る"
                 className="w-full h-12 pl-4 pr-16 bg-gray-700 border-0 rounded-full text-white placeholder:text-gray-400 focus:outline-none focus:ring-0"
                 disabled={isLoading}
-                onKeyPress={(e) => {
+                onKeyDown={(e) => {
                   if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
                     handleSend();
@@ -494,21 +547,41 @@ export function ServiceBuilderInterface({ initialUserIdea }: ServiceBuilderInter
                 <div className="p-4 text-gray-300 leading-relaxed">
                   {serviceItems
                     .filter(item => item.id === selectedTab)
-                    .map((item, index) => (
+                    .map((item) => (
                       <div key={item.id}>
                         <div className="text-orange-400 mb-4 text-lg">
                           {item.title}
                         </div>
-                        {item.content ? (
-                          <div className="whitespace-pre-wrap text-gray-300">
-                            {item.content.split('\n').map((line, i) => (
-                              <div key={i} className="mb-2">
-                                {line}
-                              </div>
+                        
+                        {/* サービス名タブで選択UIを表示 */}
+                        {selectedTab === 'name' && showNameSelection && serviceNameOptions.length > 0 ? (
+                          <div className="space-y-3">
+                            <div className="text-gray-400 mb-3">以下から一つ選択してください：</div>
+                            {serviceNameOptions.map((name, index) => (
+                              <button
+                                key={index}
+                                onClick={() => handleNameSelection(name)}
+                                className="w-full p-3 text-left bg-gray-700 hover:bg-gray-600 border border-gray-600 rounded-lg text-white transition-colors"
+                              >
+                                {name}
+                              </button>
                             ))}
                           </div>
                         ) : (
-                          <div className="text-gray-500">生成中...</div>
+                          // 通常の内容表示
+                          <>
+                            {item.content ? (
+                              <div className="whitespace-pre-wrap text-gray-300">
+                                {item.content.split('\n').map((line, i) => (
+                                  <div key={i} className="mb-2">
+                                    {line}
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <div className="text-gray-500">生成中...</div>
+                            )}
+                          </>
                         )}
                       </div>
                     ))}

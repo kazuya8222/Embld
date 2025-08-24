@@ -100,7 +100,7 @@ export function CommunityShowcase() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h2 className="text-2xl font-bold text-white mb-2">完成アプリ一覧</h2>
+          <h2 className="text-xl font-bold text-white mb-2">完成アプリ一覧</h2>
           <p className="text-gray-400">embldで開発されたアプリを見てみましょう。</p>
         </div>
         <Link href="/owners">

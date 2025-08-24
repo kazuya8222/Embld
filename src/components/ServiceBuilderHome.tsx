@@ -112,7 +112,7 @@ export function ServiceBuilderHome() {
           </div>
 
           {/* Community Showcase Section */}
-          <div className="flex-1 overflow-y-auto pb-8">
+          <div className="flex-1 overflow-y-auto pb-8 pt-16">
             <CommunityShowcase />
           </div>
         </div>

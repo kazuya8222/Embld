@@ -20,17 +20,17 @@ export async function POST(request: NextRequest) {
     
     switch (step) {
       case 'overview':
-        prompt = `以下のアイデアから、詳細なサービス概要を生成してください。
+        prompt = `以下のユーザーのアイデアを、より詳しく分かりやすい言葉に言い換えてください。
         
 ユーザーのアイデア: ${initialIdea}${userFeedbackText}
 
-サービス概要には以下を含めてください：
-- サービスの目的と価値提案
-- ターゲットユーザー
-- 主要な機能の概要
-- ユーザーにとってのメリット
+要求：
+- ユーザーの元のアイデアの意図を保ちながら、より具体的で理解しやすい表現に言い換える
+- 専門用語があれば分かりやすい言葉に置き換える
+- 誰が読んでもサービスの内容が想像できるような説明にする
+- 構造化された項目（ターゲットユーザー、機能一覧など）は作らず、自然な文章で表現する
 
-200文字程度で簡潔にまとめてください。`;
+150-200文字程度で簡潔にまとめてください。`;
         break;
 
       case 'problem':
@@ -39,9 +39,8 @@ export async function POST(request: NextRequest) {
 サービス概要: ${currentItems.find((item: any) => item.id === 'overview')?.content}${userFeedbackText}
 
 課題には以下を含めてください：
-- 現状の問題点
+- サービス概要から推測されるユーザーが課題に感じていること
 - ユーザーが抱える不満や困りごと
-- 既存の解決策の不足点
 
 150文字程度で簡潔にまとめてください。`;
         break;
@@ -55,7 +54,6 @@ export async function POST(request: NextRequest) {
 理想の状態には以下を含めてください：
 - 課題が解決された後の状態
 - ユーザーが得られる体験
-- 実現したい世界観
 
 150文字程度で簡潔にまとめてください。`;
         break;
@@ -68,9 +66,8 @@ export async function POST(request: NextRequest) {
 理想: ${currentItems.find((item: any) => item.id === 'ideal')?.content}${userFeedbackText}
 
 解決策には以下を含めてください：
+- 課題と理想のギャップを埋めるためのアプローチ
 - 技術的なアプローチ
-- 主要な機能の実装方法
-- 差別化要因
 
 200文字程度で簡潔にまとめてください。`;
         break;
@@ -84,13 +81,12 @@ export async function POST(request: NextRequest) {
 機能詳細には以下を含めてください：
 - 主要機能（3-5個）
 - 各機能の簡単な説明
-- ユーザーインターフェースの特徴
 
 箇条書きで整理してください。`;
         break;
 
       case 'name':
-        prompt = `以下の情報から、キャッチーなサービス名を3つ提案してください。
+        prompt = `以下の情報から、キャッチーなサービス名を5つ提案してください。
 
 サービス概要: ${currentItems.find((item: any) => item.id === 'overview')?.content}
 主要機能: ${currentItems.find((item: any) => item.id === 'features')?.content}${userFeedbackText}
@@ -99,8 +95,16 @@ export async function POST(request: NextRequest) {
 - 覚えやすい
 - サービスの特徴を表現
 - ユニークで印象的
+- 日本語でも英語でも可
 
-各名前に簡単な説明を添えてください。`;
+以下の形式で回答してください：
+1. [サービス名1]
+2. [サービス名2]
+3. [サービス名3]
+4. [サービス名4]
+5. [サービス名5]
+
+サービス名のみを番号付きリストで回答してください。説明は不要です。`;
         break;
 
       default:
