@@ -10,19 +10,25 @@
     --font-noto-sans-jp: 'Noto Sans JP';
   }
   
+  html, body {
+    background-color: rgb(3 7 18); /* bg-gray-950 */
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  
   body {
     @apply antialiased;
     font-weight: 400;
     line-height: 1.7;
     letter-spacing: 0.03em;
-    color: #333333;
-    background-color: #ffffff;
-    /* 上部へのスクロールを防止 */
+    color: #ffffff;
+    background-color: rgb(3 7 18); /* bg-gray-950 */
     overflow-x: hidden;
   }
   
   html {
     overflow-x: hidden;
+    background-color: rgb(3 7 18); /* bg-gray-950 */
   }
   
   h1, h2, h3, h4, h5, h6 {
@@ -199,4 +205,27 @@
   to {
     opacity: 0;
   }
+}
+
+/* Custom scrollbar styles */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(55 65 81) rgb(17 24 39); /* gray-600 on gray-900 */
+}
+
+*::-webkit-scrollbar {
+  width: 6px;
+}
+
+*::-webkit-scrollbar-track {
+  background: rgb(17 24 39); /* bg-gray-900 */
+}
+
+*::-webkit-scrollbar-thumb {
+  background: rgb(55 65 81); /* bg-gray-600 */
+  border-radius: 3px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: rgb(75 85 99); /* bg-gray-500 */
 }

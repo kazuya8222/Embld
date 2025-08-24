@@ -18,20 +18,7 @@ export async function login(formData: FormData) {
     redirect('/auth/login?error=' + encodeURIComponent(error.message))
   }
 
-  // ユーザープロフィールを確認
-  if (authData.user) {
-    const { data: profile } = await supabase
-      .from('users')
-      .select('username')
-      .eq('id', authData.user.id)
-      .single()
-
-    // usernameが設定されていない場合はプロフィール設定ページへ
-    if (!profile?.username) {
-      revalidatePath('/', 'layout')
-      redirect('/profile/settings')
-    }
-  }
+  // すべてのユーザーをホームページへリダイレクト
 
   revalidatePath('/', 'layout')
   redirect('/home')
@@ -52,13 +39,12 @@ export async function signup(formData: FormData) {
   }
 
   if (authData.user) {
-    // ユーザープロフィールを作成（usernameはnullで作成）
+    // ユーザープロフィールを作成
     const { error: profileError } = await supabase
       .from('users')
       .insert({
         id: authData.user.id,
         email: authData.user.email!,
-        username: null, // usernameは後で設定
         auth_provider: 'email',
       })
 

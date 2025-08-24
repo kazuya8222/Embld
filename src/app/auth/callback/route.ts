@@ -30,10 +30,10 @@ export async function GET(request: NextRequest) {
       if (!error && session) {
         console.log('Session created successfully for user:', session.user.email)
         
-        // ユーザープロフィールを確認
+        // ユーザープロフィールを確認または作成
         const { data: profile } = await supabase
           .from('users')
-          .select('username')
+          .select('id')
           .eq('id', session.user.id)
           .single()
         
@@ -41,30 +41,22 @@ export async function GET(request: NextRequest) {
         if (!profile) {
           console.log('Creating new user profile for:', session.user.email)
           
-          // Google認証の場合、ユーザープロフィールを作成（usernameはnullで作成）
+          // Google認証の場合、ユーザープロフィールを作成
           const { error: insertError } = await supabase
             .from('users')
             .insert({
               id: session.user.id,
               email: session.user.email!,
-              username: null, // usernameは後で設定
               auth_provider: 'google',
               google_avatar_url: session.user.user_metadata?.avatar_url || null,
             })
           
-          if (!insertError) {
-            console.log('Redirecting to profile settings page for new user')
-            return NextResponse.redirect(new URL('/profile/settings', baseUrl))
-          } else {
+          if (insertError) {
             console.error('Profile creation error:', insertError)
           }
-        } else if (!profile.username) {
-          // プロフィールは存在するがusernameが未設定の場合もプロフィール設定ページへ
-          console.log('Username not set, redirecting to profile settings page')
-          return NextResponse.redirect(new URL('/profile/settings', baseUrl))
         }
         
-        // 既存ユーザーはホームへ
+        // すべてのユーザーをホームへリダイレクト
         console.log('Redirecting to home page')
         return NextResponse.redirect(new URL('/home', baseUrl))
       } else {

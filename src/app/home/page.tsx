@@ -1,5 +1,5 @@
-import { ChatInterface } from '@/components/ChatInterface'
+import { ServiceBuilderHome } from '@/components/ServiceBuilderHome'
 
 export default function HomePage() {
-  return <ChatInterface />
+  return <ServiceBuilderHome />
 }

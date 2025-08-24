@@ -50,7 +50,7 @@ export default function RootLayout({
         <link rel="icon" type="image/png" sizes="180x180" href="/images/favicon_180x180.png" />
         <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon_180x180.png" />
       </head>
-      <body className="font-sans bg-white">
+      <body className="font-sans bg-gray-950">
         <AuthProvider>
           <LoadingProvider>
             {children}

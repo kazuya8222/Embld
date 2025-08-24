@@ -65,7 +65,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const { data: profile, error } = await supabase
         .from('users')
-        .select('username, avatar_url, google_avatar_url, email, created_at, is_admin, is_developer')
+        .select('google_avatar_url, email, created_at, is_admin, is_developer')
         .eq('id', user.id)
         .single()
       
@@ -180,7 +180,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       const { data: profile, error } = await supabase
         .from('users')
-        .select('username, avatar_url, google_avatar_url, email, created_at, is_admin, is_developer')
+        .select('google_avatar_url, email, created_at, is_admin, is_developer')
         .eq('id', user.id)
         .single()
       
