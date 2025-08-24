@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { cn } from '@/lib/utils/cn';
+import { SettingsModal } from '../settings/SettingsModal';
 
 interface SidebarProps {
   className?: string;
@@ -36,6 +37,7 @@ const bottomMenuItems = [
 
 export function Sidebar({ className, onLockToggle }: SidebarProps) {
   const [isCollapsed] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const { user, userProfile, signOut } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
@@ -116,13 +118,13 @@ export function Sidebar({ className, onLockToggle }: SidebarProps) {
           <div className="space-y-2">
             {!isCollapsed && (
               <>
-                <Link
-                  href="/profile/settings"
+                <button
+                  onClick={() => setIsSettingsOpen(true)}
                   className="flex items-center w-full px-3 py-2 text-sm font-medium text-gray-300 rounded-lg hover:text-white hover:bg-gray-800 transition-colors"
                 >
                   <Settings className="w-4 h-4 mr-3" />
                   設定
-                </Link>
+                </button>
                 {userProfile?.is_admin && (
                   <Link
                     href="/admin"
@@ -172,6 +174,12 @@ export function Sidebar({ className, onLockToggle }: SidebarProps) {
           </div>
         )}
       </div>
+      
+      {/* Settings Modal */}
+      <SettingsModal 
+        isOpen={isSettingsOpen} 
+        onClose={() => setIsSettingsOpen(false)} 
+      />
     </div>
   );
 }
