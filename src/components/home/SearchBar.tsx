@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { Button } from '../ui/button';
 import { Textarea } from '../ui/textarea';
-import { Plus, ArrowUp, Shuffle } from 'lucide-react';
+import { ArrowUp } from 'lucide-react';
 
 interface SearchBarProps {
   onSubmit: (value: string) => void;
@@ -81,21 +81,6 @@ export function SearchBar({ onSubmit, placeholder = "どんなアプリが欲し
           />
           
           <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-gray-400 hover:text-white hover:bg-gray-700 p-2"
-            >
-              <Plus className="w-4 h-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-gray-400 hover:text-white hover:bg-gray-700 p-2"
-            >
-              <Shuffle className="w-4 h-4" />
-            </Button>
-            
             <Button
               onClick={handleSubmit}
               disabled={!input.trim()}
