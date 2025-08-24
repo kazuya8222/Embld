@@ -62,7 +62,7 @@ export function ServiceBuilderHome() {
   }
 
   return (
-    <div className="h-screen bg-gray-900 relative overflow-hidden">
+    <div className="min-h-screen bg-gray-900 relative">
       {/* TopBar */}
       <TopBar onMenuToggle={handleMenuToggle} onMenuHover={handleMenuHover} />
       
@@ -84,11 +84,11 @@ export function ServiceBuilderHome() {
       </AnimatePresence>
 
       {/* Main Content */}
-      <div className="h-full pt-0 relative">
+      <div className="min-h-screen pt-0 relative">
 
-        <div className="relative z-10 flex flex-col h-full">
+        <div className="relative z-10">
           {/* Header Section */}
-          <div className="flex-shrink-0 pt-32 pb-8">
+          <div className="pt-48 pb-8">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -112,7 +112,7 @@ export function ServiceBuilderHome() {
           </div>
 
           {/* Community Showcase Section */}
-          <div className="flex-1 overflow-y-auto pb-8 pt-16">
+          <div className="pb-8 pt-16">
             <CommunityShowcase />
           </div>
         </div>

@@ -2,16 +2,15 @@
 
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { useAuth } from '@/components/auth/AuthProvider';
 import { TopBar } from '@/components/common/TopBar';
 import { Sidebar } from '@/components/common/Sidebar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Eye, Heart, GitFork, ArrowUpRight, Plus, Rocket } from 'lucide-react';
+import { Eye, Heart, GitFork, ArrowUpRight, Filter, Grid, List } from 'lucide-react';
 import Link from 'next/link';
 
-interface UserProduct {
+interface EmbldProduct {
   id: string;
   title: string;
   description: string;
@@ -19,20 +18,23 @@ interface UserProduct {
   view_count: number;
   like_count: number;
   category: string;
+  user_id: string;
   demo_url?: string;
   github_url?: string;
   tags: string[];
   tech_stack: string[];
+  featured: boolean;
   created_at: string;
 }
 
-export default function ProductsPage() {
-  const { user } = useAuth();
-  const [products, setProducts] = useState<UserProduct[]>([]);
+export default function EmbldProductsPage() {
+  const [products, setProducts] = useState<EmbldProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSidebarLocked, setIsSidebarLocked] = useState(false);
   const [isSidebarHovered, setIsSidebarHovered] = useState(false);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
   const handleMenuToggle = () => {
     setIsSidebarLocked(!isSidebarLocked);
@@ -49,12 +51,7 @@ export default function ProductsPage() {
   const shouldShowSidebar = isSidebarLocked || isSidebarHovered;
 
   useEffect(() => {
-    const fetchUserProducts = async () => {
-      if (!user) {
-        setLoading(false);
-        return;
-      }
-
+    const fetchProducts = async () => {
       try {
         const query = `
           SELECT 
@@ -65,14 +62,17 @@ export default function ProductsPage() {
             view_count,
             like_count,
             category,
+            user_id,
             demo_url,
             github_url,
             tags,
             tech_stack,
+            featured,
             created_at
-          FROM owner_posts 
-          WHERE user_id = '${user.id}'
-          ORDER BY created_at DESC
+          FROM embld_products
+          WHERE is_public = true 
+            AND approval_status = 'approved'
+          ORDER BY featured DESC, like_count DESC, view_count DESC, created_at DESC
         `;
         
         const response = await fetch('/api/community/posts', {
@@ -86,41 +86,51 @@ export default function ProductsPage() {
           setProducts(data.posts || []);
         }
       } catch (error) {
-        console.error('Failed to fetch user products:', error);
+        console.error('Failed to fetch embld products:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchUserProducts();
-  }, [user]);
+    fetchProducts();
+  }, []);
+
+  const categories = ['all', ...Array.from(new Set(products.map(p => p.category).filter(Boolean)))];
+  const filteredProducts = selectedCategory === 'all' 
+    ? products 
+    : products.filter(p => p.category === selectedCategory);
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-900 p-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="animate-pulse">
-            <div className="h-8 bg-gray-800 rounded w-1/4 mb-2"></div>
-            <div className="h-4 bg-gray-800 rounded w-1/2 mb-8"></div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[...Array(6)].map((_, i) => (
-                <div key={i} className="bg-gray-800 rounded-lg h-64"></div>
-              ))}
+      <div className="min-h-screen bg-gray-900 relative">
+        <TopBar onMenuToggle={handleMenuToggle} onMenuHover={handleMenuHover} />
+        <AnimatePresence>
+          {shouldShowSidebar && (
+            <motion.div
+              initial={{ x: -264, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: -264, opacity: 0 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+              className="fixed left-0 top-0 z-50"
+              onMouseEnter={() => handleMenuHover(true)}
+              onMouseLeave={() => handleMenuHover(false)}
+            >
+              <Sidebar onLockToggle={handleMenuToggle} />
+            </motion.div>
+          )}
+        </AnimatePresence>
+        <div className="pt-16">
+          <div className="max-w-7xl mx-auto p-6">
+            <div className="animate-pulse">
+              <div className="h-8 bg-gray-800 rounded w-1/4 mb-2"></div>
+              <div className="h-4 bg-gray-800 rounded w-1/2 mb-8"></div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {[...Array(9)].map((_, i) => (
+                  <div key={i} className="bg-gray-800 rounded-lg h-64"></div>
+                ))}
+              </div>
             </div>
           </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-white mb-4">ログインが必要です</h1>
-          <Link href="/auth/login">
-            <Button>ログイン</Button>
-          </Link>
         </div>
       </div>
     );
@@ -151,51 +161,90 @@ export default function ProductsPage() {
       {/* Main Content */}
       <div className="pt-16">
         <div className="max-w-7xl mx-auto p-6">
-        {/* Header */}
-        <div className="mb-8">
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-3xl font-bold text-white mb-2"
-          >
-            あなたのプロダクト
-          </motion.h1>
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-gray-400"
-          >
-            開発したプロダクトを管理しましょう
-          </motion.p>
-        </div>
+          {/* Header */}
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <motion.h1
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+                className="text-3xl font-bold text-white mb-2"
+              >
+                Embld プロダクト一覧
+              </motion.h1>
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.1 }}
+                className="text-gray-400"
+              >
+                Embldで開発された全てのプロダクトを探索しましょう
+              </motion.p>
+            </div>
+            <div className="flex items-center gap-3">
+              {/* View Mode Toggle */}
+              <div className="flex bg-gray-800 rounded-lg p-1">
+                <button
+                  onClick={() => setViewMode('grid')}
+                  className={`p-2 rounded transition-colors ${
+                    viewMode === 'grid' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-white'
+                  }`}
+                >
+                  <Grid className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => setViewMode('list')}
+                  className={`p-2 rounded transition-colors ${
+                    viewMode === 'list' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-white'
+                  }`}
+                >
+                  <List className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </div>
 
-        {products.length === 0 ? (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-            className="flex flex-col items-center justify-center py-20"
-          >
-            <Rocket className="w-16 h-16 text-gray-600 mb-6" />
-            <h2 className="text-xl font-semibold text-white mb-2">
-              まだプロダクトがないです。
-            </h2>
-          </motion.div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {products.map((product, index) => (
+          {/* Filters */}
+          <div className="flex flex-wrap gap-2 mb-8">
+            {categories.map((category) => (
+              <button
+                key={category}
+                onClick={() => setSelectedCategory(category)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  selectedCategory === category
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white'
+                }`}
+              >
+                {category === 'all' ? 'すべて' : category}
+              </button>
+            ))}
+          </div>
+
+          {/* Products Grid */}
+          <div className={`grid gap-6 ${
+            viewMode === 'grid' 
+              ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' 
+              : 'grid-cols-1'
+          }`}>
+            {filteredProducts.map((product, index) => (
               <motion.div
                 key={product.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.3 + index * 0.1 }}
+                transition={{ duration: 0.6, delay: 0.1 + index * 0.05 }}
               >
                 <Card className="bg-gray-800 border-gray-700 hover:bg-gray-750 transition-all duration-300 group cursor-pointer overflow-hidden">
+                  {product.featured && (
+                    <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white text-xs font-semibold px-3 py-1">
+                      FEATURED
+                    </div>
+                  )}
                   <div className="relative">
                     {/* Project Image */}
-                    <div className="aspect-video bg-gradient-to-br from-gray-700 to-gray-800 relative overflow-hidden">
+                    <div className={`bg-gradient-to-br from-gray-700 to-gray-800 relative overflow-hidden ${
+                      viewMode === 'grid' ? 'aspect-video' : 'aspect-[3/1]'
+                    }`}>
                       {product.images && product.images.length > 0 ? (
                         <img 
                           src={product.images[0]} 
@@ -219,12 +268,23 @@ export default function ProductsPage() {
                           {product.category}
                         </Badge>
                       )}
+                      
+                      {/* View Details Button */}
+                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                        <Button 
+                          variant="secondary" 
+                          size="sm"
+                          className="bg-white text-black hover:bg-gray-200"
+                        >
+                          詳細を見る
+                        </Button>
+                      </div>
                     </div>
 
                     <CardContent className="p-4">
                       {/* Title & Description */}
                       <div className="mb-3">
-                        <h3 className="text-white font-semibold text-lg mb-2 line-clamp-1">
+                        <h3 className="text-white font-semibold text-lg mb-2 line-clamp-1 group-hover:text-blue-400 transition-colors">
                           {product.title}
                         </h3>
                         <p className="text-gray-400 text-sm line-clamp-2">
@@ -235,14 +295,14 @@ export default function ProductsPage() {
                       {/* Tech Stack Tags */}
                       {product.tech_stack && product.tech_stack.length > 0 && (
                         <div className="flex flex-wrap gap-1 mb-3">
-                          {product.tech_stack.slice(0, 3).map((tech, i) => (
+                          {product.tech_stack.slice(0, viewMode === 'grid' ? 3 : 6).map((tech, i) => (
                             <Badge key={i} variant="outline" className="text-xs border-gray-600 text-gray-300">
                               {tech}
                             </Badge>
                           ))}
-                          {product.tech_stack.length > 3 && (
+                          {product.tech_stack.length > (viewMode === 'grid' ? 3 : 6) && (
                             <Badge variant="outline" className="text-xs border-gray-600 text-gray-300">
-                              +{product.tech_stack.length - 3}
+                              +{product.tech_stack.length - (viewMode === 'grid' ? 3 : 6)}
                             </Badge>
                           )}
                         </div>
@@ -291,7 +351,17 @@ export default function ProductsPage() {
               </motion.div>
             ))}
           </div>
-        )}
+
+          {filteredProducts.length === 0 && (
+            <div className="text-center py-20">
+              <div className="text-gray-400 mb-4">
+                {selectedCategory === 'all' 
+                  ? 'まだプロダクトが登録されていません'
+                  : `${selectedCategory}カテゴリにはプロダクトがありません`
+                }
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

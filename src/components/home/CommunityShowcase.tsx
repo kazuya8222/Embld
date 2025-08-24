@@ -32,25 +32,22 @@ export function CommunityShowcase() {
       try {
         const query = `
           SELECT 
-            op.id,
-            op.title,
-            op.description,
-            op.images,
-            op.view_count,
-            op.like_count,
-            op.category,
-            op.user_id,
-            op.demo_url,
-            op.github_url,
-            op.tags,
-            op.tech_stack,
-            profiles.username,
-            profiles.avatar_url
-          FROM owner_posts op
-          LEFT JOIN profiles ON op.user_id = profiles.id
-          WHERE op.is_public = true 
-            AND op.approval_status = 'approved'
-          ORDER BY op.like_count DESC, op.view_count DESC
+            id,
+            title,
+            description,
+            images,
+            view_count,
+            like_count,
+            category,
+            user_id,
+            demo_url,
+            github_url,
+            tags,
+            tech_stack
+          FROM embld_products
+          WHERE is_public = true 
+            AND approval_status = 'approved'
+          ORDER BY like_count DESC, view_count DESC
           LIMIT 6
         `;
         
@@ -103,7 +100,7 @@ export function CommunityShowcase() {
           <h2 className="text-xl font-bold text-white mb-2">完成アプリ一覧</h2>
           <p className="text-gray-400">embldで開発されたアプリを見てみましょう。</p>
         </div>
-        <Link href="/owners">
+        <Link href="/embld-products">
           <Button variant="ghost" className="text-gray-400 hover:text-white">
             全て見る <ArrowUpRight className="w-4 h-4 ml-1" />
           </Button>
