@@ -7,7 +7,6 @@ import { Card, CardContent } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { Eye, Heart, GitFork, ArrowUpRight } from 'lucide-react';
 import Link from 'next/link';
-import { mcp__supabase__execute_sql } from '@/lib/supabase/client';
 
 interface OwnerPost {
   id: string;
