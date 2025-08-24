@@ -6,7 +6,8 @@ import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
-import { Send, Bot, User, ArrowRight, Check, Sparkles } from 'lucide-react';
+import { ArrowUp, ArrowRight, Check, Sparkles, PanelLeft } from 'lucide-react';
+import { Sidebar } from './common/Sidebar';
 
 interface Message {
   id: string;
@@ -56,6 +57,10 @@ export function ServiceBuilderInterface({ initialUserIdea }: ServiceBuilderInter
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [initialIdea, setInitialIdea] = useState(initialUserIdea || '');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarLocked, setIsSidebarLocked] = useState(false);
+  const [isSidebarHovered, setIsSidebarHovered] = useState(false);
+  const [selectedTab, setSelectedTab] = useState('overview');
   const [userModifications, setUserModifications] = useState<Record<string, string[]>>({});
   const [serviceItems, setServiceItems] = useState<ServiceItem[]>([
     { id: 'overview', title: 'サービス概要', content: '', completed: false },
@@ -66,6 +71,20 @@ export function ServiceBuilderInterface({ initialUserIdea }: ServiceBuilderInter
     { id: 'name', title: 'サービス名', content: '', completed: false }
   ]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const handleMenuToggle = () => {
+    setIsSidebarLocked(!isSidebarLocked);
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
+  const handleMenuHover = (isHovering: boolean) => {
+    setIsSidebarHovered(isHovering);
+    if (!isSidebarLocked) {
+      setIsSidebarOpen(isHovering);
+    }
+  };
+
+  const shouldShowSidebar = isSidebarLocked || isSidebarHovered;
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -327,12 +346,36 @@ export function ServiceBuilderInterface({ initialUserIdea }: ServiceBuilderInter
 
 
   return (
-    <div className="h-screen flex bg-gray-900">
+    <div className="h-screen flex bg-gray-900 relative overflow-hidden">
+      {/* Sidebar Overlay */}
+      <AnimatePresence>
+        {shouldShowSidebar && (
+          <motion.div
+            initial={{ x: -264, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: -264, opacity: 0 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className="fixed left-0 top-0 z-50"
+            onMouseEnter={() => handleMenuHover(true)}
+            onMouseLeave={() => handleMenuHover(false)}
+          >
+            <Sidebar onLockToggle={handleMenuToggle} />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <div className="flex-1 flex">
-        <div className="w-1/2 bg-gray-800 border-r border-gray-700 flex flex-col">
-          <div className="border-b border-gray-700 px-6 py-4">
-            <h2 className="text-lg font-semibold text-white">サービス構築チャット</h2>
-            <p className="text-sm text-gray-400 mt-1">AIと対話しながらサービスを作り上げます</p>
+        <div className="w-1/2 bg-gray-900 flex flex-col">
+          <div className="px-4 py-3 flex items-center gap-3">
+            <button
+              onClick={handleMenuToggle}
+              onMouseEnter={() => handleMenuHover(true)}
+              onMouseLeave={() => handleMenuHover(false)}
+              className="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
+            >
+              <PanelLeft className="w-5 h-5" />
+            </button>
+            <h2 className="text-sm font-medium text-gray-300">{initialIdea || "開発案件定義支援AIの構想と目標"}</h2>
           </div>
 
           <div className="flex-1 overflow-y-auto p-6">
@@ -344,23 +387,16 @@ export function ServiceBuilderInterface({ initialUserIdea }: ServiceBuilderInter
                   animate={{ opacity: 1, y: 0 }}
                   className={`mb-4 flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
-                  <div className={`max-w-[85%] flex items-start gap-3 ${message.role === 'user' ? 'flex-row-reverse' : ''}`}>
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                      message.role === 'user' ? 'bg-blue-500' : 'bg-gray-700'
-                    }`}>
-                      {message.role === 'user' ? (
-                        <User className="w-4 h-4 text-white" />
-                      ) : (
-                        <Bot className="w-4 h-4 text-white" />
-                      )}
-                    </div>
-                    <div className={`px-4 py-2 rounded-lg ${
-                      message.role === 'user' 
-                        ? 'bg-blue-600 text-white' 
-                        : 'bg-gray-700 text-gray-100'
-                    }`}>
-                      <div className="whitespace-pre-wrap">{message.content}</div>
-                    </div>
+                  <div className={`max-w-[85%] ${message.role === 'user' ? 'ml-auto' : 'mr-auto'}`}>
+                    {message.role === 'user' ? (
+                      <div className="px-4 py-2 rounded-lg bg-gray-700 text-gray-100">
+                        <div className="whitespace-pre-wrap">{message.content}</div>
+                      </div>
+                    ) : (
+                      <div className="text-gray-100">
+                        <div className="whitespace-pre-wrap">{message.content}</div>
+                      </div>
+                    )}
                   </div>
                 </motion.div>
               ))}
@@ -372,11 +408,8 @@ export function ServiceBuilderInterface({ initialUserIdea }: ServiceBuilderInter
                 animate={{ opacity: 1 }}
                 className="flex justify-start mb-4"
               >
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center">
-                    <Bot className="w-4 h-4 text-white" />
-                  </div>
-                  <div className="bg-gray-700 px-4 py-2 rounded-lg">
+                <div className="mr-auto max-w-[85%]">
+                  <div className="text-gray-100">
                     <div className="flex space-x-1">
                       <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce"></div>
                       <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
@@ -389,91 +422,95 @@ export function ServiceBuilderInterface({ initialUserIdea }: ServiceBuilderInter
             <div ref={messagesEndRef} />
           </div>
 
-          <div className="border-t border-gray-700 p-4">
-            <div className="flex gap-3">
-              <Textarea
+          <div className="p-4">
+            <div className="relative flex items-center">
+              <input
+                type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder={currentStep === 'initial' ? 'サービスのアイデアを入力...' : 'メッセージを入力...'}
-                className="flex-1 min-h-[80px] resize-none bg-gray-700 border-gray-600 text-white placeholder:text-gray-400"
+                placeholder="Embld にメッセージを送る"
+                className="w-full h-12 pl-4 pr-16 bg-gray-700 border-0 rounded-full text-white placeholder:text-gray-400 focus:outline-none focus:ring-0"
                 disabled={isLoading}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSend();
+                  }
+                }}
               />
-              <div className="flex flex-col gap-2">
+              <div className="absolute right-1">
                 <Button
                   onClick={handleSend}
                   disabled={!input.trim() || isLoading}
-                  className="px-4 bg-blue-600 text-white hover:bg-blue-700"
+                  size="sm"
+                  className="w-10 h-10 rounded-full bg-white hover:bg-gray-100 text-black p-0"
                 >
-                  <Send className="w-4 h-4" />
+                  <ArrowUp className="w-5 h-5" />
                 </Button>
               </div>
             </div>
-            {currentStep !== 'initial' && currentStep !== 'review' && (
-              <Button
-                onClick={handleNextStep}
-                disabled={isLoading}
-                className="mt-3 w-full bg-blue-600 text-white hover:bg-blue-700"
-              >
-                次の項目へ
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            )}
           </div>
         </div>
 
-        <div className="w-1/2 bg-gray-800 flex flex-col">
-          <div className="border-b border-gray-700 bg-gray-800 px-6 py-4">
-            <h2 className="text-lg font-semibold text-white">生成されたサービス企画</h2>
-            <div className="flex items-center gap-2 mt-2">
-              {serviceItems.map((item, index) => (
-                <div key={item.id} className="flex items-center">
-                  <div className={`flex items-center gap-1 ${item.completed ? 'text-green-600' : 'text-gray-400'}`}>
-                    <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center text-xs font-medium ${
-                      item.completed ? 'border-green-600 bg-green-50' : 'border-gray-300'
-                    }`}>
-                      {item.completed ? <Check className="w-3 h-3" /> : index + 1}
-                    </div>
-                    <span className="text-xs">{item.title}</span>
-                  </div>
-                  {index < serviceItems.length - 1 && (
-                    <div className={`w-8 h-0.5 mx-1 ${item.completed ? 'bg-green-600' : 'bg-gray-600'}`} />
-                  )}
+        <div className="w-1/2 bg-gray-900 flex flex-col p-4">
+          <div className="bg-gray-800 rounded-lg flex flex-col h-full overflow-hidden">
+            {/* Header */}
+            <div className="border-b border-gray-700 bg-gray-750 px-4 py-2 flex items-center justify-center rounded-t-lg">
+              <span className="text-sm text-gray-300">要件定義書</span>
+            </div>
+
+            <div className="flex-1 overflow-y-auto bg-gray-850">
+              {/* Editor-style content */}
+              <div className="h-full font-mono text-sm">
+                {/* Tab bar */}
+                <div className="bg-gray-800 border-b border-gray-700 px-4 py-1 flex items-center gap-1 overflow-x-auto">
+                  {serviceItems.map((item, index) => (
+                    <button
+                      key={item.id}
+                      onClick={() => setSelectedTab(item.id)}
+                      className={`px-3 py-1 rounded-t text-xs text-gray-300 whitespace-nowrap ${
+                        selectedTab === item.id 
+                          ? 'bg-gray-700 border-b-2 border-blue-500' 
+                          : 'bg-gray-850 hover:bg-gray-750'
+                      }`}
+                    >
+                      {index === 0 && 'サービス概要'}
+                      {index === 1 && '課題'}
+                      {index === 2 && '理想'}
+                      {index === 3 && '解決策'}
+                      {index === 4 && '機能詳細'}
+                      {index === 5 && 'サービス名'}
+                    </button>
+                  ))}
                 </div>
-              ))}
+                
+                {/* Editor content */}
+                <div className="p-4 text-gray-300 leading-relaxed">
+                  {serviceItems
+                    .filter(item => item.id === selectedTab)
+                    .map((item, index) => (
+                      <div key={item.id}>
+                        <div className="text-orange-400 mb-4 text-lg">
+                          {item.title}
+                        </div>
+                        {item.content ? (
+                          <div className="whitespace-pre-wrap text-gray-300">
+                            {item.content.split('\n').map((line, i) => (
+                              <div key={i} className="mb-2">
+                                {line}
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="text-gray-500">生成中...</div>
+                        )}
+                      </div>
+                    ))}
+                </div>
+              </div>
             </div>
-          </div>
-
-          <div className="flex-1 overflow-y-auto p-6">
-            <div className="space-y-4">
-              {serviceItems.map((item) => (
-                <Card key={item.id} className={`transition-all bg-gray-700 ${item.completed ? 'border-green-600/30 shadow-sm' : 'border-gray-600 opacity-60'}`}>
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-base flex items-center gap-2 text-white">
-                        {item.completed && <Check className="w-4 h-4 text-green-500" />}
-                        {item.title}
-                      </CardTitle>
-                      {item.completed && (
-                        <Badge variant="outline" className="text-green-500 border-green-500 bg-green-500/10">
-                          <Check className="w-3 h-3 mr-1" />
-                          完了
-                        </Badge>
-                      )}
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    {item.content ? (
-                      <div className="text-sm text-gray-300 whitespace-pre-wrap">{item.content}</div>
-                    ) : (
-                      <div className="text-sm text-gray-500">まだ生成されていません</div>
-                    )}
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-
-            {currentStep === 'review' && (
-              <div className="mt-6">
+            <div className="p-4 border-t border-gray-700">
+              {currentStep === 'review' ? (
                 <Button
                   onClick={handleSubmit}
                   className="w-full bg-blue-600 text-white hover:bg-blue-700 py-3"
@@ -482,8 +519,18 @@ export function ServiceBuilderInterface({ initialUserIdea }: ServiceBuilderInter
                   <Sparkles className="w-5 h-5 mr-2" />
                   企画書として保存
                 </Button>
-              </div>
-            )}
+              ) : currentStep !== 'initial' && (
+                <Button
+                  onClick={handleNextStep}
+                  disabled={isLoading}
+                  className="w-full bg-gray-700 text-white hover:bg-gray-600 py-3"
+                  size="lg"
+                >
+                  次の項目へ
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       </div>

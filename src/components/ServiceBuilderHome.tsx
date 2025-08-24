@@ -74,11 +74,11 @@ export function ServiceBuilderHome() {
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: -264, opacity: 0 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
-            className="fixed left-0 top-14 z-50"
+            className="fixed left-0 top-0 z-50"
             onMouseEnter={() => handleMenuHover(true)}
             onMouseLeave={() => handleMenuHover(false)}
           >
-            <Sidebar />
+            <Sidebar onLockToggle={handleMenuToggle} />
           </motion.div>
         )}
       </AnimatePresence>

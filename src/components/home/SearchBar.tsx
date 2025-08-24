@@ -13,6 +13,7 @@ interface SearchBarProps {
 
 export function SearchBar({ onSubmit, placeholder = "どんなアプリが欲しいですか？" }: SearchBarProps) {
   const [input, setInput] = useState('');
+  const [enterCount, setEnterCount] = useState(0);
 
   const handleSubmit = () => {
     if (input.trim()) {
@@ -21,9 +22,18 @@ export function SearchBar({ onSubmit, placeholder = "どんなアプリが欲し
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+    if (e.key === 'Enter' && !e.shiftKey && !e.ctrlKey && !e.metaKey) {
       e.preventDefault();
-      handleSubmit();
+      
+      if (enterCount === 0) {
+        // 1回目のEnter：確定
+        setEnterCount(1);
+        setTimeout(() => setEnterCount(0), 2000); // 2秒後にリセット
+      } else if (enterCount === 1) {
+        // 2回目のEnter：送信
+        handleSubmit();
+        setEnterCount(0);
+      }
     }
   };
 

@@ -21,13 +21,15 @@ import {
   LogIn,
   LogOut,
   Shield,
-  Settings
+  Settings,
+  PanelLeftClose
 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { cn } from '@/lib/utils/cn';
 
 interface SidebarProps {
   className?: string;
+  onLockToggle?: () => void;
 }
 
 const mainMenuItems = [
@@ -36,7 +38,7 @@ const mainMenuItems = [
   { icon: FileText, label: '記事一覧', href: '/articles' },
 ];
 
-export function Sidebar({ className }: SidebarProps) {
+export function Sidebar({ className, onLockToggle }: SidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const { user, userProfile, signOut } = useAuth();
   const pathname = usePathname();
@@ -57,19 +59,16 @@ export function Sidebar({ className }: SidebarProps) {
       isCollapsed ? "w-16" : "w-64",
       className
     )}>
-      {/* New Chat Button */}
+      {/* Sidebar Toggle Button */}
       <div className="p-4">
-        <Link href="/home">
-          <Button className="w-full bg-white text-black hover:bg-gray-200 transition-colors">
-            {!isCollapsed && (
-              <>
-                <Plus className="w-4 h-4 mr-2" />
-                New Chat
-              </>
-            )}
-            {isCollapsed && <Plus className="w-4 h-4" />}
-          </Button>
-        </Link>
+        <Button 
+          onClick={onLockToggle}
+          variant="ghost"
+          size="sm"
+          className="text-gray-400 hover:text-white hover:bg-gray-800 transition-colors p-2"
+        >
+          <PanelLeftClose className="w-4 h-4" />
+        </Button>
       </div>
 
       {/* Main Navigation */}

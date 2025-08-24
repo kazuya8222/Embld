@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { useRouter } from 'next/navigation';
 import { 
-  Menu,
+  PanelLeft,
   Bell,
   User,
   LogIn,
@@ -23,7 +23,7 @@ export function TopBar({ onMenuToggle, onMenuHover }: TopBarProps) {
   const { user, userProfile } = useAuth();
 
   return (
-    <div className="h-14 bg-gray-900 border-b border-gray-800 flex items-center justify-between px-4">
+    <div className="h-14 bg-gray-900 flex items-center justify-between px-4">
       {/* Left side */}
       <div className="flex items-center gap-3">
         <button
@@ -32,7 +32,7 @@ export function TopBar({ onMenuToggle, onMenuHover }: TopBarProps) {
           onMouseLeave={() => onMenuHover(false)}
           className="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
         >
-          <Menu className="w-5 h-5" />
+          <PanelLeft className="w-5 h-5" />
         </button>
         
         <Link href="/home" className="flex items-center gap-2">
