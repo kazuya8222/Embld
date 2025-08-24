@@ -6,7 +6,7 @@ import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
-import { ArrowUp, ArrowRight, Check, Sparkles, PanelLeft } from 'lucide-react';
+import { ArrowUp, ArrowRight, Check, PanelLeft } from 'lucide-react';
 import { Sidebar } from './common/Sidebar';
 
 interface Message {
@@ -203,7 +203,8 @@ export function ServiceBuilderInterface({ initialUserIdea }: ServiceBuilderInter
     setIsLoading(true);
 
     try {
-      if (currentStep === 'initial') {
+      if (currentStep === 'initial' && !initialUserIdea) {
+        // initialUserIdeaがない場合のみ初期処理を実行
         setInitialIdea(currentInput);
         
         const assistantMessage: Message = {
@@ -232,15 +233,7 @@ export function ServiceBuilderInterface({ initialUserIdea }: ServiceBuilderInter
             role: 'assistant',
             timestamp: new Date()
           };
-          
-          // 同じIDのメッセージがない場合のみ追加
-          setMessages(prev => {
-            const hasMessage = prev.some(msg => msg.content === STEP_PROMPTS.overview);
-            if (hasMessage) {
-              return prev;
-            }
-            return [...prev, completeMessage];
-          });
+          setMessages(prev => [...prev, completeMessage]);
         }
       } else if (currentStep !== 'review') {
         const currentItemId = currentStep;
@@ -340,7 +333,7 @@ export function ServiceBuilderInterface({ initialUserIdea }: ServiceBuilderInter
 
   const handleSubmit = async () => {
     try {
-      const response = await fetch('/api/service-builder/submit', {
+      const response = await fetch('/api/proposals/save', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ serviceItems })
@@ -348,7 +341,9 @@ export function ServiceBuilderInterface({ initialUserIdea }: ServiceBuilderInter
 
       if (response.ok) {
         const data = await response.json();
-        window.location.href = `/ideas/${data.ideaId}`;
+        window.location.href = `/proposals/${data.proposalId}`;
+      } else {
+        console.error('Save error:', await response.text());
       }
     } catch (error) {
       console.error('Submit error:', error);
@@ -527,7 +522,6 @@ export function ServiceBuilderInterface({ initialUserIdea }: ServiceBuilderInter
                   className="w-full bg-blue-600 text-white hover:bg-blue-700 py-3"
                   size="lg"
                 >
-                  <Sparkles className="w-5 h-5 mr-2" />
                   企画書として保存
                 </Button>
               ) : currentStep !== 'initial' && (

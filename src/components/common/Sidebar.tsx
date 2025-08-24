@@ -36,6 +36,7 @@ const mainMenuItems = [
   { icon: Home, label: 'ホーム', href: '/home' },
   { icon: Grid3X3, label: 'プロダクト一覧', href: '/owners' },
   { icon: FileText, label: '記事一覧', href: '/articles' },
+  { icon: FileText, label: '企画書一覧', href: '/proposals' },
 ];
 
 export function Sidebar({ className, onLockToggle }: SidebarProps) {
