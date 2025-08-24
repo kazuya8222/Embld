@@ -187,13 +187,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (error || !profile) {
         console.warn('AuthProvider: Profile fetch failed, using fallback')
         setUserProfile({
-          username: user.email?.split('@')[0] || 'User',
-          avatar_url: null,
           google_avatar_url: null,
-          email: user.email
+          email: user.email,
+          created_at: new Date().toISOString(),
+          is_admin: false,
+          is_developer: false
         })
       } else {
-        console.log('AuthProvider: Profile loaded successfully:', profile.username)
+        console.log('AuthProvider: Profile loaded successfully:', profile.email)
         
         // プロフィールをローカルストレージにキャッシュ（24時間）
         if (typeof window !== 'undefined') {
