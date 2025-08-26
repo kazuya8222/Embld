@@ -133,66 +133,56 @@ export function RequirementEditor({ chatId }: RequirementEditorProps) {
 
   return (
     <div className="h-full flex flex-col bg-white">
-      {/* Header */}
-      <div className="border-b border-gray-200 p-4 flex items-center justify-between">
-        <div className="flex-1">
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="text-lg font-semibold bg-transparent border-none focus:outline-none w-full"
-            placeholder="文書タイトル"
-          />
-          {lastSaved && (
-            <div className="text-xs text-gray-500 mt-1">
-              最終保存: {lastSaved.toLocaleTimeString()}
-            </div>
-          )}
+      {/* Editor Controls */}
+      <div className="border-b border-gray-200 p-3 flex items-center justify-between bg-gray-50">
+        <div className="flex bg-gray-200 rounded-lg p-1">
+          <button
+            onClick={() => setEditorMode('rich')}
+            className={cn(
+              "px-3 py-1.5 text-xs rounded transition-colors font-medium",
+              editorMode === 'rich' 
+                ? "bg-white text-gray-900 shadow-sm" 
+                : "text-gray-600 hover:text-gray-900"
+            )}
+          >
+            Rich Text
+          </button>
+          <button
+            onClick={() => setEditorMode('markdown')}
+            className={cn(
+              "px-3 py-1.5 text-xs rounded transition-colors font-medium",
+              editorMode === 'markdown' 
+                ? "bg-white text-gray-900 shadow-sm" 
+                : "text-gray-600 hover:text-gray-900"
+            )}
+          >
+            Markdown
+          </button>
         </div>
         
         <div className="flex items-center gap-2">
-          <div className="flex bg-gray-100 rounded-lg p-1">
-            <button
-              onClick={() => setEditorMode('rich')}
-              className={cn(
-                "px-3 py-1 text-sm rounded transition-colors",
-                editorMode === 'rich' 
-                  ? "bg-white text-gray-900 shadow-sm" 
-                  : "text-gray-600 hover:text-gray-900"
-              )}
-            >
-              Rich Text
-            </button>
-            <button
-              onClick={() => setEditorMode('markdown')}
-              className={cn(
-                "px-3 py-1 text-sm rounded transition-colors",
-                editorMode === 'markdown' 
-                  ? "bg-white text-gray-900 shadow-sm" 
-                  : "text-gray-600 hover:text-gray-900"
-              )}
-            >
-              Markdown
-            </button>
-          </div>
-          
+          {lastSaved && (
+            <div className="text-xs text-gray-500">
+              保存済み: {lastSaved.toLocaleTimeString()}
+            </div>
+          )}
           <Button
             onClick={saveToProposals}
             disabled={isSaving}
             size="sm"
-            className="bg-blue-600 hover:bg-blue-700"
+            className="bg-blue-600 hover:bg-blue-700 text-xs px-3 py-1.5"
           >
             {isSaving ? (
               <motion.div
                 animate={{ rotate: 360 }}
                 transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
               >
-                <Save className="w-4 h-4" />
+                <Save className="w-3 h-3" />
               </motion.div>
             ) : (
-              <Save className="w-4 h-4" />
+              <Save className="w-3 h-3" />
             )}
-            <span className="ml-2">保存</span>
+            <span className="ml-1">保存</span>
           </Button>
         </div>
       </div>

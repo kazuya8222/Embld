@@ -17,7 +17,13 @@ import {
   Settings,
   Copy,
   Check,
-  Menu
+  Menu,
+  Share,
+  Star,
+  HelpCircle,
+  X,
+  Maximize2,
+  Minimize2
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '../auth/AuthProvider';
@@ -63,6 +69,7 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
   const [selectedAgent, setSelectedAgent] = useState<AgentType>('service_builder');
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
   const [initialMessageSent, setInitialMessageSent] = useState(false);
+  const [showRequirementEditor, setShowRequirementEditor] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const supabase = createClient();
@@ -247,17 +254,60 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
   const shouldShowSidebar = isSidebarLocked || isSidebarHovered;
 
   return (
-    <div className="min-h-screen bg-gray-900 relative flex">
-      {/* Menu Toggle Button */}
-      {!shouldShowSidebar && (
-        <button
-          onClick={handleMenuToggle}
-          onMouseEnter={() => handleMenuHover(true)}
-          className="fixed top-4 left-4 z-40 p-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
-        >
-          <Menu className="w-5 h-5 text-white" />
-        </button>
-      )}
+    <div className="min-h-screen bg-gray-900 relative flex flex-col">
+      {/* Top Menu Bar */}
+      <div className="px-6 py-3 flex items-center justify-between bg-gray-950">
+        {/* Left side - Menu and Navigation */}
+        <div className="flex items-center gap-4">
+          <button
+            onClick={handleMenuToggle}
+            onMouseEnter={() => handleMenuHover(true)}
+            className="p-1.5 hover:bg-gray-800 rounded transition-colors"
+          >
+            <Menu className="w-4 h-4 text-white" />
+          </button>
+        </div>
+
+        {/* Center - Title */}
+        <div className="absolute left-1/2 transform -translate-x-1/2">
+          <h1 className="text-base font-medium text-white">
+            {session?.title || 'AIエージェントの未来'}
+          </h1>
+        </div>
+
+        {/* Right side - Actions */}
+        <div className="flex items-center gap-2">
+          <button 
+            className="p-2 hover:bg-gray-800 rounded transition-colors"
+            title="共有"
+          >
+            <Share className="w-4 h-4 text-white" />
+          </button>
+          <button 
+            className="p-2 hover:bg-gray-800 rounded transition-colors"
+            title="お気に入り"
+          >
+            <Star className="w-4 h-4 text-white" />
+          </button>
+          <button 
+            className="p-2 hover:bg-gray-800 rounded transition-colors"
+            title="ヘルプ"
+          >
+            <HelpCircle className="w-4 h-4 text-white" />
+          </button>
+          <button 
+            onClick={() => setShowRequirementEditor(!showRequirementEditor)}
+            className="p-2 hover:bg-gray-800 rounded transition-colors"
+            title={showRequirementEditor ? "ドキュメントを閉じる" : "ドキュメントを開く"}
+          >
+            {showRequirementEditor ? (
+              <Minimize2 className="w-4 h-4 text-white" />
+            ) : (
+              <Maximize2 className="w-4 h-4 text-white" />
+            )}
+          </button>
+        </div>
+      </div>
 
       {/* Sidebar */}
       <AnimatePresence>
@@ -267,7 +317,7 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: -264, opacity: 0 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
-            className="fixed left-0 top-0 z-50 h-full"
+            className="fixed left-0 top-0 z-50 h-screen"
             onMouseEnter={() => handleMenuHover(true)}
             onMouseLeave={() => handleMenuHover(false)}
           >
@@ -276,14 +326,17 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
         )}
       </AnimatePresence>
 
-      {/* Main Split Interface */}
-      <div className="flex-1 flex h-screen">
-        {/* Left Side - Chat Interface */}
-        <div className="flex-1 flex flex-col bg-gray-950">
+      {/* Main Interface */}
+      <div className="flex-1 flex">
+        {/* Chat Interface */}
+        <div className={cn(
+          "flex flex-col bg-gray-950 transition-all duration-300 relative",
+          showRequirementEditor ? "w-1/2" : "w-full"
+        )}>
 
-          {/* Messages Area */}
-          <div className="flex-1 overflow-y-auto px-4 py-4">
-            <div className="space-y-4">
+          {/* Messages Area - Centered with bottom padding for fixed input */}
+          <div className="flex-1 overflow-y-auto pb-32">
+            <div className="max-w-4xl mx-auto px-8 py-8 space-y-6">
               {messages.map((message) => (
                 <motion.div
                   key={message.id}
@@ -304,7 +357,7 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
                   
                   <div
                     className={cn(
-                      "max-w-lg rounded-lg relative group",
+                      "max-w-2xl rounded-lg relative group",
                       message.role === 'user'
                         ? "bg-blue-600 text-white px-4 py-3"
                         : "bg-gray-900 border border-gray-700 p-0 overflow-hidden"
@@ -324,18 +377,27 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
                               {agentOptions.find(a => a.value === message.agent_type)?.label}
                             </Badge>
                           </div>
-                          <button
-                            onClick={() => copyToClipboard(message.content, message.id)}
-                            className="p-1 hover:bg-gray-700 rounded transition-colors"
-                          >
-                            {copiedMessageId === message.id ? (
-                              <Check className="w-4 h-4 text-green-500" />
-                            ) : (
-                              <Copy className="w-4 h-4 text-gray-400" />
-                            )}
-                          </button>
+                          <div className="flex items-center gap-1">
+                            <button
+                              onClick={() => setShowRequirementEditor(true)}
+                              className="p-1 hover:bg-gray-700 rounded transition-colors"
+                              title="要件定義書を開く"
+                            >
+                              <FileText className="w-4 h-4 text-gray-400" />
+                            </button>
+                            <button
+                              onClick={() => copyToClipboard(message.content, message.id)}
+                              className="p-1 hover:bg-gray-700 rounded transition-colors"
+                            >
+                              {copiedMessageId === message.id ? (
+                                <Check className="w-4 h-4 text-green-500" />
+                              ) : (
+                                <Copy className="w-4 h-4 text-gray-400" />
+                              )}
+                            </button>
+                          </div>
                         </div>
-                        <pre className="p-3 text-sm text-gray-100 font-mono whitespace-pre-wrap overflow-x-auto">
+                        <pre className="p-4 text-sm text-gray-100 font-mono whitespace-pre-wrap overflow-x-auto">
                           <code>{message.content}</code>
                         </pre>
                       </div>
@@ -373,18 +435,20 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
             </div>
           </div>
 
-          {/* Input Area */}
-          <div className="p-4 border-t border-gray-800">
-            <div className="space-y-3">
-              {/* Input Field with Tabs */}
-              <div className="relative bg-gray-900 rounded-2xl border border-gray-700 overflow-hidden">
+          {/* Fixed Input Area at Bottom - With Background */}
+          <div className={cn(
+            "fixed bottom-0 left-0 right-0 z-30",
+            showRequirementEditor ? "right-1/2" : ""
+          )}>
+            <div className="bg-gray-950 px-6 pt-6 pb-6">
+              <div className="max-w-4xl mx-auto">
+                {/* Input Field with Tabs */}
+                <div className="relative bg-gray-900 rounded-2xl border border-gray-700 overflow-hidden shadow-2xl">
                 {/* Tab Header */}
                 <div className="bg-gray-800 px-4 py-2 flex items-center justify-between border-b border-gray-700">
                   <div className="flex items-center gap-2">
                     <div className="flex bg-gray-700 rounded-lg p-1">
-                      <button
-                        className="px-3 py-1 text-xs rounded bg-gray-600 text-white"
-                      >
+                      <button className="px-3 py-1 text-xs rounded bg-gray-600 text-white">
                         AIドキュメント
                       </button>
                     </div>
@@ -436,15 +500,41 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
                     </Button>
                   </div>
                 </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
         {/* Right Side - Requirements Editor */}
-        <div className="w-1/2 border-l border-gray-800">
-          <RequirementEditor chatId={chatId} />
-        </div>
+        <AnimatePresence>
+          {showRequirementEditor && (
+            <motion.div
+              initial={{ width: 0, opacity: 0 }}
+              animate={{ width: "50%", opacity: 1 }}
+              exit={{ width: 0, opacity: 0 }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
+              className="border-l border-gray-800 overflow-hidden"
+            >
+              <div className="relative h-full">
+                {/* Document Header */}
+                <div className="bg-gray-800 px-4 py-3 border-b border-gray-700 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <FileText className="w-4 h-4 text-white" />
+                    <span className="text-sm font-medium text-white">要件定義書</span>
+                  </div>
+                  <button
+                    onClick={() => setShowRequirementEditor(false)}
+                    className="p-1 hover:bg-gray-700 rounded transition-colors"
+                  >
+                    <X className="w-4 h-4 text-gray-400" />
+                  </button>
+                </div>
+                <RequirementEditor chatId={chatId} />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
