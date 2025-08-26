@@ -1331,14 +1331,29 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
                   animate={{ opacity: 1, y: 0 }}
                   className="flex justify-start mb-6"
                 >
-                  <div className="flex gap-3 max-w-4xl">
-                    <div className="w-8 h-8 bg-[#0066cc] rounded-full flex items-center justify-center text-white text-sm font-medium flex-shrink-0">
-                      AI
+                  <div className="max-w-2xl">
+                    <div className="text-[#e0e0e0] whitespace-pre-wrap mb-4">
+                      要件定義書の作成が完了しました。{'\n'}詳細を確認し、保存してください。
                     </div>
-                    <div className="min-w-0">
-                      <div className="bg-[#2a2a2a] rounded-2xl px-4 py-3">
-                        <div className="whitespace-pre-wrap text-[#e0e0e0]">要件定義書の作成が完了しました。{'\n'}詳細を確認し、保存してください。</div>
-                      </div>
+                    <div className="flex gap-3">
+                      <Button
+                        onClick={() => setShowRequirementEditor(true)}
+                        variant="outline"
+                        className="bg-[#2a2a2a] border-[#3a3a3a] hover:bg-[#3a3a3a] hover:border-[#4a4a4a] text-[#e0e0e0] px-4 py-2 flex items-center gap-2"
+                      >
+                        <FileText className="w-4 h-4" />
+                        詳細を確認
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          // RequirementEditor内の提出機能を呼び出すため、エディターを開く
+                          setShowRequirementEditor(true);
+                        }}
+                        className="bg-[#0066cc] hover:bg-[#0052a3] text-white px-4 py-2 flex items-center gap-2"
+                      >
+                        <CheckCircle className="w-4 h-4" />
+                        企画書を保存
+                      </Button>
                     </div>
                   </div>
                 </motion.div>
