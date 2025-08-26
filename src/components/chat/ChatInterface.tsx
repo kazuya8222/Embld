@@ -254,23 +254,23 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
   const shouldShowSidebar = isSidebarLocked || isSidebarHovered;
 
   return (
-    <div className="min-h-screen bg-gray-900 relative flex flex-col">
+    <div className="min-h-screen bg-[#1a1a1a] relative flex flex-col">
       {/* Top Menu Bar */}
-      <div className="px-6 py-3 flex items-center justify-between bg-gray-950">
+      <div className="px-6 py-3 flex items-center justify-between bg-[#1a1a1a]">
         {/* Left side - Menu and Navigation */}
         <div className="flex items-center gap-4">
           <button
             onClick={handleMenuToggle}
             onMouseEnter={() => handleMenuHover(true)}
-            className="p-1.5 hover:bg-gray-800 rounded transition-colors"
+            className="p-1.5 hover:bg-[#3a3a3a] rounded transition-colors"
           >
-            <Menu className="w-4 h-4 text-white" />
+            <Menu className="w-4 h-4 text-[#e0e0e0]" />
           </button>
         </div>
 
         {/* Center - Title */}
         <div className="absolute left-1/2 transform -translate-x-1/2">
-          <h1 className="text-base font-medium text-white">
+          <h1 className="text-base font-medium text-[#e0e0e0]">
             {session?.title || 'AIエージェントの未来'}
           </h1>
         </div>
@@ -278,32 +278,32 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
         {/* Right side - Actions */}
         <div className="flex items-center gap-2">
           <button 
-            className="p-2 hover:bg-gray-800 rounded transition-colors"
+            className="p-2 hover:bg-[#3a3a3a] rounded transition-colors"
             title="共有"
           >
-            <Share className="w-4 h-4 text-white" />
+            <Share className="w-4 h-4 text-[#e0e0e0]" />
           </button>
           <button 
-            className="p-2 hover:bg-gray-800 rounded transition-colors"
+            className="p-2 hover:bg-[#3a3a3a] rounded transition-colors"
             title="お気に入り"
           >
-            <Star className="w-4 h-4 text-white" />
+            <Star className="w-4 h-4 text-[#e0e0e0]" />
           </button>
           <button 
-            className="p-2 hover:bg-gray-800 rounded transition-colors"
+            className="p-2 hover:bg-[#3a3a3a] rounded transition-colors"
             title="ヘルプ"
           >
-            <HelpCircle className="w-4 h-4 text-white" />
+            <HelpCircle className="w-4 h-4 text-[#e0e0e0]" />
           </button>
           <button 
             onClick={() => setShowRequirementEditor(!showRequirementEditor)}
-            className="p-2 hover:bg-gray-800 rounded transition-colors"
+            className="p-2 hover:bg-[#3a3a3a] rounded transition-colors"
             title={showRequirementEditor ? "ドキュメントを閉じる" : "ドキュメントを開く"}
           >
             {showRequirementEditor ? (
-              <Minimize2 className="w-4 h-4 text-white" />
+              <Minimize2 className="w-4 h-4 text-[#e0e0e0]" />
             ) : (
-              <Maximize2 className="w-4 h-4 text-white" />
+              <Maximize2 className="w-4 h-4 text-[#e0e0e0]" />
             )}
           </button>
         </div>
@@ -330,7 +330,7 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
       <div className="flex-1 flex">
         {/* Chat Interface */}
         <div className={cn(
-          "flex flex-col bg-gray-950 transition-all duration-300 relative",
+          "flex flex-col bg-[#1a1a1a] transition-all duration-300 relative",
           showRequirementEditor ? "w-1/2" : "w-full"
         )}>
 
@@ -343,76 +343,26 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   className={cn(
-                    "flex gap-3",
+                    "flex",
                     message.role === 'user' ? "justify-end" : "justify-start"
                   )}
                 >
-                  {message.role === 'assistant' && (
-                    <div className="flex-shrink-0">
-                      <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                        <Bot className="w-5 h-5 text-white" />
-                      </div>
-                    </div>
-                  )}
-                  
                   <div
                     className={cn(
                       "max-w-2xl rounded-lg relative group",
                       message.role === 'user'
-                        ? "bg-blue-600 text-white px-4 py-3"
-                        : "bg-gray-900 border border-gray-700 p-0 overflow-hidden"
+                        ? "bg-[#2a2a2a] text-[#e0e0e0] px-4 py-3"
+                        : "px-0 py-0 bg-transparent"
                     )}
                   >
                     {message.role === 'assistant' ? (
-                      <div className="relative">
-                        <div className="bg-gray-800 px-3 py-2 border-b border-gray-700 flex items-center justify-between">
-                          <div className="flex items-center gap-2 text-xs text-gray-400">
-                            <div className="flex gap-1">
-                              <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                              <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                            </div>
-                            <span>ツールを使用する</span>
-                            <Badge className="text-xs" variant="secondary">
-                              {agentOptions.find(a => a.value === message.agent_type)?.label}
-                            </Badge>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <button
-                              onClick={() => setShowRequirementEditor(true)}
-                              className="p-1 hover:bg-gray-700 rounded transition-colors"
-                              title="要件定義書を開く"
-                            >
-                              <FileText className="w-4 h-4 text-gray-400" />
-                            </button>
-                            <button
-                              onClick={() => copyToClipboard(message.content, message.id)}
-                              className="p-1 hover:bg-gray-700 rounded transition-colors"
-                            >
-                              {copiedMessageId === message.id ? (
-                                <Check className="w-4 h-4 text-green-500" />
-                              ) : (
-                                <Copy className="w-4 h-4 text-gray-400" />
-                              )}
-                            </button>
-                          </div>
-                        </div>
-                        <pre className="p-4 text-sm text-gray-100 font-mono whitespace-pre-wrap overflow-x-auto">
-                          <code>{message.content}</code>
-                        </pre>
+                      <div className="text-[#e0e0e0] whitespace-pre-wrap">
+                        {message.content}
                       </div>
                     ) : (
                       <div className="whitespace-pre-wrap">{message.content}</div>
                     )}
                   </div>
-                  
-                  {message.role === 'user' && (
-                    <div className="flex-shrink-0">
-                      <div className="w-8 h-8 bg-gray-700 rounded-lg flex items-center justify-center">
-                        <User className="w-5 h-5 text-white" />
-                      </div>
-                    </div>
-                  )}
                 </motion.div>
               ))}
               
@@ -420,13 +370,11 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="flex gap-3"
+                  className="flex justify-start"
                 >
-                  <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                    <Bot className="w-5 h-5 text-white" />
-                  </div>
-                  <div className="bg-gray-900 border border-gray-700 rounded-lg p-3">
-                    <Loader2 className="w-4 h-4 animate-spin text-blue-500" />
+                  <div className="flex items-center gap-2 text-[#a0a0a0]">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>回答を生成中...</span>
                   </div>
                 </motion.div>
               )}
@@ -436,19 +384,19 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
           </div>
 
           {/* Fixed Input Area at Bottom - With Background */}
-          <div className={cn(
-            "fixed bottom-0 left-0 right-0 z-30",
-            showRequirementEditor ? "right-1/2" : ""
-          )}>
-            <div className="bg-gray-950 px-6 pt-6 pb-6">
+          <div className="fixed bottom-0 left-0 z-30 bg-[#1a1a1a] pb-6" 
+               style={{ 
+                 width: showRequirementEditor ? '50%' : '100%'
+               }}>
+            <div className="px-6">
               <div className="max-w-4xl mx-auto">
                 {/* Input Field with Tabs */}
-                <div className="relative bg-gray-900 rounded-2xl border border-gray-700 overflow-hidden shadow-2xl">
+                <div className="relative bg-[#2a2a2a] rounded-2xl border border-[#3a3a3a] overflow-hidden shadow-2xl">
                 {/* Tab Header */}
-                <div className="bg-gray-800 px-4 py-2 flex items-center justify-between border-b border-gray-700">
+                <div className="bg-[#3a3a3a] px-4 py-2 flex items-center justify-between border-b border-[#4a4a4a]">
                   <div className="flex items-center gap-2">
-                    <div className="flex bg-gray-700 rounded-lg p-1">
-                      <button className="px-3 py-1 text-xs rounded bg-gray-600 text-white">
+                    <div className="flex bg-[#4a4a4a] rounded-lg p-1">
+                      <button className="px-3 py-1 text-xs rounded bg-[#5a5a5a] text-[#e0e0e0]">
                         AIドキュメント
                       </button>
                     </div>
@@ -463,8 +411,8 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
                         className={cn(
                           "p-1.5 rounded transition-colors",
                           selectedAgent === agent.value
-                            ? "bg-gray-600 " + agent.color
-                            : "text-gray-400 hover:bg-gray-700 hover:text-white"
+                            ? "bg-[#5a5a5a] " + agent.color
+                            : "text-[#a0a0a0] hover:bg-[#4a4a4a] hover:text-[#e0e0e0]"
                         )}
                         title={agent.label}
                       >
@@ -482,7 +430,7 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
                     onChange={(e) => setInput(e.target.value)}
                     onKeyDown={handleKeyDown}
                     placeholder="ここにドキュメントリクエストを入力..."
-                    className="w-full min-h-[60px] max-h-[200px] resize-none bg-transparent border-none text-white placeholder-gray-400 focus:outline-none pr-12"
+                    className="w-full min-h-[60px] max-h-[200px] resize-none bg-transparent border-none text-[#e0e0e0] placeholder-[#a0a0a0] focus:outline-none pr-12"
                     disabled={isLoading}
                   />
                   <div className="absolute bottom-4 right-4 flex items-center gap-2">
@@ -490,7 +438,7 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
                       onClick={() => sendMessage()}
                       disabled={!input.trim() || isLoading}
                       size="sm"
-                      className="bg-blue-600 hover:bg-blue-700 p-2"
+                      className="bg-[#0066cc] hover:bg-[#0052a3] p-2"
                     >
                       {isLoading ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
@@ -514,20 +462,20 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
               animate={{ width: "50%", opacity: 1 }}
               exit={{ width: 0, opacity: 0 }}
               transition={{ duration: 0.3, ease: "easeOut" }}
-              className="border-l border-gray-800 overflow-hidden"
+              className="border-l border-[#3a3a3a] overflow-hidden"
             >
               <div className="relative h-full">
                 {/* Document Header */}
-                <div className="bg-gray-800 px-4 py-3 border-b border-gray-700 flex items-center justify-between">
+                <div className="bg-[#2a2a2a] px-4 py-3 border-b border-[#3a3a3a] flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <FileText className="w-4 h-4 text-white" />
-                    <span className="text-sm font-medium text-white">要件定義書</span>
+                    <FileText className="w-4 h-4 text-[#e0e0e0]" />
+                    <span className="text-sm font-medium text-[#e0e0e0]">要件定義書</span>
                   </div>
                   <button
                     onClick={() => setShowRequirementEditor(false)}
-                    className="p-1 hover:bg-gray-700 rounded transition-colors"
+                    className="p-1 hover:bg-[#3a3a3a] rounded transition-colors"
                   >
-                    <X className="w-4 h-4 text-gray-400" />
+                    <X className="w-4 h-4 text-[#a0a0a0]" />
                   </button>
                 </div>
                 <RequirementEditor chatId={chatId} />
