@@ -18,13 +18,14 @@ import {
   Maximize2,
   Minimize2,
   ExternalLink,
-  FolderOpen
+  FolderOpen,
+  ArrowUp,
+  CheckCircle
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '../auth/AuthProvider';
 import { Sidebar } from '../common/Sidebar';
 import { cn } from '@/lib/utils/cn';
-import { useSearchParams } from 'next/navigation';
 import { RequirementEditor } from './RequirementEditor';
 import { 
   AgentResponse, 
@@ -52,6 +53,7 @@ interface Message {
 interface ChatSession {
   id: string;
   title: string;
+  initial_message?: string;
   created_at: string;
   updated_at: string;
 }
@@ -65,7 +67,6 @@ type AgentType = 'service_builder' | 'code_assistant' | 'business_advisor';
 
 export function ChatInterface({ chatId }: ChatInterfaceProps) {
   const { user } = useAuth();
-  const searchParams = useSearchParams();
   const [messages, setMessages] = useState<Message[]>([]);
   const [session, setSession] = useState<ChatSession | null>(null);
   const [input, setInput] = useState('');
@@ -81,9 +82,27 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
   const [executingNodeName, setExecutingNodeName] = useState<NodeId | null>(null);
   const [isInitialAutoSending, setIsInitialAutoSending] = useState(false);
   const initialMessageProcessed = useRef(false);
+  const initialTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [isConfirmed, setIsConfirmed] = useState(false);
+  const [confirmTimeoutId, setConfirmTimeoutId] = useState<NodeJS.Timeout | null>(null);
   const [showRequirementEditor, setShowRequirementEditor] = useState(false);
   const [agentState, setAgentState] = useState<InterviewState | null>(null);
   const [currentNode, setCurrentNode] = useState<NodeId>('clarification_interview');
+  const [requirementEditorActiveTab, setRequirementEditorActiveTab] = useState<'overview' | 'personas' | 'interviews' | 'requirements' | 'analysis' | 'pitch' | 'evaluation'>('overview');
+  
+  // Check if all tasks are completed
+  const isAllTasksCompleted = (state: InterviewState | null): boolean => {
+    if (!state) return false;
+    
+    return !!(
+      state.professional_requirements_doc && 
+      state.personas && state.personas.length > 0 &&
+      state.interviews && state.interviews.length > 0 &&
+      state.consultant_analysis_report &&
+      state.pitch_document &&
+      (state.profitability || state.feasibility || state.legal)
+    );
+  };
   const [pendingQuestion, setPendingQuestion] = useState<QuestionMessage | null>(null);
   const [streamingContent, setStreamingContent] = useState<string>('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -119,8 +138,10 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
 
   useEffect(() => {
     if (chatId) {
+      console.log('Loading chat session:', chatId);
       // Fetch session first to restore agent state, then messages
       fetchSession().then(() => {
+        console.log('Session loaded, now loading messages');
         fetchMessages();
       });
     }
@@ -131,29 +152,61 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
   }, [messages]);
 
   useEffect(() => {
-    // Handle initial message from query parameter - use ref to prevent double execution
-    const initialMessage = searchParams.get('initial');
-    if (initialMessage && !initialMessageProcessed.current && messages.length === 0 && !isLoading) {
-      console.log('Processing initial message (one-time only):', initialMessage);
-      initialMessageProcessed.current = true;
-      setInitialMessageSent(true);
-      setIsInitialAutoSending(true);
+    // Handle initial message from database - use ref to prevent double execution
+    const processInitialMessage = () => {
+      // Get initial message from session data
+      const initialMessage = session?.initial_message;
       
-      // Store the message to send it later
-      setInput(initialMessage);
+      console.log('Initial message check:', {
+        initialMessage,
+        processed: initialMessageProcessed.current,
+        messagesLength: messages.length,
+        isLoading,
+        chatId,
+        sessionLoaded: !!session,
+        shouldProcess: initialMessage && !initialMessageProcessed.current && messages.length === 0 && !isLoading && chatId
+      });
       
-      // Auto-send the initial message after a short delay
-      const timeoutId = setTimeout(() => {
-        console.log('Auto-sending initial message:', initialMessage);
-        // Send manually without depending on sendMessage function
-        handleInitialMessageSend(initialMessage);
-        setIsInitialAutoSending(false);
-      }, 500);
-      
-      // Clear timeout if component unmounts
-      return () => clearTimeout(timeoutId);
+      if (initialMessage && !initialMessageProcessed.current && messages.length === 0 && !isLoading && chatId) {
+        console.log('Processing initial message (one-time only):', initialMessage);
+        initialMessageProcessed.current = true;
+        setInitialMessageSent(true);
+        setIsInitialAutoSending(true);
+        
+        // Auto-send the initial message after a short delay (no input bar display)
+        console.log('Setting timeout for auto-send');
+        
+        // Clear any existing timeout
+        if (initialTimeoutRef.current) {
+          clearTimeout(initialTimeoutRef.current);
+        }
+        
+        initialTimeoutRef.current = setTimeout(() => {
+          console.log('Auto-sending initial message:', initialMessage);
+          // Send directly without displaying in input bar
+          handleInitialMessageSend(initialMessage);
+          setIsInitialAutoSending(false);
+          initialTimeoutRef.current = null;
+          
+          // Clear initial_message from database after using it (one-time use)
+          supabase
+            .from('chat_sessions')
+            .update({ initial_message: null })
+            .eq('id', chatId)
+            .then(() => console.log('Cleared initial message from database'))
+            .catch(error => console.log('Error clearing initial message:', error));
+            
+        }, 500); // Reduced delay since we don't need to show in input
+        
+        console.log('Timeout set with ID:', initialTimeoutRef.current);
+      }
+    };
+    
+    // Only process if session is loaded
+    if (session) {
+      processInitialMessage();
     }
-  }, [searchParams, messages.length, isLoading]);
+  }, [messages.length, isLoading, chatId, session, supabase]);
 
   const fetchSession = async () => {
     try {
@@ -190,6 +243,7 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
 
   const fetchMessages = async () => {
     try {
+      console.log('Fetching messages for chatId:', chatId);
       const { data, error } = await supabase
         .from('chat_messages')
         .select('*')
@@ -198,6 +252,7 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
 
       if (error) throw error;
       const fetchedMessages = data || [];
+      console.log('Fetched messages:', fetchedMessages.length);
       setMessages(fetchedMessages);
       
       // If we have existing messages, mark initial message as sent to prevent auto-sending
@@ -205,6 +260,8 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
         console.log('Found existing messages, preventing auto-send');
         initialMessageProcessed.current = true;
         setInitialMessageSent(true);
+      } else {
+        console.log('No existing messages found');
       }
     } catch (error) {
       console.error('Error fetching messages:', error);
@@ -238,11 +295,19 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
   };
 
   const handleInitialMessageSend = async (message: string) => {
-    if (!message || isLoading || isExecutingNode) return;
+    console.log('=== handleInitialMessageSend called ===', { 
+      message, 
+      isLoading, 
+      isExecutingNode,
+      chatId,
+      canProceed: !(!message || isLoading || isExecutingNode)
+    });
+    
+    if (!message || isLoading || isExecutingNode) {
+      console.log('handleInitialMessageSend blocked:', { message: !!message, isLoading, isExecutingNode });
+      return;
+    }
 
-    console.log('=== handleInitialMessageSend called ===', message);
-
-    setInput('');
     setIsLoading(true);
     setPendingQuestion(null);
 
@@ -995,9 +1060,35 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+    if (e.key === 'Enter' && !e.shiftKey && !e.ctrlKey && !e.metaKey) {
       e.preventDefault();
-      sendMessage();
+      
+      if (!isConfirmed) {
+        // 1回目のEnter：確定
+        setIsConfirmed(true);
+        
+        // 既存のタイムアウトをクリア
+        if (confirmTimeoutId) {
+          clearTimeout(confirmTimeoutId);
+        }
+        
+        // 3秒後にリセット
+        const id = setTimeout(() => {
+          setIsConfirmed(false);
+        }, 3000);
+        setConfirmTimeoutId(id);
+      } else {
+        // 2回目のEnter：送信
+        sendMessage();
+        setIsConfirmed(false);
+        if (confirmTimeoutId) {
+          clearTimeout(confirmTimeoutId);
+          setConfirmTimeoutId(null);
+        }
+      }
+    } else if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+      // Ctrl+Enter for new line (default textarea behavior)
+      // Let the default behavior happen
     }
   };
 
@@ -1017,9 +1108,21 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
   };
 
   const openDocumentInEditor = (documentType: string, content: string) => {
-    // Simply open the requirement editor panel
-    // The content will be properly displayed based on the current agent state
-    console.log('Opening document editor for:', documentType);
+    // Map document type to tab
+    const documentTypeToTab: Record<string, 'overview' | 'personas' | 'interviews' | 'requirements' | 'analysis' | 'pitch' | 'evaluation'> = {
+      'summary': 'overview',
+      'personas': 'personas', 
+      'interviews': 'interviews',
+      'requirements': 'requirements',
+      'analysis': 'analysis',
+      'pitch': 'pitch',
+      'evaluation': 'evaluation'
+    };
+    
+    const targetTab = documentTypeToTab[documentType] || 'overview';
+    console.log('Opening document editor for:', documentType, '-> tab:', targetTab);
+    
+    setRequirementEditorActiveTab(targetTab);
     setShowRequirementEditor(true);
   };
 
@@ -1047,38 +1150,8 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
           </h1>
         </div>
 
-        {/* Right side - Actions */}
-        <div className="flex items-center gap-2">
-          <button 
-            className="p-2 hover:bg-[#3a3a3a] rounded transition-colors"
-            title="共有"
-          >
-            <Share className="w-4 h-4 text-[#e0e0e0]" />
-          </button>
-          <button 
-            className="p-2 hover:bg-[#3a3a3a] rounded transition-colors"
-            title="お気に入り"
-          >
-            <Star className="w-4 h-4 text-[#e0e0e0]" />
-          </button>
-          <button 
-            className="p-2 hover:bg-[#3a3a3a] rounded transition-colors"
-            title="ヘルプ"
-          >
-            <HelpCircle className="w-4 h-4 text-[#e0e0e0]" />
-          </button>
-          <button 
-            onClick={() => setShowRequirementEditor(!showRequirementEditor)}
-            className="p-2 hover:bg-[#3a3a3a] rounded transition-colors"
-            title={showRequirementEditor ? "ドキュメントを閉じる" : "ドキュメントを開く"}
-          >
-            {showRequirementEditor ? (
-              <Minimize2 className="w-4 h-4 text-[#e0e0e0]" />
-            ) : (
-              <Maximize2 className="w-4 h-4 text-[#e0e0e0]" />
-            )}
-          </button>
-        </div>
+        {/* Right side - Empty space for balance */}
+        <div className="w-16"></div>
       </div>
 
       {/* Sidebar */}
@@ -1140,7 +1213,7 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
                               }
                             }}
                             variant="outline"
-                            className="bg-[#2a2a2a] border-[#3a3a3a] hover:bg-[#3a3a3a] hover:border-[#4a4a4a] text-[#e0e0e0] px-4 py-3 flex items-center gap-3 w-full max-w-md justify-between group"
+                            className="bg-[#2a2a2a] border-[#3a3a3a] hover:bg-[#3a3a3a] hover:border-[#4a4a4a] text-[#e0e0e0] px-4 py-6 flex items-center gap-3 w-full max-w-md justify-between group"
                           >
                             <div className="flex items-center gap-3">
                               <FolderOpen className="w-5 h-5 text-[#0066cc]" />
@@ -1176,8 +1249,8 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
                                   }
                                 }}
                                 variant="outline"
-                                size="sm"
-                                className="bg-[#3a3a3a] border-[#4a4a4a] text-[#e0e0e0] hover:bg-[#4a4a4a] hover:border-[#5a5a5a]"
+                                size="lg"
+                                className="bg-[#3a3a3a] border-[#4a4a4a] text-[#e0e0e0] hover:bg-[#4a4a4a] hover:border-[#5a5a5a] px-6 py-3 text-base font-medium"
                                 disabled={isLoading || isExecutingNode}
                               >
                                 {choice.label}
@@ -1193,24 +1266,17 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
                           <div className="mt-4 p-3 bg-[#2a2a2a] rounded-lg border border-[#3a3a3a]">
                             <div className="flex items-center justify-between text-sm text-[#a0a0a0] mb-2">
                               <span>進捗</span>
-                              <span>{message.agent_response.currentQuestion} / {message.agent_response.totalQuestions}</span>
+                              <span>{message.agent_response.currentQuestion - 1} / {message.agent_response.totalQuestions}</span>
                             </div>
                             <div className="w-full bg-[#3a3a3a] rounded-full h-2">
                               <div 
                                 className="bg-[#0066cc] h-2 rounded-full transition-all duration-300"
-                                style={{ width: `${(message.agent_response.currentQuestion / message.agent_response.totalQuestions) * 100}%` }}
+                                style={{ width: `${((message.agent_response.currentQuestion - 1) / message.agent_response.totalQuestions) * 100}%` }}
                               />
                             </div>
                           </div>
                         )}
                         
-                        {/* Show placeholder hint for text inputs */}
-                        {message.agent_response?.type === 'question' && 
-                         message.agent_response?.placeholder && (
-                          <div className="mt-2 text-sm text-[#a0a0a0] italic">
-                            例: {message.agent_response.placeholder}
-                          </div>
-                        )}
                       </div>
                     ) : (
                       <div className="whitespace-pre-wrap">{message.content}</div>
@@ -1244,6 +1310,26 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
                   </div>
                 </motion.div>
               )}
+
+              {/* Completion Message */}
+              {!isLoading && !isExecutingNode && isAllTasksCompleted(agentState) && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="flex justify-start mb-6"
+                >
+                  <div className="flex gap-3 max-w-4xl">
+                    <div className="w-8 h-8 bg-[#0066cc] rounded-full flex items-center justify-center text-white text-sm font-medium flex-shrink-0">
+                      AI
+                    </div>
+                    <div className="min-w-0">
+                      <div className="bg-[#2a2a2a] rounded-2xl px-4 py-3">
+                        <div className="whitespace-pre-wrap text-[#e0e0e0]">要件定義書の作成が完了しました。{'\n'}詳細を確認し、保存してください。</div>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
               
               <div ref={messagesEndRef} />
             </div>
@@ -1256,64 +1342,46 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
                }}>
             <div className="px-6">
               <div className="max-w-4xl mx-auto">
-                {/* Input Field with Tabs */}
-                <div className="relative bg-[#2a2a2a] rounded-2xl border border-[#3a3a3a] overflow-hidden shadow-2xl">
-                {/* Tab Header */}
-                <div className="bg-[#3a3a3a] px-4 py-2 flex items-center justify-between border-b border-[#4a4a4a]">
-                  <div className="flex items-center gap-2">
-                    <div className="flex bg-[#4a4a4a] rounded-lg p-1">
-                      <button className="px-3 py-1 text-xs rounded bg-[#5a5a5a] text-[#e0e0e0]">
-                        AIドキュメント
-                      </button>
-                    </div>
-                  </div>
-                  
-                  {/* Agent Selector */}
-                  <div className="flex gap-1">
-                    {agentOptions.map((agent) => (
-                      <button
-                        key={agent.value}
-                        onClick={() => setSelectedAgent(agent.value as AgentType)}
-                        className={cn(
-                          "p-1.5 rounded transition-colors",
-                          selectedAgent === agent.value
-                            ? "bg-[#5a5a5a] " + agent.color
-                            : "text-[#a0a0a0] hover:bg-[#4a4a4a] hover:text-[#e0e0e0]"
-                        )}
-                        title={agent.label}
-                      >
-                        <agent.icon className="w-4 h-4" />
-                      </button>
-                    ))}
-                  </div>
-                </div>
+                {/* Input Field */}
+                <div className={`bg-[#2a2a2a] backdrop-blur-sm rounded-2xl border ${isConfirmed ? 'border-blue-500' : 'border-[#3a3a3a]'} transition-colors duration-200`}>
                 
                 {/* Input with send button */}
-                <div className="relative p-4">
+                <div className="flex items-end px-4 pt-3 pb-1">
                   <Textarea
                     ref={textareaRef}
                     value={input}
-                    onChange={(e) => setInput(e.target.value)}
+                    onChange={(e) => {
+                      setInput(e.target.value);
+                      // テキストが変更されたら確定状態をリセット
+                      if (isConfirmed) {
+                        setIsConfirmed(false);
+                        if (confirmTimeoutId) {
+                          clearTimeout(confirmTimeoutId);
+                          setConfirmTimeoutId(null);
+                        }
+                      }
+                    }}
                     onKeyDown={handleKeyDown}
-                    placeholder="ここにドキュメントリクエストを入力..."
-                    className="w-full min-h-[60px] max-h-[200px] resize-none bg-transparent border-none text-[#e0e0e0] placeholder-[#a0a0a0] focus:outline-none pr-12"
+                    placeholder={isConfirmed ? "もう一度Enterキーで送信" : "ここにメッセージを入力..."}
+                    className="flex-1 min-h-[60px] text-lg bg-transparent border-0 focus:ring-0 focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 resize-none text-[#e0e0e0] placeholder:text-[#a0a0a0] pr-4"
                     disabled={isLoading}
                   />
-                  <div className="absolute bottom-4 right-4 flex items-center gap-2">
+                  
+                  <div className="flex items-center gap-3">
                     <Button
                       onClick={() => {
                         console.log('Send button clicked');
                         sendMessage();
+                        setIsConfirmed(false);
+                        if (confirmTimeoutId) {
+                          clearTimeout(confirmTimeoutId);
+                          setConfirmTimeoutId(null);
+                        }
                       }}
                       disabled={!input.trim() || isLoading || isExecutingNode}
-                      size="sm"
-                      className="bg-[#0066cc] hover:bg-[#0052a3] p-2"
+                      className="w-8 h-8 rounded-full bg-white hover:bg-gray-100 text-black p-0 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      {isLoading ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <Send className="w-4 h-4" />
-                      )}
+                      <ArrowUp className="w-4 h-4" />
                     </Button>
                   </div>
                 </div>
@@ -1348,7 +1416,12 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
                   </button>
                 </div>
                 <div className="flex-1 overflow-hidden min-h-0">
-                  <RequirementEditor chatId={chatId} agentState={agentState} />
+                  <RequirementEditor 
+                    chatId={chatId} 
+                    agentState={agentState} 
+                    initialActiveTab={requirementEditorActiveTab}
+                    onTabChange={setRequirementEditorActiveTab}
+                  />
                 </div>
               </div>
             </motion.div>

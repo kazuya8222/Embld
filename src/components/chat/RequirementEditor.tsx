@@ -22,7 +22,8 @@ import {
   Users,
   BarChart3,
   Building,
-  FileCheck
+  FileCheck,
+  TrendingUp
 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { createClient } from '@/lib/supabase/client';
@@ -32,18 +33,18 @@ import { InterviewState, Persona, Interview } from '@/lib/types/agent';
 interface RequirementEditorProps {
   chatId: string;
   agentState?: InterviewState | null;
+  initialActiveTab?: TabType;
+  onTabChange?: (tab: TabType) => void;
 }
 
-type EditorMode = 'rich' | 'markdown';
 
-type TabType = 'overview' | 'personas' | 'interviews' | 'requirements' | 'analysis' | 'pitch';
+type TabType = 'overview' | 'personas' | 'interviews' | 'requirements' | 'analysis' | 'pitch' | 'evaluation';
 
-export function RequirementEditor({ chatId, agentState }: RequirementEditorProps) {
+export function RequirementEditor({ chatId, agentState, initialActiveTab, onTabChange }: RequirementEditorProps) {
   const { user } = useAuth();
   const [content, setContent] = useState('');
   const [title, setTitle] = useState('要件定義書');
-  const [editorMode, setEditorMode] = useState<EditorMode>('rich');
-  const [activeTab, setActiveTab] = useState<TabType>('overview');
+  const [activeTab, setActiveTab] = useState<TabType>(initialActiveTab || 'overview');
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const editorRef = useRef<HTMLDivElement>(null);
@@ -63,6 +64,13 @@ export function RequirementEditor({ chatId, agentState }: RequirementEditorProps
       return () => clearTimeout(timeoutId);
     }
   }, [agentState]);
+
+  useEffect(() => {
+    // Update active tab when initialActiveTab changes
+    if (initialActiveTab && initialActiveTab !== activeTab) {
+      setActiveTab(initialActiveTab);
+    }
+  }, [initialActiveTab]);
 
   const loadExistingProposal = async () => {
     try {
@@ -100,7 +108,8 @@ export function RequirementEditor({ chatId, agentState }: RequirementEditorProps
       interviews: formatInterviews(agentState.interviews || []),
       requirements: agentState.professional_requirements_doc || '',
       analysis: formatAnalysisReport(agentState.consultant_analysis_report),
-      pitch: agentState.pitch_document || ''
+      pitch: agentState.pitch_document || '',
+      evaluation: formatEvaluationReport(agentState)
     };
 
     try {
@@ -201,6 +210,7 @@ export function RequirementEditor({ chatId, agentState }: RequirementEditorProps
     { id: 'interviews', label: 'インタビュー結果', icon: FileText },
     { id: 'requirements', label: '統合要件定義書', icon: FileCheck },
     { id: 'analysis', label: '外部環境分析レポート', icon: BarChart3 },
+    { id: 'evaluation', label: '分割評価', icon: TrendingUp },
     { id: 'pitch', label: 'プロジェクト企画書', icon: Building }
   ];
 
@@ -220,6 +230,8 @@ export function RequirementEditor({ chatId, agentState }: RequirementEditorProps
         return formatAnalysisReport(agentState.consultant_analysis_report);
       case 'pitch':
         return agentState.pitch_document || '';
+      case 'evaluation':
+        return formatEvaluationReport(agentState);
       default:
         return '';
     }
@@ -296,6 +308,35 @@ ${analysis.pest_analysis || ''}
 ${analysis.summary_and_strategy || ''}`;
   };
 
+  const formatEvaluationReport = (state: InterviewState): string => {
+    const { profitability, feasibility, legal } = state;
+    
+    if (!profitability && !feasibility && !legal) {
+      return '# 分割評価\n\n評価結果がありません。';
+    }
+
+    return `# 分割評価
+
+## 収益性評価
+${profitability ? `**結果:** ${profitability.is_profitable ? '✅ 収益性が見込まれる' : '❌ 収益性に課題がある'}
+
+**理由:** ${profitability.reason}` : '評価結果がありません。'}
+
+---
+
+## 実現可能性評価
+${feasibility ? `**結果:** ${feasibility.is_feasible ? '✅ 実現可能' : '❌ 実現に課題がある'}
+
+**理由:** ${feasibility.reason}` : '評価結果がありません。'}
+
+---
+
+## 法的リスク評価
+${legal ? `**結果:** ${legal.is_compliant ? '✅ 法的リスクは低い' : '⚠️ 法的リスクがある'}
+
+**理由:** ${legal.reason}` : '評価結果がありません。'}`;
+  };
+
   const currentTabContent = getTabContent(activeTab);
 
   return (
@@ -310,7 +351,10 @@ ${analysis.summary_and_strategy || ''}`;
             return (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => {
+                  setActiveTab(tab.id);
+                  onTabChange?.(tab.id);
+                }}
                 className={cn(
                   "flex items-center gap-2 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-all",
                   activeTab === tab.id
@@ -335,140 +379,10 @@ ${analysis.summary_and_strategy || ''}`;
         </div>
       </div>
 
-      {/* Editor Controls */}
-      <div className="border-b border-gray-200 p-3 flex items-center justify-between bg-gray-50 flex-shrink-0">
-        <div className="flex bg-gray-200 rounded-lg p-1">
-          <button
-            onClick={() => setEditorMode('rich')}
-            className={cn(
-              "px-3 py-1.5 text-xs rounded transition-colors font-medium",
-              editorMode === 'rich' 
-                ? "bg-white text-gray-900 shadow-sm" 
-                : "text-gray-600 hover:text-gray-900"
-            )}
-          >
-            Rich Text
-          </button>
-          <button
-            onClick={() => setEditorMode('markdown')}
-            className={cn(
-              "px-3 py-1.5 text-xs rounded transition-colors font-medium",
-              editorMode === 'markdown' 
-                ? "bg-white text-gray-900 shadow-sm" 
-                : "text-gray-600 hover:text-gray-900"
-            )}
-          >
-            Markdown
-          </button>
-        </div>
-        
-        <div className="flex items-center gap-2">
-          {lastSaved && (
-            <div className="text-xs text-gray-500">
-              保存済み: {lastSaved.toLocaleTimeString()}
-            </div>
-          )}
-          <Button
-            onClick={saveToProposals}
-            disabled={isSaving}
-            size="sm"
-            className="bg-blue-600 hover:bg-blue-700 text-xs px-3 py-1.5"
-          >
-            {isSaving ? (
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-              >
-                <Save className="w-3 h-3" />
-              </motion.div>
-            ) : (
-              <Save className="w-3 h-3" />
-            )}
-            <span className="ml-1">保存</span>
-          </Button>
-        </div>
-      </div>
-
-      {/* Toolbar */}
-      {editorMode === 'rich' && (
-        <div className="border-b border-gray-200 p-2 flex-shrink-0">
-          <div className="flex items-center gap-1">
-            {/* Font formatting */}
-            <div className="flex items-center border-r border-gray-300 pr-2 mr-2">
-              {toolbarButtons.map((btn) => (
-                <button
-                  key={btn.command}
-                  onClick={() => formatText(btn.command)}
-                  className="p-2 hover:bg-gray-100 rounded transition-colors"
-                  title={btn.title}
-                >
-                  <btn.icon className="w-4 h-4" />
-                </button>
-              ))}
-            </div>
-
-            {/* Alignment */}
-            <div className="flex items-center border-r border-gray-300 pr-2 mr-2">
-              {alignButtons.map((btn) => (
-                <button
-                  key={btn.command}
-                  onClick={() => formatText(btn.command)}
-                  className="p-2 hover:bg-gray-100 rounded transition-colors"
-                  title={btn.title}
-                >
-                  <btn.icon className="w-4 h-4" />
-                </button>
-              ))}
-            </div>
-
-            {/* Lists */}
-            <div className="flex items-center border-r border-gray-300 pr-2 mr-2">
-              <button
-                onClick={() => insertList(false)}
-                className="p-2 hover:bg-gray-100 rounded transition-colors"
-                title="箇条書き"
-              >
-                <List className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => insertList(true)}
-                className="p-2 hover:bg-gray-100 rounded transition-colors"
-                title="番号付きリスト"
-              >
-                <ListOrdered className="w-4 h-4" />
-              </button>
-            </div>
-
-            {/* Insert */}
-            <div className="flex items-center">
-              <button
-                onClick={() => formatText('createLink', prompt('URL:') || '')}
-                className="p-2 hover:bg-gray-100 rounded transition-colors"
-                title="リンク"
-              >
-                <Link className="w-4 h-4" />
-              </button>
-              <button
-                className="p-2 hover:bg-gray-100 rounded transition-colors"
-                title="画像"
-              >
-                <Image className="w-4 h-4" />
-              </button>
-              <button
-                className="p-2 hover:bg-gray-100 rounded transition-colors"
-                title="表"
-              >
-                <Table className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Editor */}
       <div className="flex-1 overflow-hidden min-h-0">
         {currentTabContent ? (
-          editorMode === 'rich' ? (
             <div className="h-full p-6 overflow-y-auto prose prose-sm max-w-none min-h-0">
               <div dangerouslySetInnerHTML={{ 
                 __html: currentTabContent.split('\n').map(line => {
@@ -490,13 +404,6 @@ ${analysis.summary_and_strategy || ''}`;
                 }).join('')
               }} />
             </div>
-          ) : (
-            <textarea
-              value={currentTabContent}
-              readOnly
-              className="w-full h-full p-6 font-mono text-sm resize-none border-none focus:outline-none bg-gray-50 min-h-0"
-            />
-          )
         ) : (
           <div className="h-full flex items-center justify-center text-gray-500">
             <div className="text-center">

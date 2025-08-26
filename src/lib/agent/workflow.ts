@@ -114,19 +114,19 @@ export class AgentWorkflow {
     const questions = [
       {
         id: 'problem',
-        prompt: '解決したい課題は何ですか？',
+        prompt: 'アプリを思いついた背景や解決したい課題はなんですか？',
         placeholder: '例: 歌を歌っているとき、一人だと寂しい',
         key: 'problem'
       },
       {
         id: 'persona',
-        prompt: 'この課題を持つターゲットユーザー（ペルソナ）は誰ですか？',
+        prompt: 'ターゲットユーザー（ペルソナ）はどんな人ですか？',
         placeholder: '例: カラオケが好きな20代の社会人',
         key: 'persona'
       },
       {
         id: 'solution',
-        prompt: 'どのような解決策を想定していますか？',
+        prompt: 'このアプリでどのようにその課題を解決しますか？',
         placeholder: '例: AIが自動でハモってくれるアプリ',
         key: 'solution'
       }
@@ -136,7 +136,7 @@ export class AgentWorkflow {
     if (userResponse && userResponse.trim()) {
       // First response is the service overview
       if (!state.clarification_answers['service_overview']) {
-        console.log('Saving service overview and showing first question');
+        console.log('Saving service overview and showing welcome message');
         
         const updatedAnswers = {
           ...state.clarification_answers,
@@ -149,10 +149,25 @@ export class AgentWorkflow {
           current_question_index: 0  // Start with first question
         };
         
-        // Show the first question (problem)
+        // Create welcome message with process overview
+        const welcomeContent = `承知しました。「${userResponse}」について実現可能で収益性の高い要件定義書を作成いたします。
+
+以下を実行します：
+1. 要件の調査
+2. ペルソナインタビュー  
+3. 情報の十分性評価
+4. 要件定義書の作成
+5. 外部環境分析
+6. 収益性、実現可能性、法務適合性の調査
+7. 最終ドキュメント生成
+
+まずアイデアについてもう少し詳細に調査するために次の質問に答えてください。
+
+${questions[0].prompt}`;
+        
         const response: QuestionMessage = {
           type: "question",
-          content: questions[0].prompt,
+          content: welcomeContent,
           placeholder: questions[0].placeholder,
           node: "clarification_interview",
           key: questions[0].key,

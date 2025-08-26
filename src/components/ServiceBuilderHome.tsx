@@ -49,7 +49,8 @@ export function ServiceBuilderHome() {
           .insert([
             {
               user_id: user.id,
-              title: ideaValue.length > 50 ? ideaValue.substring(0, 50) + '...' : ideaValue
+              title: ideaValue.length > 50 ? ideaValue.substring(0, 50) + '...' : ideaValue,
+              initial_message: ideaValue
             }
           ])
           .select()
@@ -58,8 +59,9 @@ export function ServiceBuilderHome() {
         if (error) throw error;
         
         if (data) {
-          // Navigate to the new chat with the initial message
-          router.push(`/agents/${data.id}?initial=${encodeURIComponent(ideaValue)}`);
+          console.log('Created new chat session with initial message:', data.id);
+          // Navigate to the new chat
+          router.push(`/agents/${data.id}`);
         }
       } catch (error) {
         console.error('Error creating chat session:', error);
