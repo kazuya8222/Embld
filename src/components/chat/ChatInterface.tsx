@@ -48,6 +48,13 @@ interface Message {
   step_info?: any;
   agent_response?: AgentResponse;
   choices?: Choice[];
+  metadata?: {
+    is_document_button?: boolean;
+    document_type?: string;
+    document_title?: string;
+    full_content?: string;
+    [key: string]: any;
+  };
 }
 
 interface ChatSession {
