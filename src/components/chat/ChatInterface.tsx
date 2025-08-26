@@ -189,12 +189,18 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
           initialTimeoutRef.current = null;
           
           // Clear initial_message from database after using it (one-time use)
-          supabase
-            .from('chat_sessions')
-            .update({ initial_message: null })
-            .eq('id', chatId)
-            .then(() => console.log('Cleared initial message from database'))
-            .catch(error => console.log('Error clearing initial message:', error));
+          const clearInitialMessage = async () => {
+            try {
+              await supabase
+                .from('chat_sessions')
+                .update({ initial_message: null })
+                .eq('id', chatId);
+              console.log('Cleared initial message from database');
+            } catch (error) {
+              console.log('Error clearing initial message:', error);
+            }
+          };
+          clearInitialMessage();
             
         }, 500); // Reduced delay since we don't need to show in input
         
