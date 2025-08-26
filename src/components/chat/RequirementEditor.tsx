@@ -23,7 +23,12 @@ import {
   BarChart3,
   Building,
   FileCheck,
-  TrendingUp
+  TrendingUp,
+  Send,
+  CheckCircle,
+  Clock,
+  Loader2,
+  X
 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { createClient } from '@/lib/supabase/client';
@@ -47,6 +52,9 @@ export function RequirementEditor({ chatId, agentState, initialActiveTab, onTabC
   const [activeTab, setActiveTab] = useState<TabType>(initialActiveTab || 'overview');
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submissionStatus, setSubmissionStatus] = useState<'draft' | 'submitted' | 'approved' | 'rejected'>('draft');
+  const [submittedAt, setSubmittedAt] = useState<Date | null>(null);
   const editorRef = useRef<HTMLDivElement>(null);
   const supabase = createClient();
 
@@ -84,6 +92,10 @@ export function RequirementEditor({ chatId, agentState, initialActiveTab, onTabC
       if (data) {
         setContent(data.content || '');
         setTitle(data.title || '要件定義書');
+        setSubmissionStatus(data.status || 'draft');
+        if (data.submitted_at) {
+          setSubmittedAt(new Date(data.submitted_at));
+        }
       } else {
         // If no existing proposal, save current agent state content
         if (agentState) {
@@ -177,6 +189,36 @@ export function RequirementEditor({ chatId, agentState, initialActiveTab, onTabC
       console.error('Error saving proposal:', error);
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const submitProposal = async () => {
+    if (!user || !agentState) return;
+    
+    setIsSubmitting(true);
+    try {
+      // First ensure the latest content is saved
+      await saveAgentStateToProposals();
+      
+      // Update status to submitted
+      const { error } = await supabase
+        .from('proposals')
+        .update({
+          status: 'submitted',
+          submitted_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .eq('chat_session_id', chatId);
+
+      if (error) throw error;
+      
+      setSubmissionStatus('submitted');
+      setSubmittedAt(new Date());
+      
+    } catch (error) {
+      console.error('Error submitting proposal:', error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -337,6 +379,20 @@ ${legal ? `**結果:** ${legal.is_compliant ? '✅ 法的リスクは低い' : '
 **理由:** ${legal.reason}` : '評価結果がありません。'}`;
   };
 
+  // Check if proposal is ready for submission
+  const isProposalComplete = (): boolean => {
+    if (!agentState) return false;
+    
+    return !!(
+      agentState.professional_requirements_doc && 
+      agentState.personas && agentState.personas.length > 0 &&
+      agentState.interviews && agentState.interviews.length > 0 &&
+      agentState.consultant_analysis_report &&
+      agentState.pitch_document &&
+      (agentState.profitability || agentState.feasibility || agentState.legal)
+    );
+  };
+
   const currentTabContent = getTabContent(activeTab);
 
   return (
@@ -379,6 +435,61 @@ ${legal ? `**結果:** ${legal.is_compliant ? '✅ 法的リスクは低い' : '
         </div>
       </div>
 
+      {/* Submission Bar */}
+      {isProposalComplete() && (
+        <div className="border-b border-gray-200 bg-gray-50/50 px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            {submissionStatus === 'draft' && (
+              <>
+                <CheckCircle className="w-5 h-5 text-green-500" />
+                <span className="text-sm font-medium text-gray-700">
+                  企画書の作成が完了しました。提出の準備が整いました。
+                </span>
+              </>
+            )}
+            {submissionStatus === 'submitted' && (
+              <>
+                <Clock className="w-5 h-5 text-blue-500" />
+                <span className="text-sm font-medium text-gray-700">
+                  提出済み {submittedAt && `(${submittedAt.toLocaleDateString()})`}
+                </span>
+              </>
+            )}
+            {submissionStatus === 'approved' && (
+              <>
+                <CheckCircle className="w-5 h-5 text-green-500" />
+                <span className="text-sm font-medium text-green-700">承認済み</span>
+              </>
+            )}
+            {submissionStatus === 'rejected' && (
+              <>
+                <X className="w-5 h-5 text-red-500" />
+                <span className="text-sm font-medium text-red-700">差し戻し</span>
+              </>
+            )}
+          </div>
+          
+          {submissionStatus === 'draft' && (
+            <Button
+              onClick={submitProposal}
+              disabled={isSubmitting || !isProposalComplete()}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 flex items-center gap-2"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  提出中...
+                </>
+              ) : (
+                <>
+                  <Send className="w-4 h-4" />
+                  企画書を提出
+                </>
+              )}
+            </Button>
+          )}
+        </div>
+      )}
 
       {/* Editor */}
       <div className="flex-1 overflow-hidden min-h-0">
