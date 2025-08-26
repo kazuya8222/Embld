@@ -11,9 +11,12 @@ import { Sidebar } from './common/Sidebar';
 import { SearchBar } from './home/SearchBar';
 import { CommunityShowcase } from './home/CommunityShowcase';
 import { useAuth } from './auth/AuthProvider';
+import { createClient } from '@/lib/supabase/client';
+import { useRouter } from 'next/navigation';
 
 export function ServiceBuilderHome() {
   const { user } = useAuth();
+  const router = useRouter();
   const [isBuilding, setIsBuilding] = useState(false);
   const [initialIdea, setInitialIdea] = useState('');
   const [input, setInput] = useState('');
@@ -28,11 +31,39 @@ export function ServiceBuilderHome() {
     }
   }, [isBuilding]);
 
-  const handleSubmit = (value?: string) => {
+  const handleSubmit = async (value?: string) => {
     const ideaValue = value || input;
     if (ideaValue.trim()) {
-      setInitialIdea(ideaValue);
-      setIsBuilding(true);
+      // Create new chat session and navigate to it
+      try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (!user) {
+          router.push('/auth/login');
+          return;
+        }
+
+        const { data, error } = await supabase
+          .from('chat_sessions')
+          .insert([
+            {
+              user_id: user.id,
+              title: ideaValue.length > 50 ? ideaValue.substring(0, 50) + '...' : ideaValue
+            }
+          ])
+          .select()
+          .single();
+
+        if (error) throw error;
+        
+        if (data) {
+          // Navigate to the new chat with the initial message
+          router.push(`/agents/${data.id}?initial=${encodeURIComponent(ideaValue)}`);
+        }
+      } catch (error) {
+        console.error('Error creating chat session:', error);
+      }
     }
   };
 
@@ -57,9 +88,6 @@ export function ServiceBuilderHome() {
 
   const shouldShowSidebar = isSidebarLocked || isSidebarHovered;
 
-  if (isBuilding) {
-    return <ServiceBuilderInterface initialUserIdea={initialIdea} />;
-  }
 
   return (
     <div className="min-h-screen bg-gray-900 relative">

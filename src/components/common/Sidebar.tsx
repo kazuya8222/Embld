@@ -1,9 +1,9 @@
 'use client'
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/components/auth/AuthProvider';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname, useRouter, useParams } from 'next/navigation';
 import { 
   Home, 
   Grid3X3,
@@ -13,15 +13,29 @@ import {
   Shield,
   Settings,
   PanelLeftClose,
-  Rocket
+  Rocket,
+  MessageSquare,
+  Plus,
+  Archive,
+  Trash2,
+  Edit2
 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { cn } from '@/lib/utils/cn';
 import { SettingsModal } from '../settings/SettingsModal';
+import { createClient } from '@/lib/supabase/client';
 
 interface SidebarProps {
   className?: string;
   onLockToggle?: () => void;
+}
+
+interface ChatSession {
+  id: string;
+  title: string;
+  created_at: string;
+  updated_at: string;
+  is_archived: boolean;
 }
 
 const topMenuItems = [
@@ -38,9 +52,103 @@ const bottomMenuItems = [
 export function Sidebar({ className, onLockToggle }: SidebarProps) {
   const [isCollapsed] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [chatSessions, setChatSessions] = useState<ChatSession[]>([]);
+  const [editingChatId, setEditingChatId] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState('');
   const { user, userProfile, signOut } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
+  const params = useParams();
+  const currentChatId = params?.chatId as string;
+  const supabase = createClient();
+
+  useEffect(() => {
+    const fetchChatSessions = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('chat_sessions')
+          .select('*')
+          .eq('user_id', user?.id)
+          .eq('is_archived', false)
+          .order('updated_at', { ascending: false })
+          .limit(5);
+
+        if (error) throw error;
+        setChatSessions(data || []);
+      } catch (error) {
+        console.error('Error fetching chat sessions:', error);
+      }
+    };
+    
+    if (user) {
+      fetchChatSessions();
+    }
+  }, [user, supabase]);
+
+
+  const createNewChat = async () => {
+    try {
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('chat_sessions')
+        .insert([
+          {
+            user_id: user.id,
+            title: '新しいチャット'
+          }
+        ])
+        .select()
+        .single();
+
+      if (error) throw error;
+      if (data) {
+        router.push(`/agents/${data.id}`);
+      }
+    } catch (error) {
+      console.error('Error creating new chat:', error);
+    }
+  };
+
+  const updateChatTitle = async (sessionId: string, newTitle: string) => {
+    try {
+      const { error } = await supabase
+        .from('chat_sessions')
+        .update({ title: newTitle, updated_at: new Date().toISOString() })
+        .eq('id', sessionId);
+
+      if (error) throw error;
+      
+      setChatSessions(prev => prev.map(s => 
+        s.id === sessionId ? { ...s, title: newTitle } : s
+      ));
+      setEditingChatId(null);
+      setEditTitle('');
+    } catch (error) {
+      console.error('Error updating title:', error);
+    }
+  };
+
+  const deleteChatSession = async (sessionId: string) => {
+    if (!confirm('このチャットを削除してもよろしいですか？')) return;
+
+    try {
+      const { error } = await supabase
+        .from('chat_sessions')
+        .delete()
+        .eq('id', sessionId);
+
+      if (error) throw error;
+      
+      setChatSessions(prev => prev.filter(s => s.id !== sessionId));
+      
+      if (currentChatId === sessionId) {
+        router.push('/home');
+      }
+    } catch (error) {
+      console.error('Error deleting session:', error);
+    }
+  };
 
   const handleSignOut = async () => {
     try {
@@ -86,6 +194,112 @@ export function Sidebar({ className, onLockToggle }: SidebarProps) {
             {!isCollapsed && item.label}
           </Link>
         ))}
+        
+        {/* Chat History Section */}
+        {!isCollapsed && user && (
+          <>
+            <div className="pt-4 pb-2">
+              <div className="flex items-center justify-between px-3">
+                <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                  チャット履歴
+                </h3>
+                <button
+                  onClick={createNewChat}
+                  className="p-1 hover:bg-gray-800 rounded transition-colors"
+                  title="新しいチャット"
+                >
+                  <Plus className="w-4 h-4 text-gray-400 hover:text-white" />
+                </button>
+              </div>
+            </div>
+            
+            <div className="space-y-1">
+              {chatSessions.map((session) => (
+                <div
+                  key={session.id}
+                  className={cn(
+                    "group flex items-center px-3 py-2 text-sm rounded-lg transition-colors cursor-pointer",
+                    currentChatId === session.id
+                      ? "bg-gray-800 text-white"
+                      : "text-gray-300 hover:text-white hover:bg-gray-800"
+                  )}
+                  onClick={() => {
+                    if (editingChatId !== session.id) {
+                      router.push(`/agents/${session.id}`);
+                    }
+                  }}
+                >
+                  <MessageSquare className="w-4 h-4 mr-3 flex-shrink-0" />
+                  
+                  {editingChatId === session.id ? (
+                    <input
+                      type="text"
+                      value={editTitle}
+                      onChange={(e) => setEditTitle(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          updateChatTitle(session.id, editTitle);
+                        } else if (e.key === 'Escape') {
+                          setEditingChatId(null);
+                          setEditTitle('');
+                        }
+                      }}
+                      onBlur={() => updateChatTitle(session.id, editTitle)}
+                      onClick={(e) => e.stopPropagation()}
+                      className="flex-1 bg-gray-700 border border-gray-600 rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-blue-600"
+                      autoFocus
+                    />
+                  ) : (
+                    <div className="flex-1 min-w-0">
+                      <div className="text-xs truncate">
+                        {session.title}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Chat Actions */}
+                  <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 ml-2">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setEditingChatId(session.id);
+                        setEditTitle(session.title);
+                      }}
+                      className="p-1 hover:bg-gray-700 rounded"
+                    >
+                      <Edit2 className="w-3 h-3 text-gray-400" />
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deleteChatSession(session.id);
+                      }}
+                      className="p-1 hover:bg-gray-700 rounded"
+                    >
+                      <Trash2 className="w-3 h-3 text-gray-400" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+              
+              {chatSessions.length === 0 && (
+                <div className="px-3 py-2 text-xs text-gray-500">
+                  チャット履歴はありません
+                </div>
+              )}
+              
+              {chatSessions.length > 0 && (
+                <Link
+                  href="/agents/history"
+                  className="flex items-center px-3 py-2 text-xs text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
+                >
+                  <Archive className="w-3 h-3 mr-2" />
+                  すべて表示
+                </Link>
+              )}
+            </div>
+          </>
+        )}
         
         {/* Separator */}
         <div className="my-6">
