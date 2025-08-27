@@ -34,7 +34,9 @@ export async function POST(request: NextRequest) {
       status: session.payment_status,
     });
   } catch (error) {
-    console.error('Error verifying session:', error);
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error verifying session:', error);
+    }
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

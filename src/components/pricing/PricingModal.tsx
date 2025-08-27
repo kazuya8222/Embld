@@ -40,75 +40,48 @@ const pricingPlans: PricingPlan[] = [
   },
   {
     id: 'basic',
-    name: 'Basic',
-    price: 16,
+    name: 'Embld Basic',
+    price: 2000,
     period: 'month',
     badge: 'ベータ',
     features: [
       '毎日 300 クレジットのリフレッシュ',
-      '1,900クレジット/月 詳細を確認',
-      '毎月追加 C+1,900クレジットを獲得',
-      '限定オファー',
-      'チャットモードへの無制限アクセス',
-      'Agentモードで高度なモデルを使用',
-      '2個の同時実行タスク',
-      '2件のスケジュールタスク',
-      '画像生成',
-      '動画生成',
-      'スライド生成',
-      '独占データソース'
-    ],
-    highlights: ['毎月追加 C+1,900クレジットを獲得', '限定オファー'],
-    priceId: 'price_1QgVo9FaYIdITkPyA8Ea5YP2', // Basic plan price ID
-  },
-  {
-    id: 'plus',
-    name: 'Plus',
-    price: 33,
-    period: 'month',
-    badge: 'ベータ',
-    popular: true,
-    features: [
-      '毎日 300 クレジットのリフレッシュ',
-      '3,900クレジット/月 詳細を確認',
-      '毎月追加 C+3,900クレジットを獲得',
-      '限定オファー',
+      '2,500クレジット/月',
+      '毎月追加 C+2,500クレジットを獲得',
       'チャットモードへの無制限アクセス',
       'Agentモードで高度なモデルを使用',
       '3個の同時実行タスク',
       '3件のスケジュールタスク',
       '画像生成',
       '動画生成',
-      'スライド生成',
-      '独占データソース'
+      'スライド生成'
     ],
-    highlights: ['毎月追加 C+3,900クレジットを獲得', '限定オファー'],
-    priceId: 'price_1QgVouFaYIdITkPyVxn1SRGJ', // Plus plan price ID
+    highlights: ['毎月追加 C+2,500クレジットを獲得'],
+    priceId: 'price_1S0fMFFaYIdITkPyE5hOS7lh', // Embld Basic plan price ID
   },
   {
-    id: 'pro',
-    name: 'Pro',
-    price: 166,
+    id: 'plus',
+    name: 'Embld Plus',
+    price: 6000,
     period: 'month',
     badge: 'ベータ',
+    popular: true,
     features: [
       '毎日 300 クレジットのリフレッシュ',
-      '19,900クレジット/月 詳細を確認',
-      '毎月追加 C+19,900クレジットを獲得',
-      '限定オファー',
+      '8,000クレジット/月',
+      '毎月追加 C+8,000クレジットを獲得',
       'チャットモードへの無制限アクセス',
       'Agentモードで高度なモデルを使用',
-      '10個の同時実行タスク',
-      '10件のスケジュールタスク',
+      '5個の同時実行タスク',
+      '5件のスケジュールタスク',
       '画像生成',
       '動画生成',
       'スライド生成',
-      'Marius Tシャツ',
       '独占データソース',
       'ベータ機能の早期アクセス'
     ],
-    highlights: ['毎月追加 C+19,900クレジットを獲得', '限定オファー'],
-    priceId: 'price_1QgVpRFaYIdITkPy8hNGBrwZ', // Pro plan price ID
+    highlights: ['毎月追加 C+8,000クレジットを獲得', '独占データソース'],
+    priceId: 'price_1S0fNIFaYIdITkPyitTY8NhK', // Embld Plus plan price ID
   }
 ];
 
@@ -144,16 +117,21 @@ export function PricingModal({ isOpen, onClose }: PricingModalProps) {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to create checkout session');
+        const errorData = await response.json().catch(() => ({ error: `HTTP ${response.status}` }));
+        console.error('Checkout session creation failed:', response.status, errorData);
+        throw new Error(errorData.error || `HTTP error: ${response.status}`);
       }
 
-      const { url, error } = await response.json();
+      const { url, error, debug } = await response.json();
       if (error) {
+        console.error('Stripe checkout error:', { error, debug });
         throw new Error(error);
       }
       
       if (url) {
         window.location.href = url;
+      } else {
+        throw new Error('No checkout URL received');
       }
     } catch (error) {
       console.error('Error creating checkout session:', error);
@@ -236,7 +214,7 @@ export function PricingModal({ isOpen, onClose }: PricingModalProps) {
 
               {/* Pricing Plans */}
               <div className="flex-1 p-6 overflow-y-auto">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
                   {pricingPlans.map((plan) => (
                     <motion.div
                       key={plan.id}
@@ -268,7 +246,7 @@ export function PricingModal({ isOpen, onClose }: PricingModalProps) {
                           )}
                         </div>
                         <div className="text-3xl font-bold text-[#e0e0e0] mb-1">
-                          ${getCurrentPlanPrice(plan)}
+                          ¥{getCurrentPlanPrice(plan).toLocaleString()}
                           <span className="text-sm font-normal text-[#a0a0a0]">
                             /{billingPeriod === 'monthly' ? '月' : '年'}
                           </span>

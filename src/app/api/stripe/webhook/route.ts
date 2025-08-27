@@ -18,7 +18,9 @@ export async function POST(request: NextRequest) {
     try {
       event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
     } catch (err: any) {
-      console.error('Webhook signature verification failed.', err.message);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Webhook signature verification failed.', err.message);
+      }
       return NextResponse.json(
         { error: 'Invalid signature' },
         { status: 400 }
@@ -44,7 +46,7 @@ export async function POST(request: NextRequest) {
             })
             .eq('id', checkoutSession.metadata.userId);
 
-          if (error) {
+          if (error && process.env.NODE_ENV === 'development') {
             console.error('Error updating user subscription:', error);
           }
         }
@@ -62,7 +64,7 @@ export async function POST(request: NextRequest) {
             })
             .eq('id', updatedSubscription.metadata.userId);
 
-          if (error) {
+          if (error && process.env.NODE_ENV === 'development') {
             console.error('Error updating subscription status:', error);
           }
         }
@@ -81,7 +83,7 @@ export async function POST(request: NextRequest) {
             })
             .eq('id', deletedSubscription.metadata.userId);
 
-          if (error) {
+          if (error && process.env.NODE_ENV === 'development') {
             console.error('Error updating canceled subscription:', error);
           }
         }
@@ -99,19 +101,23 @@ export async function POST(request: NextRequest) {
             })
             .eq('id', failedInvoice.subscription_details.metadata.userId);
 
-          if (error) {
+          if (error && process.env.NODE_ENV === 'development') {
             console.error('Error updating failed payment status:', error);
           }
         }
         break;
 
       default:
-        console.log(`Unhandled event type ${event.type}`);
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`Unhandled event type ${event.type}`);
+        }
     }
 
     return NextResponse.json({ received: true });
   } catch (error) {
-    console.error('Webhook error:', error);
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Webhook error:', error);
+    }
     return NextResponse.json(
       { error: 'Webhook handler failed' },
       { status: 500 }
