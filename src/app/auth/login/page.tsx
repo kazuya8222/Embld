@@ -13,8 +13,10 @@ export default function LoginPage() {
       </div>
       
       {/* Content */}
-      <div className="relative z-10 flex items-center justify-center min-h-screen">
-        <LoginForm />
+      <div className="relative z-10 flex items-center justify-center min-h-screen pt-[-80px]">
+        <div className="mb-20">
+          <LoginForm />
+        </div>
       </div>
     </div>
   )

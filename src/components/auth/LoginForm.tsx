@@ -27,7 +27,7 @@ export function LoginForm() {
 
       {/* Center Logo */}
       <div className="text-center">
-        <div className="w-16 h-16 flex items-center justify-center mx-auto mb-8">
+        <div className="w-16 h-16 flex items-center justify-center mx-auto mb-6">
           <img 
             src="/images/EnBld_logo_icon_monochrome.svg"
             alt="EMBLD Icon"
@@ -127,10 +127,10 @@ export function LoginForm() {
 
       {/* Footer Links */}
       <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2">
-        <div className="flex items-center space-x-6 text-gray-500 text-sm">
+        <div className="flex items-center space-x-6 text-sm">
           <a 
             href="/legal/terms" 
-            className="hover:text-gray-300 underline transition-colors"
+            className="text-gray-500 hover:text-white transition-colors"
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -138,7 +138,7 @@ export function LoginForm() {
           </a>
           <a 
             href="/legal/privacy" 
-            className="hover:text-gray-300 underline transition-colors"
+            className="text-gray-500 hover:text-white transition-colors"
             target="_blank"
             rel="noopener noreferrer"
           >

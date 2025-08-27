@@ -16,8 +16,8 @@ import { cn } from '@/lib/utils/cn';
 import { UserProfileDropdown } from './UserProfileDropdown';
 
 interface TopBarProps {
-  onMenuToggle: () => void;
-  onMenuHover: (isHovering: boolean) => void;
+  onMenuToggle?: () => void;
+  onMenuHover?: (isHovering: boolean) => void;
 }
 
 export function TopBar({ onMenuToggle, onMenuHover }: TopBarProps) {
@@ -27,14 +27,16 @@ export function TopBar({ onMenuToggle, onMenuHover }: TopBarProps) {
     <div className="h-14 bg-[#1a1a1a] flex items-center justify-between px-4">
       {/* Left side */}
       <div className="flex items-center gap-3">
-        <button
-          onClick={onMenuToggle}
-          onMouseEnter={() => onMenuHover(true)}
-          onMouseLeave={() => onMenuHover(false)}
-          className="p-2 text-[#a0a0a0] hover:text-[#e0e0e0] hover:bg-[#3a3a3a] rounded-lg transition-colors"
-        >
-          <PanelLeft className="w-5 h-5" />
-        </button>
+        {onMenuToggle && onMenuHover && (
+          <button
+            onClick={onMenuToggle}
+            onMouseEnter={() => onMenuHover(true)}
+            onMouseLeave={() => onMenuHover(false)}
+            className="p-2 text-[#a0a0a0] hover:text-[#e0e0e0] hover:bg-[#3a3a3a] rounded-lg transition-colors"
+          >
+            <PanelLeft className="w-5 h-5" />
+          </button>
+        )}
         
         <Link href="/home" className="flex items-center gap-2">
           <img 
