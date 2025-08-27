@@ -45,18 +45,18 @@ export async function POST(request: NextRequest) {
       case 'checkout.session.completed':
         const checkoutSession = event.data.object as Stripe.Checkout.Session;
         
-        // Update user's subscription status and grant credits
+        // Update user's subscription status (no credits on initial setup)
         console.log('Checkout session metadata:', checkoutSession.metadata);
         
         if (checkoutSession.metadata?.userId && checkoutSession.metadata?.planName) {
           const userId = checkoutSession.metadata.userId;
           const planName = checkoutSession.metadata.planName;
           
-          console.log('Processing for userId:', userId, 'planName:', planName);
+          console.log('Processing initial subscription for userId:', userId, 'planName:', planName);
           
-          // Update subscription status
+          // Update subscription status only
           const { error } = await supabase
-            .from('user_profiles')
+            .from('users')
             .update({
               subscription_plan: planName,
               stripe_customer_id: checkoutSession.customer,
@@ -66,31 +66,7 @@ export async function POST(request: NextRequest) {
             .eq('id', userId);
 
           console.log('Subscription update result:', { error });
-
-          // Grant credits based on plan
-          let creditsToGrant = 0;
-          if (planName === 'Embld Basic') {
-            creditsToGrant = 200;
-          } else if (planName === 'Embld Plus') {
-            creditsToGrant = 600;
-          }
-
-          console.log('Credits to grant:', creditsToGrant);
-
-          if (creditsToGrant > 0) {
-            const creditResult = await addCredits(
-              userId,
-              creditsToGrant,
-              'plan_purchase',
-              `プラン購入: ${planName}`,
-              {
-                plan: planName,
-                stripe_session_id: checkoutSession.id,
-                amount_paid: checkoutSession.amount_total
-              }
-            );
-            console.log('Credit granting result:', creditResult);
-          }
+          console.log('Initial subscription setup complete. Credits will be granted on first invoice payment.');
         } else {
           console.log('Missing metadata - userId:', checkoutSession.metadata?.userId, 'planName:', checkoutSession.metadata?.planName);
         }
@@ -101,13 +77,14 @@ export async function POST(request: NextRequest) {
         
         if (updatedSubscription.metadata?.userId) {
           const { error } = await supabase
-            .from('user_profiles')
+            .from('users')
             .update({
               subscription_status: updatedSubscription.status,
               updated_at: new Date().toISOString(),
             })
             .eq('id', updatedSubscription.metadata.userId);
-
+            
+          console.log('Subscription update result:', { error });
         }
         break;
 
@@ -116,14 +93,76 @@ export async function POST(request: NextRequest) {
         
         if (deletedSubscription.metadata?.userId) {
           const { error } = await supabase
-            .from('user_profiles')
+            .from('users')
             .update({
               subscription_plan: 'free',
               subscription_status: 'canceled',
               updated_at: new Date().toISOString(),
             })
             .eq('id', deletedSubscription.metadata.userId);
+            
+          console.log('Subscription cancellation result:', { error });
+        }
+        break;
 
+      case 'invoice.payment_succeeded':
+        const paidInvoice = event.data.object as Stripe.Invoice;
+        console.log('Invoice payment succeeded:', paidInvoice.id);
+        
+        // Get subscription details to access metadata
+        if (paidInvoice.subscription) {
+          try {
+            const subscription = await stripe.subscriptions.retrieve(
+              paidInvoice.subscription as string
+            );
+            
+            if (subscription.metadata?.userId) {
+              const userId = subscription.metadata.userId;
+              const planName = subscription.metadata.planName;
+              
+              console.log('Processing monthly payment for userId:', userId, 'planName:', planName);
+              
+              // Grant credits based on plan for each successful monthly payment
+              let creditsToGrant = 0;
+              if (planName === 'Embld Basic') {
+                creditsToGrant = 200;
+              } else if (planName === 'Embld Plus') {
+                creditsToGrant = 600;
+              }
+              
+              console.log('Monthly credits to grant:', creditsToGrant);
+              
+              if (creditsToGrant > 0) {
+                try {
+                  const creditResult = await addCredits(
+                    userId,
+                    creditsToGrant,
+                    'monthly_subscription',
+                    `月額プラン支払い: ${planName}`,
+                    {
+                      plan: planName,
+                      stripe_invoice_id: paidInvoice.id,
+                      stripe_subscription_id: subscription.id,
+                      amount_paid: paidInvoice.amount_paid,
+                      billing_period_start: new Date(paidInvoice.period_start * 1000).toISOString(),
+                      billing_period_end: new Date(paidInvoice.period_end * 1000).toISOString()
+                    }
+                  );
+                  console.log('Monthly credit granting result:', creditResult);
+                  
+                  if (!creditResult) {
+                    console.error('Failed to grant monthly credits for user:', userId);
+                  } else {
+                    console.log(`Successfully granted ${creditsToGrant} credits to user ${userId} for monthly payment`);
+                  }
+                } catch (creditError) {
+                  console.error('Error during monthly credit granting:', creditError);
+                }
+              }
+            }
+          } catch (subscriptionError) {
+            console.error('Error retrieving subscription details:', subscriptionError);
+          }
         }
         break;
 
@@ -132,13 +171,14 @@ export async function POST(request: NextRequest) {
         
         if (failedInvoice.subscription_details?.metadata?.userId) {
           const { error } = await supabase
-            .from('user_profiles')
+            .from('users')
             .update({
               subscription_status: 'past_due',
               updated_at: new Date().toISOString(),
             })
             .eq('id', failedInvoice.subscription_details.metadata.userId);
-
+            
+          console.log('Payment failed update result:', { error });
         }
         break;
 
@@ -148,8 +188,9 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ received: true });
   } catch (error) {
+    console.error('Webhook handler failed:', error);
     return NextResponse.json(
-      { error: 'Webhook handler failed' },
+      { error: 'Webhook handler failed', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
   }
