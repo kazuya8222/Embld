@@ -66,26 +66,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     
     try {
       const { data, error } = await supabase
-        .from('user_credits')
-        .select('credits')
-        .eq('user_id', user.id)
+        .from('users')
+        .select('credits_balance')
+        .eq('id', user.id)
         .single();
       
-      if (error || !data) {
-        // クレジットレコードが存在しない場合は作成
-        const { error: insertError } = await supabase
-          .from('user_credits')
-          .upsert({
-            user_id: user.id,
-            credits: 0,
-            updated_at: new Date().toISOString()
-          });
-        
-        if (!insertError) {
-          setCredits(0);
-        }
+      if (error) {
+        console.error('Error fetching credits:', error);
+        setCredits(0);
       } else {
-        setCredits(data.credits);
+        setCredits(data?.credits_balance || 0);
       }
     } catch (error) {
       console.error('Error fetching credits:', error);

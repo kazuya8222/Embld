@@ -75,26 +75,31 @@ export async function grantCreditsToUser(data: CreditGrantData): Promise<boolean
   const supabase = createSupabaseWebhookClient();
   
   try {
-    // Get current credits
-    const { data: currentCredits, error: fetchError } = await supabase
-      .from('user_credits')
-      .select('credits')
-      .eq('user_id', data.userId)
+    // Get current credits from users table
+    const { data: currentUser, error: fetchError } = await supabase
+      .from('users')
+      .select('credits_balance')
+      .eq('id', data.userId)
       .single();
 
-    console.log('Current credits fetch result:', { currentCredits, fetchError });
+    console.log('Current credits fetch result:', { currentUser, fetchError });
 
-    const newBalance = (currentCredits?.credits || 0) + data.amount;
+    if (fetchError) {
+      console.error('Failed to fetch current user credits:', fetchError);
+      return false;
+    }
+
+    const newBalance = (currentUser?.credits_balance || 0) + data.amount;
     console.log('New balance will be:', newBalance);
 
-    // Update credits balance
+    // Update credits balance in users table
     const { error: updateError } = await supabase
-      .from('user_credits')
-      .upsert({
-        user_id: data.userId,
-        credits: newBalance,
+      .from('users')
+      .update({
+        credits_balance: newBalance,
         updated_at: new Date().toISOString()
-      });
+      })
+      .eq('id', data.userId);
 
     if (updateError) {
       console.error('Credits update failed:', updateError);

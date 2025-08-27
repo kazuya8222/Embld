@@ -25,18 +25,17 @@ export async function getUserCredits(userId: string, useAdminClient: boolean = f
   const supabase = useAdminClient ? createSupabaseWebhookClient() : (await createClient());
   
   const { data, error } = await supabase
-    .from('user_credits')
-    .select('credits')
-    .eq('user_id', userId)
+    .from('users')
+    .select('credits_balance')
+    .eq('id', userId)
     .single();
 
   if (error || !data) {
-    // If no credits record exists, create one with 0 credits
-    await initializeUserCredits(userId);
+    console.error('Error fetching user credits:', error);
     return 0;
   }
 
-  return data.credits;
+  return data.credits_balance || 0;
 }
 
 /**
@@ -46,12 +45,12 @@ export async function initializeUserCredits(userId: string, useAdminClient: bool
   const supabase = useAdminClient ? createSupabaseWebhookClient() : (await createClient());
   
   await supabase
-    .from('user_credits')
-    .upsert({
-      user_id: userId,
-      credits: 0,
+    .from('users')
+    .update({
+      credits_balance: 0,
       updated_at: new Date().toISOString()
-    });
+    })
+    .eq('id', userId);
 }
 
 /**
@@ -74,26 +73,26 @@ export async function addCredits(
   const supabase = useAdminClient ? createSupabaseWebhookClient() : (await createClient());
   
   try {
-    // Start transaction
-    const { data: currentCredits, error: fetchError } = await supabase
-      .from('user_credits')
-      .select('credits')
-      .eq('user_id', userId)
+    // Get current balance from users table
+    const { data: currentUser, error: fetchError } = await supabase
+      .from('users')
+      .select('credits_balance')
+      .eq('id', userId)
       .single();
 
-    console.log('Current credits fetch result:', { currentCredits, fetchError });
+    console.log('Current credits fetch result:', { currentUser, fetchError });
 
-    const newBalance = (currentCredits?.credits || 0) + amount;
+    const newBalance = (currentUser?.credits_balance || 0) + amount;
     console.log('New balance will be:', newBalance);
 
-    // Update credits balance
+    // Update credits balance in users table
     const { error: updateError } = await supabase
-      .from('user_credits')
-      .upsert({
-        user_id: userId,
-        credits: newBalance,
+      .from('users')
+      .update({
+        credits_balance: newBalance,
         updated_at: new Date().toISOString()
-      });
+      })
+      .eq('id', userId);
 
     console.log('Credits update result:', { updateError });
 
@@ -136,14 +135,14 @@ export async function deductCredits(
   const supabase = useAdminClient ? createSupabaseWebhookClient() : (await createClient());
   
   try {
-    // Check current balance
-    const { data: currentCredits } = await supabase
-      .from('user_credits')
-      .select('credits')
-      .eq('user_id', userId)
+    // Check current balance from users table
+    const { data: currentUser } = await supabase
+      .from('users')
+      .select('credits_balance')
+      .eq('id', userId)
       .single();
 
-    const currentBalance = currentCredits?.credits || 0;
+    const currentBalance = currentUser?.credits_balance || 0;
     
     if (currentBalance < amount) {
       return false; // Insufficient credits
@@ -151,14 +150,14 @@ export async function deductCredits(
 
     const newBalance = currentBalance - amount;
 
-    // Update credits balance
+    // Update credits balance in users table
     const { error: updateError } = await supabase
-      .from('user_credits')
-      .upsert({
-        user_id: userId,
-        credits: newBalance,
+      .from('users')
+      .update({
+        credits_balance: newBalance,
         updated_at: new Date().toISOString()
-      });
+      })
+      .eq('id', userId);
 
     if (updateError) throw updateError;
 
