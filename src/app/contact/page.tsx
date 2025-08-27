@@ -81,7 +81,7 @@ export default function ContactPage() {
         {/* Back Button */}
         <Link 
           href="/home" 
-          className="inline-flex items-center gap-2 text-[#a0a0a0] hover:text-[#e0e0e0] mb-8 transition-colors">
+          className="inline-flex items-center gap-2 text-[#a0a0a0] hover:text-[#e0e0e0] mb-8 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           ホームに戻る
