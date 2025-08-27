@@ -35,6 +35,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [userProfile, setUserProfile] = useState<any | null>(null)
   const [credits, setCredits] = useState<number>(0)
   const [loading, setLoading] = useState(true)
+  const [hydrated, setHydrated] = useState(false)
   const hasInitialized = useRef(false)
   const isFetchingProfile = useRef(false)
   const router = useRouter()
@@ -123,7 +124,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUserProfile(profile)
         
         // クレジット情報も更新
-        await refreshCredits()
+        refreshCredits()
       }
     } catch (error) {
       console.error('RefreshProfile error:', error)
@@ -243,7 +244,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUserProfile(profile)
         
         // クレジット情報も取得
-        await refreshCredits()
+        refreshCredits()
       }
     } catch (error) {
       console.error('AuthProvider: Exception during profile fetch:', error)
@@ -282,10 +283,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           // プロフィールがまだ無い場合のみ取得
           if (!userProfile) {
             await fetchUserProfile(session.user)
+          } else {
+            // プロフィールがある場合もクレジット情報は更新
+            refreshCredits()
           }
         } else {
           setUser(null)
           setUserProfile(null)
+          setCredits(0)
         }
       } catch (error) {
         console.error('AuthProvider: Exception during initial session:', error)
@@ -293,6 +298,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUserProfile(null)
       } finally {
         setLoading(false)
+        setHydrated(true)
       }
     }
 
@@ -322,6 +328,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } else if (event === 'TOKEN_REFRESHED' && session?.user) {
           // トークン更新時はユーザー情報のみ更新（プロフィール取得しない）
           setUser(session.user)
+          // クレジット情報は更新
+          refreshCredits()
         } else if (event === 'INITIAL_SESSION') {
           // 初期セッションは既に処理済みなのでスキップ
           return
@@ -338,7 +346,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => {
       subscription.unsubscribe()
     }
-  }, [fetchUserProfile, userProfile])
+  }, [fetchUserProfile, refreshCredits])
+
+  // Prevent hydration mismatch by not rendering until hydrated
+  if (!hydrated) {
+    return (
+      <div className="min-h-screen bg-[#1a1a1a] flex items-center justify-center">
+        <div className="text-[#e0e0e0]">Loading...</div>
+      </div>
+    )
+  }
 
   return (
     <AuthContext.Provider value={{ user, userProfile, credits, loading, signOut, refreshProfile, refreshCredits, updateProfileOptimistic }}>
