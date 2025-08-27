@@ -11,7 +11,7 @@ import {
   LogIn,
   LogOut,
   Shield,
-  Settings,
+  User,
   PanelLeftClose,
   Rocket,
   MessageSquare,
@@ -23,7 +23,7 @@ import {
 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { cn } from '@/lib/utils/cn';
-import { SettingsModal } from '../settings/SettingsModal';
+import { AccountModal } from '../account/AccountModal';
 import { createClient } from '@/lib/supabase/client';
 
 interface SidebarProps {
@@ -53,7 +53,7 @@ const bottomMenuItems = [
 
 export function Sidebar({ className, onLockToggle, isLocked = false }: SidebarProps) {
   const [isCollapsed] = useState(false);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isAccountOpen, setIsAccountOpen] = useState(false);
   const [chatSessions, setChatSessions] = useState<ChatSession[]>([]);
   const [editingChatId, setEditingChatId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState('');
@@ -339,11 +339,11 @@ export function Sidebar({ className, onLockToggle, isLocked = false }: SidebarPr
             {!isCollapsed && (
               <>
                 <button
-                  onClick={() => setIsSettingsOpen(true)}
+                  onClick={() => setIsAccountOpen(true)}
                   className="flex items-center w-full px-3 py-2 text-sm font-medium text-[#a0a0a0] rounded-lg hover:text-[#e0e0e0] hover:bg-[#3a3a3a] transition-colors"
                 >
-                  <Settings className="w-4 h-4 mr-3" />
-                  設定
+                  <User className="w-4 h-4 mr-3" />
+                  アカウント
                 </button>
                 <Link
                   href="/help"
@@ -402,10 +402,10 @@ export function Sidebar({ className, onLockToggle, isLocked = false }: SidebarPr
         )}
       </div>
       
-      {/* Settings Modal */}
-      <SettingsModal 
-        isOpen={isSettingsOpen} 
-        onClose={() => setIsSettingsOpen(false)} 
+      {/* Account Modal */}
+      <AccountModal 
+        isOpen={isAccountOpen} 
+        onClose={() => setIsAccountOpen(false)} 
       />
     </div>
   );

@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { 
-  Settings, 
+  User, 
   Home, 
   LogOut,
   ExternalLink,
@@ -14,12 +14,12 @@ import {
   HelpCircle
 } from 'lucide-react';
 import { Button } from '../ui/button';
-import { SettingsModal } from '../settings/SettingsModal';
+import { AccountModal } from '../account/AccountModal';
 import { PricingModal } from '../pricing/PricingModal';
 
 export function UserProfileDropdown() {
   const [isOpen, setIsOpen] = useState(false);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isAccountOpen, setIsAccountOpen] = useState(false);
   const [isPricingOpen, setIsPricingOpen] = useState(false);
   const { user, userProfile, credits, signOut, refreshCredits } = useAuth();
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -47,9 +47,9 @@ export function UserProfileDropdown() {
     }
   };
 
-  const handleSettingsClick = () => {
+  const handleAccountClick = () => {
     setIsOpen(false);
-    setIsSettingsOpen(true);
+    setIsAccountOpen(true);
   };
 
   if (!user) {
@@ -192,13 +192,13 @@ export function UserProfileDropdown() {
 
               {/* Menu Items */}
               <div className="py-1">
-                {/* Settings */}
+                {/* Account */}
                 <button 
-                  onClick={handleSettingsClick}
+                  onClick={handleAccountClick}
                   className="w-full flex items-center space-x-3 px-3 py-2.5 text-[#a0a0a0] hover:bg-[#3a3a3a] hover:text-[#e0e0e0] transition-colors text-sm"
                 >
-                  <Settings className="w-4 h-4" />
-                  <span>設定</span>
+                  <User className="w-4 h-4" />
+                  <span>アカウント</span>
                 </button>
 
                 <div className="border-t border-[#3a3a3a] my-1"></div>
@@ -234,10 +234,10 @@ export function UserProfileDropdown() {
         </AnimatePresence>
       </div>
 
-      {/* Settings Modal */}
-      <SettingsModal 
-        isOpen={isSettingsOpen} 
-        onClose={() => setIsSettingsOpen(false)} 
+      {/* Account Modal */}
+      <AccountModal 
+        isOpen={isAccountOpen} 
+        onClose={() => setIsAccountOpen(false)} 
       />
       
       {/* Pricing Modal */}
