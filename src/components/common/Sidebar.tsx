@@ -18,7 +18,8 @@ import {
   Plus,
   Archive,
   Trash2,
-  Edit2
+  Edit2,
+  HelpCircle
 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { cn } from '@/lib/utils/cn';
@@ -339,6 +340,13 @@ export function Sidebar({ className, onLockToggle }: SidebarProps) {
                   <Settings className="w-4 h-4 mr-3" />
                   設定
                 </button>
+                <Link
+                  href="/help"
+                  className="flex items-center w-full px-3 py-2 text-sm font-medium text-[#a0a0a0] rounded-lg hover:text-[#e0e0e0] hover:bg-[#3a3a3a] transition-colors"
+                >
+                  <HelpCircle className="w-4 h-4 mr-3" />
+                  ヘルプ
+                </Link>
                 {userProfile?.is_admin && (
                   <Link
                     href="/admin"
