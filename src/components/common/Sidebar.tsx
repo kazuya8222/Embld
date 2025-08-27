@@ -29,6 +29,7 @@ import { createClient } from '@/lib/supabase/client';
 interface SidebarProps {
   className?: string;
   onLockToggle?: () => void;
+  isLocked?: boolean;
 }
 
 interface ChatSession {
@@ -50,7 +51,7 @@ const bottomMenuItems = [
   { icon: FileText, label: '記事', href: '/articles' },
 ];
 
-export function Sidebar({ className, onLockToggle }: SidebarProps) {
+export function Sidebar({ className, onLockToggle, isLocked = false }: SidebarProps) {
   const [isCollapsed] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [chatSessions, setChatSessions] = useState<ChatSession[]>([]);
@@ -172,9 +173,13 @@ export function Sidebar({ className, onLockToggle }: SidebarProps) {
           onClick={onLockToggle}
           variant="ghost"
           size="sm"
-          className="text-[#a0a0a0] hover:text-[#e0e0e0] hover:bg-[#3a3a3a] transition-colors p-2"
+          className={isLocked
+            ? "transition-all p-2 text-[#e0e0e0] bg-[#3a3a3a]"
+            : "transition-all p-2 text-[#a0a0a0] hover:text-[#e0e0e0] hover:bg-[#3a3a3a]"
+          }
+          title={isLocked ? "サイドバーを固定解除" : "サイドバーを固定"}
         >
-          <PanelLeftClose className="w-4 h-4" />
+          <PanelLeftClose className="w-5 h-5" />
         </Button>
       </div>
 

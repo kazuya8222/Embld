@@ -18,9 +18,10 @@ import { UserProfileDropdown } from './UserProfileDropdown';
 interface TopBarProps {
   onMenuToggle?: () => void;
   onMenuHover?: (isHovering: boolean) => void;
+  isMenuLocked?: boolean;
 }
 
-export function TopBar({ onMenuToggle, onMenuHover }: TopBarProps) {
+export function TopBar({ onMenuToggle, onMenuHover, isMenuLocked = false }: TopBarProps) {
   const { user, userProfile } = useAuth();
 
   return (
@@ -32,7 +33,10 @@ export function TopBar({ onMenuToggle, onMenuHover }: TopBarProps) {
             onClick={onMenuToggle}
             onMouseEnter={() => onMenuHover(true)}
             onMouseLeave={() => onMenuHover(false)}
-            className="p-2 text-[#a0a0a0] hover:text-[#e0e0e0] hover:bg-[#3a3a3a] rounded-lg transition-colors"
+            className={isMenuLocked 
+              ? "p-2 rounded-lg transition-colors text-[#e0e0e0] bg-[#3a3a3a]"
+              : "p-2 rounded-lg transition-colors text-[#a0a0a0] hover:text-[#e0e0e0] hover:bg-[#3a3a3a]"
+            }
           >
             <PanelLeft className="w-5 h-5" />
           </button>

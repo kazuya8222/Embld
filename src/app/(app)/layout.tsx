@@ -16,8 +16,9 @@ export default function AppLayout({
   const [isSidebarHovered, setIsSidebarHovered] = useState(false)
 
   const handleMenuToggle = () => {
-    setIsSidebarLocked(!isSidebarLocked)
-    setIsSidebarOpen(!isSidebarOpen)
+    const newLockState = !isSidebarLocked
+    setIsSidebarLocked(newLockState)
+    setIsSidebarOpen(newLockState)
   }
 
   const handleMenuHover = (isHovering: boolean) => {
@@ -31,7 +32,7 @@ export default function AppLayout({
 
   return (
     <div className="min-h-screen bg-gray-900 flex flex-col relative">
-      <TopBar onMenuToggle={handleMenuToggle} onMenuHover={handleMenuHover} />
+      <TopBar onMenuToggle={handleMenuToggle} onMenuHover={handleMenuHover} isMenuLocked={isSidebarLocked} />
       
       {/* Sidebar Overlay */}
       <AnimatePresence>
@@ -45,7 +46,7 @@ export default function AppLayout({
             onMouseEnter={() => handleMenuHover(true)}
             onMouseLeave={() => handleMenuHover(false)}
           >
-            <Sidebar />
+            <Sidebar isLocked={isSidebarLocked} onLockToggle={handleMenuToggle} />
           </motion.div>
         )}
       </AnimatePresence>
