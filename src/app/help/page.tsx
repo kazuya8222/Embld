@@ -58,7 +58,7 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
 
 export default function HelpPage() {
   return (
-    <div className="min-h-screen bg-[#1a1a1a] text-[#e0e0e0] py-8">
+    <div className="py-8">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-[#e0e0e0] mb-4">ヘルプ</h1>
