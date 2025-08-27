@@ -119,21 +119,11 @@ export function ServiceBuilderHome() {
         <div className="relative z-10">
           {/* Header Section */}
           <div className="pt-48 pb-8">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              className="text-center px-4"
-            >
-              <motion.h1
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.1 }}
-                className="text-3xl sm:text-4xl font-bold text-[#e0e0e0] mb-6"
-              >
+            <div className="text-center px-4">
+              <h1 className="text-3xl sm:text-4xl font-bold text-[#e0e0e0] mb-6">
 どんなアプリが欲しいですか？
-              </motion.h1>
-            </motion.div>
+              </h1>
+            </div>
             
             {/* Search Bar */}
             <div className="px-4">

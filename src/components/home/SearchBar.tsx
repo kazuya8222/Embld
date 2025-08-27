@@ -1,7 +1,6 @@
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react';
-import { motion } from 'motion/react';
 import { Button } from '../ui/button';
 import { Textarea } from '../ui/textarea';
 import { ArrowUp, ChevronDown, Zap, Bot } from 'lucide-react';
@@ -79,12 +78,7 @@ export function SearchBar({ onSubmit, placeholder = "どんなアプリが欲し
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, delay: 0.3 }}
-      className="w-full max-w-4xl mx-auto"
-    >
+    <div className="w-full max-w-4xl mx-auto">
       <div className={`bg-[#2a2a2a] backdrop-blur-sm rounded-2xl border ${isConfirmed ? 'border-blue-500' : 'border-[#3a3a3a]'} transition-colors duration-200`}>
         <div className="flex items-end px-4 pt-3 pb-1">
           <Textarea
@@ -159,7 +153,6 @@ export function SearchBar({ onSubmit, placeholder = "どんなアプリが欲し
           </div>
         </div>
       </div>
-
-    </motion.div>
+    </div>
   );
 }

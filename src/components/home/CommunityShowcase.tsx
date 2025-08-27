@@ -88,12 +88,7 @@ export function CommunityShowcase() {
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, delay: 0.6 }}
-      className="w-full max-w-7xl mx-auto px-4"
-    >
+    <div className="w-full max-w-7xl mx-auto px-4">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
@@ -114,7 +109,7 @@ export function CommunityShowcase() {
             key={post.id}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.7 + index * 0.1 }}
+            transition={{ duration: 0.6, delay: index * 0.1 }}
           >
             <Card className="bg-[#2a2a2a] border-[#3a3a3a] hover:bg-[#3a3a3a] transition-all duration-300 group cursor-pointer overflow-hidden">
               <div className="relative">
@@ -207,7 +202,6 @@ export function CommunityShowcase() {
           </motion.div>
         ))}
       </div>
-
-    </motion.div>
+    </div>
   );
 }

@@ -18,7 +18,6 @@ import {
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ja } from 'date-fns/locale';
-import { cn } from '@/lib/utils/cn';
 
 interface ChatSession {
   id: string;
@@ -187,11 +186,8 @@ export default function AgentHistoryPage() {
       </AnimatePresence>
 
       {/* Main Content */}
-      <div className={cn(
-        "min-h-screen transition-all duration-200",
-        shouldShowSidebar ? "ml-64" : "ml-0"
-      )}>
-        <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="pt-16">
+        <div className="max-w-7xl mx-auto p-6">
           {/* Header */}
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-[#e0e0e0] mb-2">エージェント履歴</h1>
@@ -213,12 +209,11 @@ export default function AgentHistoryPage() {
             
             <button
               onClick={() => setShowArchived(!showArchived)}
-              className={cn(
-                "flex items-center gap-2 px-4 py-3 rounded-lg transition-colors",
+              className={`flex items-center gap-2 px-4 py-3 rounded-lg transition-colors ${
                 showArchived
                   ? "bg-[#3a3a3a] text-[#e0e0e0]"
                   : "bg-[#2a2a2a] text-[#a0a0a0] hover:text-[#e0e0e0]"
-              )}
+              }`}
             >
               <Archive className="w-5 h-5" />
               <span>アーカイブ済み</span>
