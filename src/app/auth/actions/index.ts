@@ -122,3 +122,39 @@ export async function loginWithGoogle() {
     redirect(data.url)
   }
 }
+
+export async function loginWithApple() {
+  const supabase = createSupabaseServerClient()
+  
+  // 本番環境でのリダイレクトURLを動的に生成
+  let baseUrl = 'https://www.em-bld.com'
+  
+  // 開発環境の場合はlocalhostを使用
+  if (process.env.NODE_ENV === 'development') {
+    baseUrl = 'http://localhost:3000'
+  }
+  
+  // 環境変数が設定されている場合はそれを使用
+  if (process.env.NEXT_PUBLIC_APP_URL) {
+    baseUrl = process.env.NEXT_PUBLIC_APP_URL
+  }
+  
+  console.log('Apple login redirect URL:', `${baseUrl}/auth/callback`)
+  
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: 'apple',
+    options: {
+      redirectTo: `${baseUrl}/auth/callback`,
+    },
+  })
+
+  if (error) {
+    console.error('Apple login error:', error)
+    redirect('/auth/login?error=' + encodeURIComponent(error.message))
+  }
+
+  if (data.url) {
+    console.log('Redirecting to Apple OAuth URL:', data.url)
+    redirect(data.url)
+  }
+}

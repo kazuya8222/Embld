@@ -41,14 +41,20 @@ export async function GET(request: NextRequest) {
         if (!profile) {
           console.log('Creating new user profile for:', session.user.email)
           
-          // Google認証の場合、ユーザープロフィールを作成
+          // プロバイダーを特定
+          let authProvider = 'unknown'
+          if (session.user.app_metadata?.provider) {
+            authProvider = session.user.app_metadata.provider
+          }
+          
+          // OAuth認証の場合、ユーザープロフィールを作成
           const { error: insertError } = await supabase
             .from('users')
             .insert({
               id: session.user.id,
               email: session.user.email!,
-              auth_provider: 'google',
-              google_avatar_url: session.user.user_metadata?.avatar_url || null,
+              auth_provider: authProvider,
+              google_avatar_url: authProvider === 'google' ? (session.user.user_metadata?.avatar_url || null) : null,
             })
           
           if (insertError) {
