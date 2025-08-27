@@ -154,8 +154,8 @@ export default function AgentHistoryPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="text-white">Loading...</div>
+      <div className="min-h-screen bg-[#1a1a1a] flex items-center justify-center">
+        <div className="text-[#e0e0e0]">Loading...</div>
       </div>
     );
   }
@@ -165,7 +165,7 @@ export default function AgentHistoryPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 relative">
+    <div className="min-h-screen bg-[#1a1a1a] relative">
       {/* TopBar */}
       <TopBar onMenuToggle={handleMenuToggle} onMenuHover={handleMenuHover} />
       
@@ -194,20 +194,20 @@ export default function AgentHistoryPage() {
         <div className="max-w-7xl mx-auto px-4 py-8">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-white mb-2">エージェント履歴</h1>
-            <p className="text-gray-400">過去のAIエージェントとの対話履歴を管理</p>
+            <h1 className="text-3xl font-bold text-[#e0e0e0] mb-2">エージェント履歴</h1>
+            <p className="text-[#a0a0a0]">過去のAIエージェントとの対話履歴を管理</p>
           </div>
 
           {/* Filters */}
           <div className="mb-6 flex gap-4 items-center">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#a0a0a0] w-5 h-5" />
               <input
                 type="text"
                 placeholder="チャットを検索..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-600"
+                className="w-full pl-10 pr-4 py-3 bg-[#2a2a2a] border border-[#3a3a3a] rounded-lg text-[#e0e0e0] placeholder-[#a0a0a0] focus:outline-none focus:border-[#0066cc]"
               />
             </div>
             
@@ -216,8 +216,8 @@ export default function AgentHistoryPage() {
               className={cn(
                 "flex items-center gap-2 px-4 py-3 rounded-lg transition-colors",
                 showArchived
-                  ? "bg-gray-700 text-white"
-                  : "bg-gray-800 text-gray-400 hover:text-white"
+                  ? "bg-[#3a3a3a] text-[#e0e0e0]"
+                  : "bg-[#2a2a2a] text-[#a0a0a0] hover:text-[#e0e0e0]"
               )}
             >
               <Archive className="w-5 h-5" />
@@ -228,12 +228,12 @@ export default function AgentHistoryPage() {
           {/* Chat List */}
           {isLoading ? (
             <div className="text-center py-12">
-              <div className="text-gray-400">読み込み中...</div>
+              <div className="text-[#a0a0a0]">読み込み中...</div>
             </div>
           ) : filteredSessions.length === 0 ? (
             <div className="text-center py-12">
-              <MessageSquare className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-              <div className="text-gray-400">チャット履歴がありません</div>
+              <MessageSquare className="w-12 h-12 text-[#5a5a5a] mx-auto mb-4" />
+              <div className="text-[#a0a0a0]">チャット履歴がありません</div>
             </div>
           ) : (
             <div className="grid gap-4">
@@ -243,23 +243,23 @@ export default function AgentHistoryPage() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   onClick={() => router.push(`/agents/${session.id}`)}
-                  className="bg-gray-800 hover:bg-gray-750 rounded-lg p-6 cursor-pointer transition-colors group"
+                  className="bg-[#2a2a2a] hover:bg-[#3a3a3a] rounded-lg p-6 cursor-pointer transition-colors group"
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
                         <MessageSquare className="w-5 h-5 text-blue-500" />
-                        <h3 className="text-lg font-medium text-white">
+                        <h3 className="text-lg font-medium text-[#e0e0e0]">
                           {session.title}
                         </h3>
                         {session.is_archived && (
-                          <span className="px-2 py-1 bg-gray-700 text-gray-400 text-xs rounded">
+                          <span className="px-2 py-1 bg-[#3a3a3a] text-[#a0a0a0] text-xs rounded">
                             アーカイブ済み
                           </span>
                         )}
                       </div>
                       
-                      <div className="flex items-center gap-4 text-sm text-gray-400">
+                      <div className="flex items-center gap-4 text-sm text-[#a0a0a0]">
                         <div className="flex items-center gap-1">
                           <Calendar className="w-4 h-4" />
                           <span>
@@ -281,20 +281,20 @@ export default function AgentHistoryPage() {
                       {!session.is_archived && (
                         <button
                           onClick={(e) => archiveSession(session.id, e)}
-                          className="p-2 hover:bg-gray-700 rounded transition-colors"
+                          className="p-2 hover:bg-[#3a3a3a] rounded transition-colors"
                           title="アーカイブ"
                         >
-                          <Archive className="w-4 h-4 text-gray-400" />
+                          <Archive className="w-4 h-4 text-[#a0a0a0]" />
                         </button>
                       )}
                       <button
                         onClick={(e) => deleteSession(session.id, e)}
-                        className="p-2 hover:bg-gray-700 rounded transition-colors"
+                        className="p-2 hover:bg-[#3a3a3a] rounded transition-colors"
                         title="削除"
                       >
-                        <Trash2 className="w-4 h-4 text-gray-400" />
+                        <Trash2 className="w-4 h-4 text-[#a0a0a0]" />
                       </button>
-                      <ChevronRight className="w-5 h-5 text-gray-400" />
+                      <ChevronRight className="w-5 h-5 text-[#a0a0a0]" />
                     </div>
                   </div>
                 </motion.div>

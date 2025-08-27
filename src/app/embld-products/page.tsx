@@ -102,7 +102,7 @@ export default function EmbldProductsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-900 relative">
+      <div className="min-h-screen bg-[#1a1a1a] relative">
         <TopBar onMenuToggle={handleMenuToggle} onMenuHover={handleMenuHover} />
         <AnimatePresence>
           {shouldShowSidebar && (
@@ -122,11 +122,11 @@ export default function EmbldProductsPage() {
         <div className="pt-16">
           <div className="max-w-7xl mx-auto p-6">
             <div className="animate-pulse">
-              <div className="h-8 bg-gray-800 rounded w-1/4 mb-2"></div>
-              <div className="h-4 bg-gray-800 rounded w-1/2 mb-8"></div>
+              <div className="h-8 bg-[#2a2a2a] rounded w-1/4 mb-2"></div>
+              <div className="h-4 bg-[#2a2a2a] rounded w-1/2 mb-8"></div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {[...Array(9)].map((_, i) => (
-                  <div key={i} className="bg-gray-800 rounded-lg h-64"></div>
+                  <div key={i} className="bg-[#2a2a2a] rounded-lg h-64"></div>
                 ))}
               </div>
             </div>
@@ -137,7 +137,7 @@ export default function EmbldProductsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 relative">
+    <div className="min-h-screen bg-[#1a1a1a] relative">
       {/* TopBar */}
       <TopBar onMenuToggle={handleMenuToggle} onMenuHover={handleMenuHover} />
       
@@ -168,7 +168,7 @@ export default function EmbldProductsPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6 }}
-                className="text-3xl font-bold text-white mb-2"
+                className="text-3xl font-bold text-[#e0e0e0] mb-2"
               >
                 Embld プロダクト一覧
               </motion.h1>
@@ -176,18 +176,18 @@ export default function EmbldProductsPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.1 }}
-                className="text-gray-400"
+                className="text-[#a0a0a0]"
               >
                 Embldで開発された全てのプロダクトを探索しましょう
               </motion.p>
             </div>
             <div className="flex items-center gap-3">
               {/* View Mode Toggle */}
-              <div className="flex bg-gray-800 rounded-lg p-1">
+              <div className="flex bg-[#2a2a2a] rounded-lg p-1">
                 <button
                   onClick={() => setViewMode('grid')}
                   className={`p-2 rounded transition-colors ${
-                    viewMode === 'grid' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-white'
+                    viewMode === 'grid' ? 'bg-[#3a3a3a] text-[#e0e0e0]' : 'text-[#a0a0a0] hover:text-[#e0e0e0]'
                   }`}
                 >
                   <Grid className="w-4 h-4" />
@@ -195,7 +195,7 @@ export default function EmbldProductsPage() {
                 <button
                   onClick={() => setViewMode('list')}
                   className={`p-2 rounded transition-colors ${
-                    viewMode === 'list' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-white'
+                    viewMode === 'list' ? 'bg-[#3a3a3a] text-[#e0e0e0]' : 'text-[#a0a0a0] hover:text-[#e0e0e0]'
                   }`}
                 >
                   <List className="w-4 h-4" />
@@ -212,8 +212,8 @@ export default function EmbldProductsPage() {
                 onClick={() => setSelectedCategory(category)}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                   selectedCategory === category
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white'
+                    ? 'bg-[#0066cc] text-[#e0e0e0]'
+                    : 'bg-[#2a2a2a] text-[#a0a0a0] hover:bg-[#3a3a3a] hover:text-[#e0e0e0]'
                 }`}
               >
                 {category === 'all' ? 'すべて' : category}
@@ -234,15 +234,15 @@ export default function EmbldProductsPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.1 + index * 0.05 }}
               >
-                <Card className="bg-gray-800 border-gray-700 hover:bg-gray-750 transition-all duration-300 group cursor-pointer overflow-hidden">
+                <Card className="bg-[#2a2a2a] border-[#3a3a3a] hover:bg-[#3a3a3a] transition-all duration-300 group cursor-pointer overflow-hidden">
                   {product.featured && (
-                    <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white text-xs font-semibold px-3 py-1">
+                    <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-[#e0e0e0] text-xs font-semibold px-3 py-1">
                       FEATURED
                     </div>
                   )}
                   <div className="relative">
                     {/* Project Image */}
-                    <div className={`bg-gradient-to-br from-gray-700 to-gray-800 relative overflow-hidden ${
+                    <div className={`bg-gradient-to-br from-[#3a3a3a] to-[#2a2a2a] relative overflow-hidden ${
                       viewMode === 'grid' ? 'aspect-video' : 'aspect-[3/1]'
                     }`}>
                       {product.images && product.images.length > 0 ? (
@@ -253,7 +253,7 @@ export default function EmbldProductsPage() {
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
-                          <div className="text-gray-500 text-lg font-medium">
+                          <div className="text-[#a0a0a0] text-lg font-medium">
                             {product.title.charAt(0).toUpperCase()}
                           </div>
                         </div>
@@ -263,7 +263,7 @@ export default function EmbldProductsPage() {
                       {product.category && (
                         <Badge 
                           variant="secondary" 
-                          className="absolute top-3 left-3 bg-black/50 text-white border-0"
+                          className="absolute top-3 left-3 bg-black/50 text-[#e0e0e0] border-0"
                         >
                           {product.category}
                         </Badge>
@@ -274,7 +274,7 @@ export default function EmbldProductsPage() {
                         <Button 
                           variant="secondary" 
                           size="sm"
-                          className="bg-white text-black hover:bg-gray-200"
+                          className="bg-[#e0e0e0] text-black hover:bg-[#c0c0c0]"
                         >
                           詳細を見る
                         </Button>
@@ -284,10 +284,10 @@ export default function EmbldProductsPage() {
                     <CardContent className="p-4">
                       {/* Title & Description */}
                       <div className="mb-3">
-                        <h3 className="text-white font-semibold text-lg mb-2 line-clamp-1 group-hover:text-blue-400 transition-colors">
+                        <h3 className="text-[#e0e0e0] font-semibold text-lg mb-2 line-clamp-1 group-hover:text-blue-400 transition-colors">
                           {product.title}
                         </h3>
-                        <p className="text-gray-400 text-sm line-clamp-2">
+                        <p className="text-[#a0a0a0] text-sm line-clamp-2">
                           {product.description}
                         </p>
                       </div>
@@ -296,12 +296,12 @@ export default function EmbldProductsPage() {
                       {product.tech_stack && product.tech_stack.length > 0 && (
                         <div className="flex flex-wrap gap-1 mb-3">
                           {product.tech_stack.slice(0, viewMode === 'grid' ? 3 : 6).map((tech, i) => (
-                            <Badge key={i} variant="outline" className="text-xs border-gray-600 text-gray-300">
+                            <Badge key={i} variant="outline" className="text-xs border-[#3a3a3a] text-[#a0a0a0]">
                               {tech}
                             </Badge>
                           ))}
                           {product.tech_stack.length > (viewMode === 'grid' ? 3 : 6) && (
-                            <Badge variant="outline" className="text-xs border-gray-600 text-gray-300">
+                            <Badge variant="outline" className="text-xs border-[#3a3a3a] text-[#a0a0a0]">
                               +{product.tech_stack.length - (viewMode === 'grid' ? 3 : 6)}
                             </Badge>
                           )}
@@ -310,7 +310,7 @@ export default function EmbldProductsPage() {
 
                       {/* Stats */}
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4 text-sm text-gray-400">
+                        <div className="flex items-center gap-4 text-sm text-[#a0a0a0]">
                           <div className="flex items-center gap-1">
                             <Eye className="w-4 h-4" />
                             <span>{product.view_count || 0}</span>
@@ -328,7 +328,7 @@ export default function EmbldProductsPage() {
                               href={product.demo_url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-gray-400 hover:text-white"
+                              className="text-[#a0a0a0] hover:text-[#e0e0e0]"
                             >
                               <ArrowUpRight className="w-4 h-4" />
                             </a>
@@ -338,7 +338,7 @@ export default function EmbldProductsPage() {
                               href={product.github_url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-gray-400 hover:text-white"
+                              className="text-[#a0a0a0] hover:text-[#e0e0e0]"
                             >
                               <GitFork className="w-4 h-4" />
                             </a>
@@ -354,7 +354,7 @@ export default function EmbldProductsPage() {
 
           {filteredProducts.length === 0 && (
             <div className="text-center py-20">
-              <div className="text-gray-400 mb-4">
+              <div className="text-[#a0a0a0] mb-4">
                 {selectedCategory === 'all' 
                   ? 'まだプロダクトが登録されていません'
                   : `${selectedCategory}カテゴリにはプロダクトがありません`

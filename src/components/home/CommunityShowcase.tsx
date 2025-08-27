@@ -75,11 +75,11 @@ export function CommunityShowcase() {
     return (
       <div className="w-full max-w-7xl mx-auto px-4">
         <div className="animate-pulse">
-          <div className="h-8 bg-gray-800 rounded w-1/4 mb-2"></div>
-          <div className="h-4 bg-gray-800 rounded w-1/2 mb-8"></div>
+          <div className="h-8 bg-[#2a2a2a] rounded w-1/4 mb-2"></div>
+          <div className="h-4 bg-[#2a2a2a] rounded w-1/2 mb-8"></div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[...Array(6)].map((_, i) => (
-              <div key={i} className="bg-gray-800 rounded-lg h-64"></div>
+              <div key={i} className="bg-[#2a2a2a] rounded-lg h-64"></div>
             ))}
           </div>
         </div>
@@ -97,11 +97,11 @@ export function CommunityShowcase() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h2 className="text-xl font-bold text-white mb-2">完成アプリ一覧</h2>
-          <p className="text-gray-400">embldで開発されたアプリを見てみましょう。</p>
+          <h2 className="text-xl font-bold text-[#e0e0e0] mb-2">完成アプリ一覧</h2>
+          <p className="text-[#a0a0a0]">embldで開発されたアプリを見てみましょう。</p>
         </div>
         <Link href="/embld-products">
-          <Button variant="ghost" className="text-gray-400 hover:text-white">
+          <Button variant="ghost" className="text-[#a0a0a0] hover:text-[#e0e0e0]">
             全て見る <ArrowUpRight className="w-4 h-4 ml-1" />
           </Button>
         </Link>
@@ -116,10 +116,10 @@ export function CommunityShowcase() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.7 + index * 0.1 }}
           >
-            <Card className="bg-gray-800 border-gray-700 hover:bg-gray-750 transition-all duration-300 group cursor-pointer overflow-hidden">
+            <Card className="bg-[#2a2a2a] border-[#3a3a3a] hover:bg-[#3a3a3a] transition-all duration-300 group cursor-pointer overflow-hidden">
               <div className="relative">
                 {/* Project Image */}
-                <div className="aspect-video bg-gradient-to-br from-gray-700 to-gray-800 relative overflow-hidden">
+                <div className="aspect-video bg-gradient-to-br from-[#3a3a3a] to-[#2a2a2a] relative overflow-hidden">
                   {post.images && post.images.length > 0 ? (
                     <img 
                       src={post.images[0]} 
@@ -128,7 +128,7 @@ export function CommunityShowcase() {
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
-                      <div className="text-gray-500 text-lg font-medium">
+                      <div className="text-[#a0a0a0] text-lg font-medium">
                         {post.title.charAt(0).toUpperCase()}
                       </div>
                     </div>
@@ -138,7 +138,7 @@ export function CommunityShowcase() {
                   {post.category && (
                     <Badge 
                       variant="secondary" 
-                      className="absolute top-3 left-3 bg-black/50 text-white border-0"
+                      className="absolute top-3 left-3 bg-black/50 text-[#e0e0e0] border-0"
                     >
                       {post.category}
                     </Badge>
@@ -149,7 +149,7 @@ export function CommunityShowcase() {
                     <Button 
                       variant="secondary" 
                       size="sm"
-                      className="bg-white text-black hover:bg-gray-200"
+                      className="bg-[#e0e0e0] text-black hover:bg-[#c0c0c0]"
                     >
                       View Details
                     </Button>
@@ -159,10 +159,10 @@ export function CommunityShowcase() {
                 <CardContent className="p-4">
                   {/* Title & Description */}
                   <div className="mb-3">
-                    <h3 className="text-white font-semibold text-lg mb-2 line-clamp-1 group-hover:text-blue-400 transition-colors">
+                    <h3 className="text-[#e0e0e0] font-semibold text-lg mb-2 line-clamp-1 group-hover:text-blue-400 transition-colors">
                       {post.title}
                     </h3>
-                    <p className="text-gray-400 text-sm line-clamp-2">
+                    <p className="text-[#a0a0a0] text-sm line-clamp-2">
                       {post.description}
                     </p>
                   </div>
@@ -171,12 +171,12 @@ export function CommunityShowcase() {
                   {post.tech_stack && post.tech_stack.length > 0 && (
                     <div className="flex flex-wrap gap-1 mb-3">
                       {post.tech_stack.slice(0, 3).map((tech, i) => (
-                        <Badge key={i} variant="outline" className="text-xs border-gray-600 text-gray-300">
+                        <Badge key={i} variant="outline" className="text-xs border-[#3a3a3a] text-[#a0a0a0]">
                           {tech}
                         </Badge>
                       ))}
                       {post.tech_stack.length > 3 && (
-                        <Badge variant="outline" className="text-xs border-gray-600 text-gray-300">
+                        <Badge variant="outline" className="text-xs border-[#3a3a3a] text-[#a0a0a0]">
                           +{post.tech_stack.length - 3}
                         </Badge>
                       )}
@@ -185,7 +185,7 @@ export function CommunityShowcase() {
 
                   {/* Stats */}
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4 text-sm text-gray-400">
+                    <div className="flex items-center gap-4 text-sm text-[#a0a0a0]">
                       <div className="flex items-center gap-1">
                         <GitFork className="w-4 h-4" />
                         <span>{post.view_count || 0}</span>
@@ -197,7 +197,7 @@ export function CommunityShowcase() {
                     </div>
                     
                     {/* User Avatar */}
-                    <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-medium">
+                    <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-[#e0e0e0] text-xs font-medium">
                       {post.user_id?.charAt(0).toUpperCase() || 'U'}
                     </div>
                   </div>

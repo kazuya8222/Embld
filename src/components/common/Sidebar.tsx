@@ -161,7 +161,7 @@ export function Sidebar({ className, onLockToggle }: SidebarProps) {
 
   return (
     <div className={cn(
-      "flex flex-col h-screen bg-gray-950 text-white border-r border-gray-800",
+      "flex flex-col h-screen bg-[#2a2a2a] text-[#e0e0e0] border-r border-[#3a3a3a]",
       isCollapsed ? "w-16" : "w-64",
       className
     )}>
@@ -171,7 +171,7 @@ export function Sidebar({ className, onLockToggle }: SidebarProps) {
           onClick={onLockToggle}
           variant="ghost"
           size="sm"
-          className="text-gray-400 hover:text-white hover:bg-gray-800 transition-colors p-2"
+          className="text-[#a0a0a0] hover:text-[#e0e0e0] hover:bg-[#3a3a3a] transition-colors p-2"
         >
           <PanelLeftClose className="w-4 h-4" />
         </Button>
@@ -186,8 +186,8 @@ export function Sidebar({ className, onLockToggle }: SidebarProps) {
             className={cn(
               "flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors",
               pathname === item.href || (item.href === '/home' && pathname === '/')
-                ? "bg-gray-800 text-white"
-                : "text-gray-300 hover:text-white hover:bg-gray-800"
+                ? "bg-[#3a3a3a] text-[#e0e0e0]"
+                : "text-[#a0a0a0] hover:text-[#e0e0e0] hover:bg-[#3a3a3a]"
             )}
           >
             <item.icon className={cn("w-5 h-5", !isCollapsed && "mr-3")} />
@@ -200,15 +200,15 @@ export function Sidebar({ className, onLockToggle }: SidebarProps) {
           <>
             <div className="pt-4 pb-2">
               <div className="flex items-center justify-between px-3">
-                <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                <h3 className="text-xs font-semibold text-[#a0a0a0] uppercase tracking-wider">
                   チャット履歴
                 </h3>
                 <button
                   onClick={createNewChat}
-                  className="p-1 hover:bg-gray-800 rounded transition-colors"
+                  className="p-1 hover:bg-[#3a3a3a] rounded transition-colors"
                   title="新しいチャット"
                 >
-                  <Plus className="w-4 h-4 text-gray-400 hover:text-white" />
+                  <Plus className="w-4 h-4 text-[#a0a0a0] hover:text-[#e0e0e0]" />
                 </button>
               </div>
             </div>
@@ -220,8 +220,8 @@ export function Sidebar({ className, onLockToggle }: SidebarProps) {
                   className={cn(
                     "group flex items-center px-3 py-2 text-sm rounded-lg transition-colors cursor-pointer",
                     currentChatId === session.id
-                      ? "bg-gray-800 text-white"
-                      : "text-gray-300 hover:text-white hover:bg-gray-800"
+                      ? "bg-[#3a3a3a] text-[#e0e0e0]"
+                      : "text-[#a0a0a0] hover:text-[#e0e0e0] hover:bg-[#3a3a3a]"
                   )}
                   onClick={() => {
                     if (editingChatId !== session.id) {
@@ -246,7 +246,7 @@ export function Sidebar({ className, onLockToggle }: SidebarProps) {
                       }}
                       onBlur={() => updateChatTitle(session.id, editTitle)}
                       onClick={(e) => e.stopPropagation()}
-                      className="flex-1 bg-gray-700 border border-gray-600 rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-blue-600"
+                      className="flex-1 bg-[#3a3a3a] border border-[#4a4a4a] rounded px-2 py-1 text-xs text-[#e0e0e0] focus:outline-none focus:border-blue-600"
                       autoFocus
                     />
                   ) : (
@@ -265,25 +265,25 @@ export function Sidebar({ className, onLockToggle }: SidebarProps) {
                         setEditingChatId(session.id);
                         setEditTitle(session.title);
                       }}
-                      className="p-1 hover:bg-gray-700 rounded"
+                      className="p-1 hover:bg-[#4a4a4a] rounded"
                     >
-                      <Edit2 className="w-3 h-3 text-gray-400" />
+                      <Edit2 className="w-3 h-3 text-[#a0a0a0]" />
                     </button>
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         deleteChatSession(session.id);
                       }}
-                      className="p-1 hover:bg-gray-700 rounded"
+                      className="p-1 hover:bg-[#4a4a4a] rounded"
                     >
-                      <Trash2 className="w-3 h-3 text-gray-400" />
+                      <Trash2 className="w-3 h-3 text-[#a0a0a0]" />
                     </button>
                   </div>
                 </div>
               ))}
               
               {chatSessions.length === 0 && (
-                <div className="px-3 py-2 text-xs text-gray-500">
+                <div className="px-3 py-2 text-xs text-[#a0a0a0]">
                   チャット履歴はありません
                 </div>
               )}
@@ -291,7 +291,7 @@ export function Sidebar({ className, onLockToggle }: SidebarProps) {
               {chatSessions.length > 0 && (
                 <Link
                   href="/agents/history"
-                  className="flex items-center px-3 py-2 text-xs text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
+                  className="flex items-center px-3 py-2 text-xs text-[#a0a0a0] hover:text-[#e0e0e0] hover:bg-[#3a3a3a] rounded-lg transition-colors"
                 >
                   <Archive className="w-3 h-3 mr-2" />
                   すべて表示
@@ -303,7 +303,7 @@ export function Sidebar({ className, onLockToggle }: SidebarProps) {
         
         {/* Separator */}
         <div className="my-6">
-          <div className="border-t border-gray-800"></div>
+          <div className="border-t border-[#3a3a3a]"></div>
         </div>
         
         {bottomMenuItems.map((item) => (
@@ -313,8 +313,8 @@ export function Sidebar({ className, onLockToggle }: SidebarProps) {
             className={cn(
               "flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors",
               pathname === item.href
-                ? "bg-gray-800 text-white"
-                : "text-gray-300 hover:text-white hover:bg-gray-800"
+                ? "bg-[#3a3a3a] text-[#e0e0e0]"
+                : "text-[#a0a0a0] hover:text-[#e0e0e0] hover:bg-[#3a3a3a]"
             )}
           >
             <item.icon className={cn("w-5 h-5", !isCollapsed && "mr-3")} />
@@ -327,14 +327,14 @@ export function Sidebar({ className, onLockToggle }: SidebarProps) {
       <div className="flex-1"></div>
 
       {/* User Section */}
-      <div className="p-4 border-t border-gray-800">
+      <div className="p-4 border-t border-[#3a3a3a]">
         {user ? (
           <div className="space-y-2">
             {!isCollapsed && (
               <>
                 <button
                   onClick={() => setIsSettingsOpen(true)}
-                  className="flex items-center w-full px-3 py-2 text-sm font-medium text-gray-300 rounded-lg hover:text-white hover:bg-gray-800 transition-colors"
+                  className="flex items-center w-full px-3 py-2 text-sm font-medium text-[#a0a0a0] rounded-lg hover:text-[#e0e0e0] hover:bg-[#3a3a3a] transition-colors"
                 >
                   <Settings className="w-4 h-4 mr-3" />
                   設定
@@ -342,7 +342,7 @@ export function Sidebar({ className, onLockToggle }: SidebarProps) {
                 {userProfile?.is_admin && (
                   <Link
                     href="/admin"
-                    className="flex items-center w-full px-3 py-2 text-sm font-medium text-red-400 rounded-lg hover:text-red-300 hover:bg-gray-800 transition-colors"
+                    className="flex items-center w-full px-3 py-2 text-sm font-medium text-red-400 rounded-lg hover:text-red-300 hover:bg-[#3a3a3a] transition-colors"
                   >
                     <Shield className="w-4 h-4 mr-3" />
                     管理者画面
@@ -350,7 +350,7 @@ export function Sidebar({ className, onLockToggle }: SidebarProps) {
                 )}
                 <button
                   onClick={handleSignOut}
-                  className="flex items-center w-full px-3 py-2 text-sm font-medium text-gray-300 rounded-lg hover:text-white hover:bg-gray-800 transition-colors"
+                  className="flex items-center w-full px-3 py-2 text-sm font-medium text-[#a0a0a0] rounded-lg hover:text-[#e0e0e0] hover:bg-[#3a3a3a] transition-colors"
                 >
                   <LogOut className="w-4 h-4 mr-3" />
                   ログアウト
@@ -359,7 +359,7 @@ export function Sidebar({ className, onLockToggle }: SidebarProps) {
             )}
             {isCollapsed && (
               <div className="flex flex-col space-y-2">
-                <button onClick={handleSignOut} className="p-2 text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg transition-colors">
+                <button onClick={handleSignOut} className="p-2 text-[#a0a0a0] hover:text-[#e0e0e0] hover:bg-[#3a3a3a] rounded-lg transition-colors">
                   <LogOut className="w-4 h-4" />
                 </button>
               </div>
@@ -371,7 +371,7 @@ export function Sidebar({ className, onLockToggle }: SidebarProps) {
               <>
                 <Link
                   href="/auth/login"
-                  className="flex items-center w-full px-3 py-2 text-sm font-medium text-gray-300 rounded-lg hover:text-white hover:bg-gray-800 transition-colors"
+                  className="flex items-center w-full px-3 py-2 text-sm font-medium text-[#a0a0a0] rounded-lg hover:text-[#e0e0e0] hover:bg-[#3a3a3a] transition-colors"
                 >
                   <LogIn className="w-4 h-4 mr-3" />
                   ログイン
@@ -380,7 +380,7 @@ export function Sidebar({ className, onLockToggle }: SidebarProps) {
             )}
             {isCollapsed && (
               <div className="flex flex-col space-y-2">
-                <Link href="/auth/login" className="p-2 text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg transition-colors">
+                <Link href="/auth/login" className="p-2 text-[#a0a0a0] hover:text-[#e0e0e0] hover:bg-[#3a3a3a] rounded-lg transition-colors">
                   <LogIn className="w-4 h-4" />
                 </Link>
               </div>

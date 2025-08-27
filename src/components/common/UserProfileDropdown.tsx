@@ -86,20 +86,20 @@ export function UserProfileDropdown() {
         {/* Top Bar Icons */}
         <div className="flex items-center space-x-3">
           {/* Notification Bell */}
-          <button className="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors">
+          <button className="p-2 text-[#a0a0a0] hover:text-[#e0e0e0] hover:bg-[#3a3a3a] rounded-lg transition-colors">
             <Bell className="w-5 h-5" />
           </button>
           
           {/* Credits */}
-          <div className="flex items-center space-x-2 px-3 py-2 bg-gray-800 rounded-lg">
+          <div className="flex items-center space-x-2 px-3 py-2 bg-[#2a2a2a] rounded-lg">
             <Sparkles className="w-4 h-4 text-blue-400" />
-            <span className="text-white text-sm">753</span>
+            <span className="text-[#e0e0e0] text-sm">753</span>
           </div>
 
           {/* User Avatar */}
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="w-8 h-8 bg-pink-600 hover:bg-pink-700 rounded-full flex items-center justify-center text-white font-semibold transition-colors overflow-hidden"
+            className="w-8 h-8 bg-pink-600 hover:bg-pink-700 rounded-full flex items-center justify-center text-[#e0e0e0] font-semibold transition-colors overflow-hidden"
           >
             {getAvatarUrl() ? (
               <img 
@@ -121,12 +121,12 @@ export function UserProfileDropdown() {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 10, scale: 0.95 }}
               transition={{ duration: 0.2 }}
-              className="absolute right-0 top-full mt-2 w-72 bg-gray-800 border border-gray-700 rounded-xl shadow-2xl overflow-hidden z-50"
+              className="absolute right-0 top-full mt-2 w-72 bg-[#2a2a2a] border border-[#3a3a3a] rounded-xl shadow-2xl overflow-hidden z-50"
             >
               {/* User Info Header */}
-              <div className="p-3 border-b border-gray-700">
+              <div className="p-3 border-b border-[#3a3a3a]">
                 <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-pink-600 rounded-full flex items-center justify-center text-white font-semibold text-sm overflow-hidden">
+                  <div className="w-10 h-10 bg-pink-600 rounded-full flex items-center justify-center text-[#e0e0e0] font-semibold text-sm overflow-hidden">
                     {getAvatarUrl() ? (
                       <img 
                         src={getAvatarUrl()} 
@@ -138,44 +138,44 @@ export function UserProfileDropdown() {
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-white font-semibold text-base truncate">
+                    <h3 className="text-[#e0e0e0] font-semibold text-base truncate">
                       {getUserName()}
                     </h3>
-                    <p className="text-gray-400 text-xs truncate">
+                    <p className="text-[#a0a0a0] text-xs truncate">
                       {getUserEmail()}
                     </p>
                   </div>
-                  <button className="p-1.5 text-gray-400 hover:text-white transition-colors">
+                  <button className="p-1.5 text-[#a0a0a0] hover:text-[#e0e0e0] transition-colors">
                     <ArrowUpRight className="w-3.5 h-3.5" />
                   </button>
                 </div>
               </div>
 
               {/* Plan Section */}
-              <div className="p-3 border-b border-gray-700">
+              <div className="p-3 border-b border-[#3a3a3a]">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-gray-300 font-medium text-sm">無料</span>
+                  <span className="text-[#a0a0a0] font-medium text-sm">無料</span>
                   <Button 
                     variant="secondary" 
                     size="sm"
-                    className="bg-white text-black hover:bg-gray-200 px-3 py-1 text-xs h-7"
+                    className="bg-[#e0e0e0] text-black hover:bg-[#c0c0c0] px-3 py-1 text-xs h-7"
                   >
                     アップグレード
                   </Button>
                 </div>
                 
                 {/* Credits */}
-                <div className="flex items-center justify-between p-2.5 bg-gray-700/50 rounded-lg">
+                <div className="flex items-center justify-between p-2.5 bg-[#3a3a3a]/50 rounded-lg">
                   <div className="flex items-center space-x-2">
                     <Sparkles className="w-4 h-4 text-blue-400" />
-                    <span className="text-gray-300 text-sm">クレジット</span>
-                    <button className="p-1 text-gray-400 hover:text-white transition-colors">
+                    <span className="text-[#a0a0a0] text-sm">クレジット</span>
+                    <button className="p-1 text-[#a0a0a0] hover:text-[#e0e0e0] transition-colors">
                       <HelpCircle className="w-2.5 h-2.5" />
                     </button>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <span className="text-white font-semibold text-sm">753</span>
-                    <ArrowUpRight className="w-3.5 h-3.5 text-gray-400" />
+                    <span className="text-[#e0e0e0] font-semibold text-sm">753</span>
+                    <ArrowUpRight className="w-3.5 h-3.5 text-[#a0a0a0]" />
                   </div>
                 </div>
               </div>
@@ -185,13 +185,13 @@ export function UserProfileDropdown() {
                 {/* Settings */}
                 <button 
                   onClick={handleSettingsClick}
-                  className="w-full flex items-center space-x-3 px-3 py-2.5 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors text-sm"
+                  className="w-full flex items-center space-x-3 px-3 py-2.5 text-[#a0a0a0] hover:bg-[#3a3a3a] hover:text-[#e0e0e0] transition-colors text-sm"
                 >
                   <Settings className="w-4 h-4" />
                   <span>設定</span>
                 </button>
 
-                <div className="border-t border-gray-700 my-1"></div>
+                <div className="border-t border-[#3a3a3a] my-1"></div>
 
                 {/* Homepage */}
                 <button 
@@ -199,7 +199,7 @@ export function UserProfileDropdown() {
                     setIsOpen(false);
                     window.location.href = '/';
                   }}
-                  className="w-full flex items-center justify-between px-3 py-2.5 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors text-sm"
+                  className="w-full flex items-center justify-between px-3 py-2.5 text-[#a0a0a0] hover:bg-[#3a3a3a] hover:text-[#e0e0e0] transition-colors text-sm"
                 >
                   <div className="flex items-center space-x-3">
                     <Home className="w-4 h-4" />
@@ -208,12 +208,12 @@ export function UserProfileDropdown() {
                   <ExternalLink className="w-3.5 h-3.5" />
                 </button>
 
-                <div className="border-t border-gray-700 my-1"></div>
+                <div className="border-t border-[#3a3a3a] my-1"></div>
 
                 {/* Sign Out */}
                 <button 
                   onClick={handleSignOut}
-                  className="w-full flex items-center space-x-3 px-3 py-2.5 text-red-400 hover:bg-gray-700 hover:text-red-300 transition-colors text-sm"
+                  className="w-full flex items-center space-x-3 px-3 py-2.5 text-red-400 hover:bg-[#3a3a3a] hover:text-red-300 transition-colors text-sm"
                 >
                   <LogOut className="w-4 h-4" />
                   <span>ログアウト</span>

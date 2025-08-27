@@ -85,7 +85,7 @@ export function SearchBar({ onSubmit, placeholder = "どんなアプリが欲し
       transition={{ duration: 0.6, delay: 0.3 }}
       className="w-full max-w-4xl mx-auto"
     >
-      <div className={`bg-gray-800 backdrop-blur-sm rounded-2xl border ${isConfirmed ? 'border-blue-500' : 'border-gray-700'} transition-colors duration-200`}>
+      <div className={`bg-[#2a2a2a] backdrop-blur-sm rounded-2xl border ${isConfirmed ? 'border-blue-500' : 'border-[#3a3a3a]'} transition-colors duration-200`}>
         <div className="flex items-end px-4 pt-3 pb-1">
           <Textarea
             value={input}
@@ -102,7 +102,7 @@ export function SearchBar({ onSubmit, placeholder = "どんなアプリが欲し
             }}
             onKeyDown={handleKeyDown}
             placeholder={isConfirmed ? "もう一度Enterキーで送信" : placeholder}
-            className="flex-1 min-h-[60px] text-lg bg-transparent border-0 focus:ring-0 focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 resize-none text-white placeholder:text-gray-400 pr-4"
+            className="flex-1 min-h-[60px] text-lg bg-transparent border-0 focus:ring-0 focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 resize-none text-[#e0e0e0] placeholder:text-[#a0a0a0] pr-4"
           />
           
           <div className="flex items-center gap-3">
@@ -112,7 +112,7 @@ export function SearchBar({ onSubmit, placeholder = "どんなアプリが欲し
                 onClick={() => setShowModelDropdown(!showModelDropdown)}
                 variant="ghost"
                 size="sm"
-                className="flex items-center gap-2 text-gray-300 hover:text-white hover:bg-gray-700 px-3 py-2 text-sm"
+                className="flex items-center gap-2 text-[#a0a0a0] hover:text-[#e0e0e0] hover:bg-[#3a3a3a] px-3 py-2 text-sm"
               >
                 <span>{selectedModelOption?.label}</span>
                 <ChevronDown className="w-3 h-3" />
@@ -120,7 +120,7 @@ export function SearchBar({ onSubmit, placeholder = "どんなアプリが欲し
               
               {/* ドロップダウンメニュー */}
               {showModelDropdown && (
-                <div className="absolute top-full right-0 mt-1 w-64 bg-gray-800 border border-gray-600 rounded-lg shadow-lg z-10">
+                <div className="absolute top-full right-0 mt-1 w-64 bg-[#2a2a2a] border border-[#3a3a3a] rounded-lg shadow-lg z-10">
                   {modelOptions.map((option) => {
                     const OptionIcon = option.icon;
                     return (
@@ -130,14 +130,14 @@ export function SearchBar({ onSubmit, placeholder = "どんなアプリが欲し
                           setSelectedModel(option.id);
                           setShowModelDropdown(false);
                         }}
-                        className={`w-full flex items-start gap-3 p-3 text-left hover:bg-gray-700 transition-colors ${
-                          selectedModel === option.id ? 'bg-gray-700' : ''
+                        className={`w-full flex items-start gap-3 p-3 text-left hover:bg-[#3a3a3a] transition-colors ${
+                          selectedModel === option.id ? 'bg-[#3a3a3a]' : ''
                         }`}
                       >
                         <OptionIcon className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" />
                         <div>
-                          <div className="text-white text-sm font-medium">{option.label}</div>
-                          <div className="text-gray-400 text-xs">{option.description}</div>
+                          <div className="text-[#e0e0e0] text-sm font-medium">{option.label}</div>
+                          <div className="text-[#a0a0a0] text-xs">{option.description}</div>
                         </div>
                         {selectedModel === option.id && (
                           <div className="ml-auto text-blue-400">✓</div>
@@ -152,7 +152,7 @@ export function SearchBar({ onSubmit, placeholder = "どんなアプリが欲し
             <Button
               onClick={handleSubmit}
               disabled={!input.trim()}
-              className="w-8 h-8 rounded-full bg-white hover:bg-gray-100 text-black p-0 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-8 h-8 rounded-full bg-white hover:bg-[#f0f0f0] text-black p-0 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <ArrowUp className="w-4 h-4" />
             </Button>

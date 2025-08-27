@@ -97,14 +97,14 @@ export default function ProductsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-900 p-6">
+      <div className="min-h-screen bg-[#1a1a1a] p-6">
         <div className="max-w-7xl mx-auto">
           <div className="animate-pulse">
-            <div className="h-8 bg-gray-800 rounded w-1/4 mb-2"></div>
-            <div className="h-4 bg-gray-800 rounded w-1/2 mb-8"></div>
+            <div className="h-8 bg-[#2a2a2a] rounded w-1/4 mb-2"></div>
+            <div className="h-4 bg-[#2a2a2a] rounded w-1/2 mb-8"></div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {[...Array(6)].map((_, i) => (
-                <div key={i} className="bg-gray-800 rounded-lg h-64"></div>
+                <div key={i} className="bg-[#2a2a2a] rounded-lg h-64"></div>
               ))}
             </div>
           </div>
@@ -115,9 +115,9 @@ export default function ProductsPage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-[#1a1a1a] flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-white mb-4">ログインが必要です</h1>
+          <h1 className="text-2xl font-bold text-[#e0e0e0] mb-4">ログインが必要です</h1>
           <Link href="/auth/login">
             <Button>ログイン</Button>
           </Link>
@@ -127,7 +127,7 @@ export default function ProductsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 relative">
+    <div className="min-h-screen bg-[#1a1a1a] relative">
       {/* TopBar */}
       <TopBar onMenuToggle={handleMenuToggle} onMenuHover={handleMenuHover} />
       
@@ -157,7 +157,7 @@ export default function ProductsPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="text-3xl font-bold text-white mb-2"
+            className="text-3xl font-bold text-[#e0e0e0] mb-2"
           >
             あなたのプロダクト
           </motion.h1>
@@ -165,7 +165,7 @@ export default function ProductsPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-gray-400"
+            className="text-[#a0a0a0]"
           >
             開発したプロダクトを管理しましょう
           </motion.p>
@@ -178,8 +178,8 @@ export default function ProductsPage() {
             transition={{ duration: 0.6, delay: 0.3 }}
             className="flex flex-col items-center justify-center py-20"
           >
-            <Rocket className="w-16 h-16 text-gray-600 mb-6" />
-            <h2 className="text-xl font-semibold text-white mb-2">
+            <Rocket className="w-16 h-16 text-[#5a5a5a] mb-6" />
+            <h2 className="text-xl font-semibold text-[#e0e0e0] mb-2">
               まだプロダクトがないです。
             </h2>
           </motion.div>
@@ -192,10 +192,10 @@ export default function ProductsPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.3 + index * 0.1 }}
               >
-                <Card className="bg-gray-800 border-gray-700 hover:bg-gray-750 transition-all duration-300 group cursor-pointer overflow-hidden">
+                <Card className="bg-[#2a2a2a] border-[#3a3a3a] hover:bg-[#3a3a3a] transition-all duration-300 group cursor-pointer overflow-hidden">
                   <div className="relative">
                     {/* Project Image */}
-                    <div className="aspect-video bg-gradient-to-br from-gray-700 to-gray-800 relative overflow-hidden">
+                    <div className="aspect-video bg-gradient-to-br from-[#3a3a3a] to-[#2a2a2a] relative overflow-hidden">
                       {product.images && product.images.length > 0 ? (
                         <img 
                           src={product.images[0]} 
@@ -204,7 +204,7 @@ export default function ProductsPage() {
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
-                          <div className="text-gray-500 text-lg font-medium">
+                          <div className="text-[#a0a0a0] text-lg font-medium">
                             {product.title.charAt(0).toUpperCase()}
                           </div>
                         </div>
@@ -214,7 +214,7 @@ export default function ProductsPage() {
                       {product.category && (
                         <Badge 
                           variant="secondary" 
-                          className="absolute top-3 left-3 bg-black/50 text-white border-0"
+                          className="absolute top-3 left-3 bg-black/50 text-[#e0e0e0] border-0"
                         >
                           {product.category}
                         </Badge>
@@ -224,10 +224,10 @@ export default function ProductsPage() {
                     <CardContent className="p-4">
                       {/* Title & Description */}
                       <div className="mb-3">
-                        <h3 className="text-white font-semibold text-lg mb-2 line-clamp-1">
+                        <h3 className="text-[#e0e0e0] font-semibold text-lg mb-2 line-clamp-1">
                           {product.title}
                         </h3>
-                        <p className="text-gray-400 text-sm line-clamp-2">
+                        <p className="text-[#a0a0a0] text-sm line-clamp-2">
                           {product.description}
                         </p>
                       </div>
@@ -236,12 +236,12 @@ export default function ProductsPage() {
                       {product.tech_stack && product.tech_stack.length > 0 && (
                         <div className="flex flex-wrap gap-1 mb-3">
                           {product.tech_stack.slice(0, 3).map((tech, i) => (
-                            <Badge key={i} variant="outline" className="text-xs border-gray-600 text-gray-300">
+                            <Badge key={i} variant="outline" className="text-xs border-[#3a3a3a] text-[#a0a0a0]">
                               {tech}
                             </Badge>
                           ))}
                           {product.tech_stack.length > 3 && (
-                            <Badge variant="outline" className="text-xs border-gray-600 text-gray-300">
+                            <Badge variant="outline" className="text-xs border-[#3a3a3a] text-[#a0a0a0]">
                               +{product.tech_stack.length - 3}
                             </Badge>
                           )}
@@ -250,7 +250,7 @@ export default function ProductsPage() {
 
                       {/* Stats */}
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4 text-sm text-gray-400">
+                        <div className="flex items-center gap-4 text-sm text-[#a0a0a0]">
                           <div className="flex items-center gap-1">
                             <Eye className="w-4 h-4" />
                             <span>{product.view_count || 0}</span>
@@ -268,7 +268,7 @@ export default function ProductsPage() {
                               href={product.demo_url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-gray-400 hover:text-white"
+                              className="text-[#a0a0a0] hover:text-[#e0e0e0]"
                             >
                               <ArrowUpRight className="w-4 h-4" />
                             </a>
@@ -278,7 +278,7 @@ export default function ProductsPage() {
                               href={product.github_url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-gray-400 hover:text-white"
+                              className="text-[#a0a0a0] hover:text-[#e0e0e0]"
                             >
                               <GitFork className="w-4 h-4" />
                             </a>

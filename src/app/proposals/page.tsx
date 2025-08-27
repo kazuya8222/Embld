@@ -78,17 +78,17 @@ export default function ProposalsPage() {
 
   if (loading) {
     return (
-      <div className="h-screen flex flex-col bg-gray-900">
+      <div className="h-screen flex flex-col bg-[#1a1a1a]">
         <TopBar onMenuToggle={handleMenuToggle} onMenuHover={handleMenuHover} />
         <div className="flex-1 flex items-center justify-center">
-          <div className="text-white">読み込み中...</div>
+          <div className="text-[#e0e0e0]">読み込み中...</div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="h-screen flex flex-col bg-gray-900 relative overflow-hidden">
+    <div className="h-screen flex flex-col bg-[#1a1a1a] relative overflow-hidden">
       {/* Sidebar Overlay */}
       <AnimatePresence>
         {shouldShowSidebar && (
@@ -115,13 +115,13 @@ export default function ProposalsPage() {
           {/* Header */}
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h1 className="text-3xl font-bold text-white mb-2">企画書一覧</h1>
-              <p className="text-gray-400">作成した企画書を管理できます</p>
+              <h1 className="text-3xl font-bold text-[#e0e0e0] mb-2">企画書一覧</h1>
+              <p className="text-[#a0a0a0]">作成した企画書を管理できます</p>
             </div>
             
             <Button
               onClick={() => router.push('/home')}
-              className="bg-blue-600 text-white hover:bg-blue-700"
+              className="bg-[#0066cc] text-[#e0e0e0] hover:bg-[#0052a3]"
             >
               <Plus className="w-4 h-4 mr-2" />
               新しい企画書を作成
@@ -131,16 +131,16 @@ export default function ProposalsPage() {
           {/* Proposals Grid */}
           {proposals.length === 0 ? (
             <div className="text-center py-12">
-              <FileText className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-300 mb-2">
+              <FileText className="w-16 h-16 text-[#5a5a5a] mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-[#a0a0a0] mb-2">
                 企画書がありません
               </h3>
-              <p className="text-gray-500 mb-6">
+              <p className="text-[#808080] mb-6">
                 最初の企画書を作成してみましょう
               </p>
               <Button
                 onClick={() => router.push('/home')}
-                className="bg-blue-600 text-white hover:bg-blue-700"
+                className="bg-[#0066cc] text-[#e0e0e0] hover:bg-[#0052a3]"
               >
                 <Plus className="w-4 h-4 mr-2" />
                 企画書を作成する
@@ -155,28 +155,28 @@ export default function ProposalsPage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
                 >
-                  <Card className="bg-gray-800 border-gray-700 hover:border-gray-600 transition-colors cursor-pointer group">
+                  <Card className="bg-[#2a2a2a] border-[#3a3a3a] hover:border-[#4a4a4a] transition-colors cursor-pointer group">
                     <Link href={`/proposals/${proposal.id}`}>
                       <CardHeader className="pb-3">
                         <div className="flex items-start justify-between">
                           <FileText className="w-6 h-6 text-blue-400 flex-shrink-0" />
-                          <ChevronRight className="w-4 h-4 text-gray-500 group-hover:text-white transition-colors" />
+                          <ChevronRight className="w-4 h-4 text-[#808080] group-hover:text-[#e0e0e0] transition-colors" />
                         </div>
                       </CardHeader>
                       
                       <CardContent>
-                        <CardTitle className="text-lg text-white mb-2 line-clamp-2 group-hover:text-blue-400 transition-colors">
+                        <CardTitle className="text-lg text-[#e0e0e0] mb-2 line-clamp-2 group-hover:text-blue-400 transition-colors">
                           {proposal.service_name || '無題の企画書'}
                         </CardTitle>
                         
-                        <p className="text-gray-400 text-sm mb-4 line-clamp-3">
+                        <p className="text-[#a0a0a0] text-sm mb-4 line-clamp-3">
                           {proposal.service_overview ? 
                             proposal.service_overview.slice(0, 100) + (proposal.service_overview.length > 100 ? '...' : '')
                             : '概要がありません'
                           }
                         </p>
                         
-                        <div className="flex items-center text-xs text-gray-500">
+                        <div className="flex items-center text-xs text-[#808080]">
                           <Calendar className="w-3 h-3 mr-1" />
                           {new Date(proposal.created_at).toLocaleDateString('ja-JP', {
                             year: 'numeric',

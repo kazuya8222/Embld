@@ -92,7 +92,7 @@ export function ServiceBuilderHome() {
 
 
   return (
-    <div className="min-h-screen bg-gray-900 relative">
+    <div className="min-h-screen bg-[#1a1a1a] relative">
       {/* TopBar */}
       <TopBar onMenuToggle={handleMenuToggle} onMenuHover={handleMenuHover} />
       
@@ -129,7 +129,7 @@ export function ServiceBuilderHome() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.1 }}
-                className="text-3xl sm:text-4xl font-bold text-white mb-6"
+                className="text-3xl sm:text-4xl font-bold text-[#e0e0e0] mb-6"
               >
 どんなアプリが欲しいですか？
               </motion.h1>

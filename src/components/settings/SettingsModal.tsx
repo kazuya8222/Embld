@@ -56,27 +56,27 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
         return (
           <div className="space-y-8">
             <div>
-              <h3 className="text-lg font-semibold text-white mb-4">一般</h3>
+              <h3 className="text-lg font-semibold text-[#e0e0e0] mb-4">一般</h3>
               
               {/* Language Setting */}
               <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-300 mb-3">言語</label>
+                <label className="block text-sm font-medium text-[#a0a0a0] mb-3">言語</label>
                 <div className="relative">
                   <select
                     value={language}
                     onChange={(e) => setLanguage(e.target.value)}
-                    className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full bg-[#3a3a3a] border border-[#4a4a4a] rounded-lg px-3 py-2 text-[#e0e0e0] appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="japanese">日本語</option>
                     <option value="english">English</option>
                   </select>
-                  <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                  <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#a0a0a0] pointer-events-none" />
                 </div>
               </div>
 
               {/* Theme Setting */}
               <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-300 mb-3">外観</label>
+                <label className="block text-sm font-medium text-[#a0a0a0] mb-3">外観</label>
                 <div className="grid grid-cols-3 gap-3">
                   {themeOptions.map((option) => {
                     const IconComponent = option.icon;
@@ -87,20 +87,20 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                         className={`p-4 rounded-lg border-2 transition-colors ${
                           theme === option.id
                             ? 'border-blue-500 bg-blue-500/10'
-                            : 'border-gray-600 bg-gray-700 hover:border-gray-500'
+                            : 'border-[#4a4a4a] bg-[#3a3a3a] hover:border-[#5a5a5a]'
                         }`}
                       >
                         <div className="flex flex-col items-center space-y-2">
                           <div className={`w-12 h-8 rounded border ${
-                            option.id === 'light' ? 'bg-gray-200 border-gray-300' :
-                            option.id === 'dark' ? 'bg-gray-800 border-gray-700' :
-                            'bg-gradient-to-r from-gray-200 via-gray-400 to-gray-800 border-gray-500'
+                            option.id === 'light' ? 'bg-[#e0e0e0] border-[#c0c0c0]' :
+                            option.id === 'dark' ? 'bg-[#2a2a2a] border-[#3a3a3a]' :
+                            'bg-gradient-to-r from-[#e0e0e0] via-[#a0a0a0] to-[#2a2a2a] border-[#5a5a5a]'
                           }`}>
                             {option.id === 'system' && (
-                              <div className="w-full h-full bg-gradient-to-r from-gray-200 to-gray-800 rounded"></div>
+                              <div className="w-full h-full bg-gradient-to-r from-[#e0e0e0] to-[#2a2a2a] rounded"></div>
                             )}
                           </div>
-                          <span className="text-xs text-gray-300">{option.label}</span>
+                          <span className="text-xs text-[#a0a0a0]">{option.label}</span>
                         </div>
                       </button>
                     );
@@ -111,20 +111,20 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
             {/* Personalization */}
             <div>
-              <h3 className="text-lg font-semibold text-white mb-4">パーソナライゼーション</h3>
+              <h3 className="text-lg font-semibold text-[#e0e0e0] mb-4">パーソナライゼーション</h3>
               
               <div className="space-y-4">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <h4 className="text-white font-medium mb-1">限定コンテンツを受け取る</h4>
-                    <p className="text-sm text-gray-400">
+                    <h4 className="text-[#e0e0e0] font-medium mb-1">限定コンテンツを受け取る</h4>
+                    <p className="text-sm text-[#a0a0a0]">
                       限定オファー、イベント更新情報、優れたケーススタディ、新機能ガイドを入手。
                     </p>
                   </div>
                   <button
                     onClick={() => setLimitedContent(!limitedContent)}
                     className={`ml-4 w-12 h-6 rounded-full transition-colors ${
-                      limitedContent ? 'bg-blue-600' : 'bg-gray-600'
+                      limitedContent ? 'bg-blue-600' : 'bg-[#5a5a5a]'
                     }`}
                   >
                     <div className={`w-5 h-5 bg-white rounded-full transition-transform ${
@@ -135,17 +135,17 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <h4 className="text-white font-medium mb-1">
+                    <h4 className="text-[#e0e0e0] font-medium mb-1">
                       キューに入っているタスクが処理を開始したらメールで通知してください
                     </h4>
-                    <p className="text-sm text-gray-400">
+                    <p className="text-sm text-[#a0a0a0]">
                       有効にすると、タスクがキューを終了して処理を開始した際にメールでお知らせしますので、進捗状況を簡単に確認できます。この設定はいつでも変更可能です。
                     </p>
                   </div>
                   <button
                     onClick={() => setEmailNotifications(!emailNotifications)}
                     className={`ml-4 w-12 h-6 rounded-full transition-colors ${
-                      emailNotifications ? 'bg-blue-600' : 'bg-gray-600'
+                      emailNotifications ? 'bg-blue-600' : 'bg-[#5a5a5a]'
                     }`}
                   >
                     <div className={`w-5 h-5 bg-white rounded-full transition-transform ${
@@ -157,10 +157,10 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             </div>
 
             {/* Cookie Management */}
-            <div className="pt-6 border-t border-gray-700">
+            <div className="pt-6 border-t border-[#3a3a3a]">
               <div className="flex items-center justify-between">
-                <span className="text-white font-medium">クッキーを管理</span>
-                <Button variant="outline" size="sm" className="border-gray-600 text-gray-300 hover:bg-gray-700">
+                <span className="text-[#e0e0e0] font-medium">クッキーを管理</span>
+                <Button variant="outline" size="sm" className="border-[#4a4a4a] text-[#a0a0a0] hover:bg-[#3a3a3a]">
                   管理
                 </Button>
               </div>
@@ -171,24 +171,24 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
       case 'account':
         return (
           <div className="space-y-6">
-            <h3 className="text-lg font-semibold text-white mb-4">アカウント設定</h3>
-            <p className="text-gray-400">アカウント設定はこちらで管理できます。</p>
+            <h3 className="text-lg font-semibold text-[#e0e0e0] mb-4">アカウント設定</h3>
+            <p className="text-[#a0a0a0]">アカウント設定はこちらで管理できます。</p>
           </div>
         );
 
       case 'usage':
         return (
           <div className="space-y-6">
-            <h3 className="text-lg font-semibold text-white mb-4">使用状況</h3>
-            <p className="text-gray-400">使用状況の詳細はこちらで確認できます。</p>
+            <h3 className="text-lg font-semibold text-[#e0e0e0] mb-4">使用状況</h3>
+            <p className="text-[#a0a0a0]">使用状況の詳細はこちらで確認できます。</p>
           </div>
         );
 
       default:
         return (
           <div className="space-y-6">
-            <h3 className="text-lg font-semibold text-white mb-4">{menuItems.find(item => item.id === activeSection)?.label}</h3>
-            <p className="text-gray-400">この機能は準備中です。</p>
+            <h3 className="text-lg font-semibold text-[#e0e0e0] mb-4">{menuItems.find(item => item.id === activeSection)?.label}</h3>
+            <p className="text-[#a0a0a0]">この機能は準備中です。</p>
           </div>
         );
     }
@@ -214,16 +214,16 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             exit={{ opacity: 0, scale: 0.95 }}
             className="fixed inset-0 z-50 flex items-center justify-center p-4"
           >
-            <div className="bg-gray-900 rounded-2xl shadow-2xl w-full max-w-6xl h-[80vh] flex overflow-hidden">
+            <div className="bg-[#1a1a1a] rounded-2xl shadow-2xl w-full max-w-6xl h-[80vh] flex overflow-hidden">
               {/* Left Sidebar */}
-              <div className="w-80 bg-gray-800 border-r border-gray-700">
+              <div className="w-80 bg-[#2a2a2a] border-r border-[#3a3a3a]">
                 {/* Header */}
-                <div className="p-6 border-b border-gray-700">
+                <div className="p-6 border-b border-[#3a3a3a]">
                   <div className="flex items-center space-x-3">
                     <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
                       <span className="text-white font-bold text-sm">E</span>
                     </div>
-                    <span className="text-white font-semibold">embld</span>
+                    <span className="text-[#e0e0e0] font-semibold">embld</span>
                   </div>
                 </div>
 
@@ -237,8 +237,8 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                         onClick={() => setActiveSection(item.id)}
                         className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-left transition-colors ${
                           activeSection === item.id
-                            ? 'bg-gray-700 text-white'
-                            : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                            ? 'bg-[#3a3a3a] text-[#e0e0e0]'
+                            : 'text-[#a0a0a0] hover:bg-[#3a3a3a] hover:text-[#e0e0e0]'
                         }`}
                       >
                         <IconComponent className="w-5 h-5" />
@@ -250,7 +250,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
                 {/* Help Section */}
                 <div className="absolute bottom-4 left-4 right-4">
-                  <button className="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-left transition-colors text-gray-300 hover:bg-gray-700 hover:text-white">
+                  <button className="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-left transition-colors text-[#a0a0a0] hover:bg-[#3a3a3a] hover:text-[#e0e0e0]">
                     <HelpCircle className="w-5 h-5" />
                     <span className="text-sm">ヘルプを取得</span>
                     <ExternalLink className="w-4 h-4 ml-auto" />
@@ -261,13 +261,13 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
               {/* Right Content */}
               <div className="flex-1 flex flex-col">
                 {/* Header */}
-                <div className="flex items-center justify-between p-6 border-b border-gray-700">
-                  <h2 className="text-xl font-semibold text-white">設定</h2>
+                <div className="flex items-center justify-between p-6 border-b border-[#3a3a3a]">
+                  <h2 className="text-xl font-semibold text-[#e0e0e0]">設定</h2>
                   <button
                     onClick={onClose}
-                    className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
+                    className="p-2 hover:bg-[#3a3a3a] rounded-lg transition-colors"
                   >
-                    <X className="w-5 h-5 text-gray-400" />
+                    <X className="w-5 h-5 text-[#a0a0a0]" />
                   </button>
                 </div>
 

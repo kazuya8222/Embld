@@ -18,8 +18,8 @@ export default function HomePage() {
   // Show loading state while checking authentication
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="text-white">Loading...</div>
+      <div className="min-h-screen bg-[#1a1a1a] flex items-center justify-center">
+        <div className="text-[#e0e0e0]">Loading...</div>
       </div>
     );
   }
