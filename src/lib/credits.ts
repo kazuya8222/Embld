@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createSupabaseWebhookClient } from '@/lib/supabase/server';
 
 export interface CreditTransaction {
   id: string;
@@ -21,8 +21,8 @@ export interface UserCredits {
 /**
  * Get user's current credit balance
  */
-export async function getUserCredits(userId: string): Promise<number> {
-  const supabase = await createClient();
+export async function getUserCredits(userId: string, useAdminClient: boolean = false): Promise<number> {
+  const supabase = useAdminClient ? createSupabaseWebhookClient() : (await createClient());
   
   const { data, error } = await supabase
     .from('user_credits')
@@ -42,8 +42,8 @@ export async function getUserCredits(userId: string): Promise<number> {
 /**
  * Initialize user credits (usually called on first login)
  */
-export async function initializeUserCredits(userId: string): Promise<void> {
-  const supabase = await createClient();
+export async function initializeUserCredits(userId: string, useAdminClient: boolean = false): Promise<void> {
+  const supabase = useAdminClient ? createSupabaseWebhookClient() : (await createClient());
   
   await supabase
     .from('user_credits')
@@ -62,7 +62,8 @@ export async function addCredits(
   amount: number, 
   transactionType: string,
   description?: string,
-  metadata?: Record<string, any>
+  metadata?: Record<string, any>,
+  useAdminClient: boolean = false
 ): Promise<boolean> {
   console.log('=== Adding Credits ===');
   console.log('UserId:', userId);
@@ -70,7 +71,7 @@ export async function addCredits(
   console.log('Transaction Type:', transactionType);
   console.log('Description:', description);
   
-  const supabase = await createClient();
+  const supabase = useAdminClient ? createSupabaseWebhookClient() : (await createClient());
   
   try {
     // Start transaction
@@ -129,9 +130,10 @@ export async function deductCredits(
   amount: number,
   transactionType: string,
   description?: string,
-  metadata?: Record<string, any>
+  metadata?: Record<string, any>,
+  useAdminClient: boolean = false
 ): Promise<boolean> {
-  const supabase = await createClient();
+  const supabase = useAdminClient ? createSupabaseWebhookClient() : (await createClient());
   
   try {
     // Check current balance
@@ -185,9 +187,10 @@ export async function deductCredits(
  */
 export async function getCreditTransactions(
   userId: string,
-  limit: number = 50
+  limit: number = 50,
+  useAdminClient: boolean = false
 ): Promise<CreditTransaction[]> {
-  const supabase = await createClient();
+  const supabase = useAdminClient ? createSupabaseWebhookClient() : (await createClient());
   
   const { data, error } = await supabase
     .from('credit_transactions')

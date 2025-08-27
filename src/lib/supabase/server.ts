@@ -55,3 +55,25 @@ export const createSupabaseServerClient = () => {
     }
   );
 };
+
+// Webhook client for stripe webhooks - uses service role with limited scope
+export const createSupabaseWebhookClient = () => {
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    throw new Error('SUPABASE_SERVICE_ROLE_KEY is required for webhook operations');
+  }
+  
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return []
+        },
+        setAll() {
+          // No-op for webhook client
+        },
+      },
+    }
+  );
+};

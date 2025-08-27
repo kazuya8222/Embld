@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
-import { createClient } from '@/lib/supabase/server';
-import { addCredits } from '@/lib/credits';
+import { updateUserSubscription, grantCreditsToUser, updateSubscriptionStatus } from '@/lib/webhook-operations';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2023-10-16',
@@ -37,8 +36,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const supabase = await createClient();
-
     // Handle the event
     console.log('Processing event type:', event.type);
     switch (event.type) {
@@ -48,27 +45,21 @@ export async function POST(request: NextRequest) {
         // Update user's subscription status (no credits on initial setup)
         console.log('Checkout session metadata:', checkoutSession.metadata);
         
-        if (checkoutSession.metadata?.userId && checkoutSession.metadata?.planName) {
-          const userId = checkoutSession.metadata.userId;
-          const planName = checkoutSession.metadata.planName;
-          
-          console.log('Processing initial subscription for userId:', userId, 'planName:', planName);
-          
-          // Update subscription status only
-          const { error } = await supabase
-            .from('users')
-            .update({
-              subscription_plan: planName,
-              stripe_customer_id: checkoutSession.customer,
-              subscription_status: 'active',
-              updated_at: new Date().toISOString(),
-            })
-            .eq('id', userId);
+        if (checkoutSession.metadata?.userId && checkoutSession.metadata?.planName && checkoutSession.customer) {
+          const success = await updateUserSubscription({
+            userId: checkoutSession.metadata.userId,
+            planName: checkoutSession.metadata.planName,
+            customerId: checkoutSession.customer as string,
+            status: 'active'
+          });
 
-          console.log('Subscription update result:', { error });
-          console.log('Initial subscription setup complete. Credits will be granted on first invoice payment.');
+          if (success) {
+            console.log('Initial subscription setup complete. Credits will be granted on first invoice payment.');
+          } else {
+            console.error('Failed to update subscription for user:', checkoutSession.metadata.userId);
+          }
         } else {
-          console.log('Missing metadata - userId:', checkoutSession.metadata?.userId, 'planName:', checkoutSession.metadata?.planName);
+          console.log('Missing required metadata in checkout session');
         }
         break;
 
@@ -76,15 +67,14 @@ export async function POST(request: NextRequest) {
         const updatedSubscription = event.data.object as Stripe.Subscription;
         
         if (updatedSubscription.metadata?.userId) {
-          const { error } = await supabase
-            .from('users')
-            .update({
-              subscription_status: updatedSubscription.status,
-              updated_at: new Date().toISOString(),
-            })
-            .eq('id', updatedSubscription.metadata.userId);
-            
-          console.log('Subscription update result:', { error });
+          const success = await updateSubscriptionStatus(
+            updatedSubscription.metadata.userId,
+            updatedSubscription.status as 'active' | 'inactive' | 'canceled' | 'past_due'
+          );
+          
+          if (!success) {
+            console.error('Failed to update subscription status for user:', updatedSubscription.metadata.userId);
+          }
         }
         break;
 
@@ -92,16 +82,14 @@ export async function POST(request: NextRequest) {
         const deletedSubscription = event.data.object as Stripe.Subscription;
         
         if (deletedSubscription.metadata?.userId) {
-          const { error } = await supabase
-            .from('users')
-            .update({
-              subscription_plan: 'free',
-              subscription_status: 'canceled',
-              updated_at: new Date().toISOString(),
-            })
-            .eq('id', deletedSubscription.metadata.userId);
-            
-          console.log('Subscription cancellation result:', { error });
+          const success = await updateSubscriptionStatus(
+            deletedSubscription.metadata.userId,
+            'canceled'
+          );
+          
+          if (!success) {
+            console.error('Failed to update subscription status for user:', deletedSubscription.metadata.userId);
+          }
         }
         break;
 
@@ -116,7 +104,7 @@ export async function POST(request: NextRequest) {
               paidInvoice.subscription as string
             );
             
-            if (subscription.metadata?.userId) {
+            if (subscription.metadata?.userId && subscription.metadata?.planName) {
               const userId = subscription.metadata.userId;
               const planName = subscription.metadata.planName;
               
@@ -130,33 +118,26 @@ export async function POST(request: NextRequest) {
                 creditsToGrant = 600;
               }
               
-              console.log('Monthly credits to grant:', creditsToGrant);
-              
               if (creditsToGrant > 0) {
-                try {
-                  const creditResult = await addCredits(
-                    userId,
-                    creditsToGrant,
-                    'monthly_subscription',
-                    `月額プラン支払い: ${planName}`,
-                    {
-                      plan: planName,
-                      stripe_invoice_id: paidInvoice.id,
-                      stripe_subscription_id: subscription.id,
-                      amount_paid: paidInvoice.amount_paid,
-                      billing_period_start: new Date(paidInvoice.period_start * 1000).toISOString(),
-                      billing_period_end: new Date(paidInvoice.period_end * 1000).toISOString()
-                    }
-                  );
-                  console.log('Monthly credit granting result:', creditResult);
-                  
-                  if (!creditResult) {
-                    console.error('Failed to grant monthly credits for user:', userId);
-                  } else {
-                    console.log(`Successfully granted ${creditsToGrant} credits to user ${userId} for monthly payment`);
+                const success = await grantCreditsToUser({
+                  userId,
+                  amount: creditsToGrant,
+                  transactionType: 'monthly_subscription',
+                  description: `月額プラン支払い: ${planName}`,
+                  metadata: {
+                    plan: planName,
+                    stripe_invoice_id: paidInvoice.id,
+                    stripe_subscription_id: subscription.id,
+                    amount_paid: paidInvoice.amount_paid,
+                    billing_period_start: new Date(paidInvoice.period_start * 1000).toISOString(),
+                    billing_period_end: new Date(paidInvoice.period_end * 1000).toISOString()
                   }
-                } catch (creditError) {
-                  console.error('Error during monthly credit granting:', creditError);
+                });
+                
+                if (success) {
+                  console.log(`Successfully granted ${creditsToGrant} credits to user ${userId} for monthly payment`);
+                } else {
+                  console.error('Failed to grant monthly credits for user:', userId);
                 }
               }
             }
@@ -170,15 +151,14 @@ export async function POST(request: NextRequest) {
         const failedInvoice = event.data.object as Stripe.Invoice;
         
         if (failedInvoice.subscription_details?.metadata?.userId) {
-          const { error } = await supabase
-            .from('users')
-            .update({
-              subscription_status: 'past_due',
-              updated_at: new Date().toISOString(),
-            })
-            .eq('id', failedInvoice.subscription_details.metadata.userId);
-            
-          console.log('Payment failed update result:', { error });
+          const success = await updateSubscriptionStatus(
+            failedInvoice.subscription_details.metadata.userId,
+            'past_due'
+          );
+          
+          if (!success) {
+            console.error('Failed to update subscription status for user:', failedInvoice.subscription_details.metadata.userId);
+          }
         }
         break;
 
