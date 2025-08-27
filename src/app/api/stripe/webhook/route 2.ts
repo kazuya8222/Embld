@@ -9,28 +9,16 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
 
-// Debug webhook secret
-console.log('Webhook secret configured:', !!webhookSecret, webhookSecret?.substring(0, 10) + '...');
-
 export async function POST(request: NextRequest) {
-  console.log('=== Stripe Webhook Received ===');
-  console.log('Timestamp:', new Date().toISOString());
-  
   try {
     const body = await request.text();
     const signature = request.headers.get('stripe-signature')!;
-
-    console.log('Body length:', body.length);
-    console.log('Has signature:', !!signature);
 
     let event: Stripe.Event;
 
     try {
       event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
-      console.log('Event type:', event.type);
-      console.log('Event ID:', event.id);
     } catch (err: any) {
-      console.log('Webhook signature verification failed:', err.message);
       return NextResponse.json(
         { error: 'Invalid signature' },
         { status: 400 }
@@ -40,19 +28,14 @@ export async function POST(request: NextRequest) {
     const supabase = await createClient();
 
     // Handle the event
-    console.log('Processing event type:', event.type);
     switch (event.type) {
       case 'checkout.session.completed':
         const checkoutSession = event.data.object as Stripe.Checkout.Session;
         
         // Update user's subscription status and grant credits
-        console.log('Checkout session metadata:', checkoutSession.metadata);
-        
         if (checkoutSession.metadata?.userId && checkoutSession.metadata?.planName) {
           const userId = checkoutSession.metadata.userId;
           const planName = checkoutSession.metadata.planName;
-          
-          console.log('Processing for userId:', userId, 'planName:', planName);
           
           // Update subscription status
           const { error } = await supabase
@@ -65,20 +48,16 @@ export async function POST(request: NextRequest) {
             })
             .eq('id', userId);
 
-          console.log('Subscription update result:', { error });
-
           // Grant credits based on plan
           let creditsToGrant = 0;
           if (planName === 'Embld Basic') {
-            creditsToGrant = 200;
+            creditsToGrant = 500;
           } else if (planName === 'Embld Plus') {
-            creditsToGrant = 600;
+            creditsToGrant = 2000;
           }
 
-          console.log('Credits to grant:', creditsToGrant);
-
           if (creditsToGrant > 0) {
-            const creditResult = await addCredits(
+            await addCredits(
               userId,
               creditsToGrant,
               'plan_purchase',
@@ -89,10 +68,7 @@ export async function POST(request: NextRequest) {
                 amount_paid: checkoutSession.amount_total
               }
             );
-            console.log('Credit granting result:', creditResult);
           }
-        } else {
-          console.log('Missing metadata - userId:', checkoutSession.metadata?.userId, 'planName:', checkoutSession.metadata?.planName);
         }
         break;
 

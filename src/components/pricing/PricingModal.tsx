@@ -46,8 +46,7 @@ const pricingPlans: PricingPlan[] = [
     badge: 'ベータ',
     features: [
       '毎日 300 クレジットのリフレッシュ',
-      '2,500クレジット/月',
-      '毎月追加 C+2,500クレジットを獲得',
+      '200クレジット/月（購入時付与）',
       'チャットモードへの無制限アクセス',
       'Agentモードで高度なモデルを使用',
       '3個の同時実行タスク',
@@ -56,7 +55,7 @@ const pricingPlans: PricingPlan[] = [
       '動画生成',
       'スライド生成'
     ],
-    highlights: ['毎月追加 C+2,500クレジットを獲得'],
+    highlights: ['200クレジット/月（購入時付与）'],
     priceId: 'price_1S0fMFFaYIdITkPyE5hOS7lh', // Embld Basic plan price ID
   },
   {
@@ -68,8 +67,7 @@ const pricingPlans: PricingPlan[] = [
     popular: true,
     features: [
       '毎日 300 クレジットのリフレッシュ',
-      '8,000クレジット/月',
-      '毎月追加 C+8,000クレジットを獲得',
+      '600クレジット/月（購入時付与）',
       'チャットモードへの無制限アクセス',
       'Agentモードで高度なモデルを使用',
       '5個の同時実行タスク',
@@ -80,7 +78,7 @@ const pricingPlans: PricingPlan[] = [
       '独占データソース',
       'ベータ機能の早期アクセス'
     ],
-    highlights: ['毎月追加 C+8,000クレジットを獲得', '独占データソース'],
+    highlights: ['600クレジット/月（購入時付与）', '独占データソース'],
     priceId: 'price_1S0fNIFaYIdITkPyitTY8NhK', // Embld Plus plan price ID
   }
 ];

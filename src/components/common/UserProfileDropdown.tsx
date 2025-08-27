@@ -21,7 +21,7 @@ export function UserProfileDropdown() {
   const [isOpen, setIsOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isPricingOpen, setIsPricingOpen] = useState(false);
-  const { user, userProfile, signOut } = useAuth();
+  const { user, userProfile, credits, signOut } = useAuth();
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Close dropdown when clicking outside
@@ -95,7 +95,7 @@ export function UserProfileDropdown() {
           {/* Credits */}
           <div className="flex items-center space-x-2 px-3 py-2 bg-[#2a2a2a] rounded-lg">
             <Sparkles className="w-4 h-4 text-blue-400" />
-            <span className="text-[#e0e0e0] text-sm">753</span>
+            <span className="text-[#e0e0e0] text-sm">{credits.toLocaleString()}</span>
           </div>
 
           {/* User Avatar */}
@@ -180,7 +180,7 @@ export function UserProfileDropdown() {
                     </button>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <span className="text-[#e0e0e0] font-semibold text-sm">753</span>
+                    <span className="text-[#e0e0e0] font-semibold text-sm">{credits.toLocaleString()}</span>
                     <ArrowUpRight className="w-3.5 h-3.5 text-[#a0a0a0]" />
                   </div>
                 </div>

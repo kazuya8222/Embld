@@ -11,29 +11,24 @@ const supabase = createClient()
 interface AuthContextType {
   user: User | null
   userProfile: any | null
-  credits: number
   loading: boolean
   signOut: () => Promise<void>
   refreshProfile: () => Promise<void>
-  refreshCredits: () => Promise<void>
   updateProfileOptimistic: (newProfile: Partial<any>) => void
 }
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
   userProfile: null,
-  credits: 0,
   loading: true,
   signOut: async () => {},
   refreshProfile: async () => {},
-  refreshCredits: async () => {},
   updateProfileOptimistic: () => {},
 })
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [userProfile, setUserProfile] = useState<any | null>(null)
-  const [credits, setCredits] = useState<number>(0)
   const [loading, setLoading] = useState(true)
   const hasInitialized = useRef(false)
   const isFetchingProfile = useRef(false)
@@ -56,42 +51,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     }
   }, [])
-
-  // クレジット残高を取得する関数
-  const refreshCredits = async () => {
-    if (!user) {
-      setCredits(0);
-      return;
-    }
-    
-    try {
-      const { data, error } = await supabase
-        .from('user_credits')
-        .select('credits')
-        .eq('user_id', user.id)
-        .single();
-      
-      if (error || !data) {
-        // クレジットレコードが存在しない場合は作成
-        const { error: insertError } = await supabase
-          .from('user_credits')
-          .upsert({
-            user_id: user.id,
-            credits: 0,
-            updated_at: new Date().toISOString()
-          });
-        
-        if (!insertError) {
-          setCredits(0);
-        }
-      } else {
-        setCredits(data.credits);
-      }
-    } catch (error) {
-      console.error('Error fetching credits:', error);
-      setCredits(0);
-    }
-  };
 
   // プロフィール情報を強制再取得する関数（高速化）
   const refreshProfile = async () => {
@@ -131,9 +90,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
         
         setUserProfile(profile)
-        
-        // クレジット情報も更新
-        await refreshCredits()
       }
     } catch (error) {
       console.error('RefreshProfile error:', error)
@@ -172,7 +128,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // 状態を即座にクリア
       setUser(null)
       setUserProfile(null)
-      setCredits(0)
       
       // ローカルストレージもクリア
       if (typeof window !== 'undefined') {
@@ -251,9 +206,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
         
         setUserProfile(profile)
-        
-        // クレジット情報も取得
-        await refreshCredits()
       }
     } catch (error) {
       console.error('AuthProvider: Exception during profile fetch:', error)
@@ -316,7 +268,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (event === 'SIGNED_OUT') {
           setUser(null)
           setUserProfile(null)
-          setCredits(0)
           isFetchingProfile.current = false
           
           // ローカルストレージもクリア
@@ -338,7 +289,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } else if (!session) {
           setUser(null)
           setUserProfile(null)
-          setCredits(0)
         }
         
         setLoading(false)
@@ -351,7 +301,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [fetchUserProfile, userProfile])
 
   return (
-    <AuthContext.Provider value={{ user, userProfile, credits, loading, signOut, refreshProfile, refreshCredits, updateProfileOptimistic }}>
+    <AuthContext.Provider value={{ user, userProfile, loading, signOut, refreshProfile, updateProfileOptimistic }}>
       {children}
     </AuthContext.Provider>
   )

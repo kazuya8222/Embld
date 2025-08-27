@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { TopBar } from '@/components/common/TopBar';
 import { Sidebar } from '@/components/common/Sidebar';
 import { AnimatePresence } from 'motion/react';
+import { useAuth } from '@/components/auth/AuthProvider';
 
 export default function BillingSuccessPage() {
   const [isLoading, setIsLoading] = useState(true);
@@ -18,6 +19,7 @@ export default function BillingSuccessPage() {
   
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { refreshCredits } = useAuth();
   const sessionId = searchParams.get('session_id');
 
   const handleMenuToggle = () => {
@@ -53,6 +55,9 @@ export default function BillingSuccessPage() {
         if (response.ok) {
           const data = await response.json();
           setSessionData(data);
+          
+          // 決済成功後にクレジット情報を更新
+          await refreshCredits();
         }
       } catch (error) {
         console.error('Error verifying session:', error);
