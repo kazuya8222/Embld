@@ -12,6 +12,7 @@ interface AuthContextType {
   user: User | null
   userProfile: any | null
   credits: number
+  subscriptionPlan: string
   loading: boolean
   signOut: () => Promise<void>
   refreshProfile: () => Promise<void>
@@ -23,6 +24,7 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   userProfile: null,
   credits: 0,
+  subscriptionPlan: '無料',
   loading: true,
   signOut: async () => {},
   refreshProfile: async () => {},
@@ -34,6 +36,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [userProfile, setUserProfile] = useState<any | null>(null)
   const [credits, setCredits] = useState<number>(0)
+  const [subscriptionPlan, setSubscriptionPlan] = useState<string>('無料')
   const [loading, setLoading] = useState(true)
   const [hydrated, setHydrated] = useState(false)
   const hasInitialized = useRef(false)
@@ -72,7 +75,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const { data, error } = await supabase
         .from('users')
-        .select('credits_balance')
+        .select('credits_balance, subscription_plan')
         .eq('id', user.id)
         .single();
       
@@ -85,10 +88,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const creditBalance = data?.credits_balance || 0;
         console.log('Setting credits to:', creditBalance);
         setCredits(creditBalance);
+        
+        // subscription_planも更新
+        if (data?.subscription_plan) {
+          const plan = data.subscription_plan;
+          if (plan === 'free') {
+            setSubscriptionPlan('無料');
+          } else if (plan === 'Embld Basic') {
+            setSubscriptionPlan('Embld Basic');
+          } else if (plan === 'Embld Plus') {
+            setSubscriptionPlan('Embld Plus');
+          } else {
+            setSubscriptionPlan(plan);
+          }
+        } else {
+          setSubscriptionPlan('無料');
+        }
       }
     } catch (error) {
       console.error('Error fetching credits:', error);
       setCredits(0);
+      setSubscriptionPlan('無料');
     }
   };
 
@@ -378,7 +398,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, userProfile, credits, loading, signOut, refreshProfile, refreshCredits, updateProfileOptimistic }}>
+    <AuthContext.Provider value={{ user, userProfile, credits, subscriptionPlan, loading, signOut, refreshProfile, refreshCredits, updateProfileOptimistic }}>
       {children}
     </AuthContext.Provider>
   )

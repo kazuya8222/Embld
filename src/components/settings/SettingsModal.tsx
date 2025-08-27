@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Button } from '../ui/button';
+import { useAuth } from '../auth/AuthProvider';
 import { 
   X, 
   User, 
@@ -18,7 +19,10 @@ import {
   Sun,
   Moon,
   Monitor,
-  ChevronDown
+  ChevronDown,
+  Zap,
+  RefreshCw,
+  LogOut
 } from 'lucide-react';
 
 interface SettingsModalProps {
@@ -27,21 +31,17 @@ interface SettingsModalProps {
 }
 
 export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
-  const [activeSection, setActiveSection] = useState('settings');
+  const { user, userProfile, credits, subscriptionPlan, signOut } = useAuth();
+  const [activeSection, setActiveSection] = useState('account');
   const [language, setLanguage] = useState('japanese');
   const [theme, setTheme] = useState('system');
   const [limitedContent, setLimitedContent] = useState(true);
-  const [emailNotifications, setEmailNotifications] = useState(true);
 
   const menuItems = [
     { id: 'account', label: 'アカウント', icon: User },
     { id: 'settings', label: '設定', icon: Settings },
     { id: 'usage', label: '使用状況', icon: Activity },
-    { id: 'schedule', label: '定期タスク', icon: Calendar },
-    { id: 'mail', label: 'Mail Embld', icon: Mail },
-    { id: 'data', label: 'データ管理', icon: Database },
-    { id: 'cloud', label: 'クラウドブラウザ', icon: Cloud },
-    { id: 'apps', label: '接続されたアプリ', icon: Grid3X3 },
+    { id: 'help', label: 'ヘルプを取得', icon: HelpCircle },
   ];
 
   const themeOptions = [
@@ -132,27 +132,6 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     }`}></div>
                   </button>
                 </div>
-
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <h4 className="text-[#e0e0e0] font-medium mb-1">
-                      キューに入っているタスクが処理を開始したらメールで通知してください
-                    </h4>
-                    <p className="text-sm text-[#a0a0a0]">
-                      有効にすると、タスクがキューを終了して処理を開始した際にメールでお知らせしますので、進捗状況を簡単に確認できます。この設定はいつでも変更可能です。
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => setEmailNotifications(!emailNotifications)}
-                    className={`ml-4 w-12 h-6 rounded-full transition-colors ${
-                      emailNotifications ? 'bg-blue-600' : 'bg-[#5a5a5a]'
-                    }`}
-                  >
-                    <div className={`w-5 h-5 bg-white rounded-full transition-transform ${
-                      emailNotifications ? 'translate-x-6' : 'translate-x-0.5'
-                    }`}></div>
-                  </button>
-                </div>
               </div>
             </div>
 
@@ -170,9 +149,69 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
       
       case 'account':
         return (
-          <div className="space-y-6">
-            <h3 className="text-lg font-semibold text-[#e0e0e0] mb-4">アカウント設定</h3>
-            <p className="text-[#a0a0a0]">アカウント設定はこちらで管理できます。</p>
+          <div className="space-y-8">
+            {/* User Profile Section */}
+            <div className="flex items-center space-x-4">
+              {user?.user_metadata?.avatar_url ? (
+                <img
+                  src={user.user_metadata.avatar_url}
+                  alt="Profile"
+                  className="w-16 h-16 rounded-full"
+                />
+              ) : (
+                <div className="w-16 h-16 bg-gradient-to-br from-pink-500 to-purple-600 rounded-full flex items-center justify-center">
+                  <span className="text-white font-bold text-xl">
+                    {user?.user_metadata?.full_name?.charAt(0)?.toUpperCase() || 
+                     user?.email?.charAt(0)?.toUpperCase() || 'U'}
+                  </span>
+                </div>
+              )}
+              <div className="flex-1">
+                <h3 className="text-xl font-semibold text-[#e0e0e0]">
+                  {user?.user_metadata?.full_name || user?.user_metadata?.name || 'ユーザー'}
+                </h3>
+                <p className="text-[#a0a0a0]">{user?.email}</p>
+              </div>
+              <button 
+                onClick={async () => {
+                  try {
+                    await signOut();
+                    onClose();
+                  } catch (error) {
+                    console.error('Logout error:', error);
+                  }
+                }}
+                className="flex items-center space-x-3 px-3 py-2.5 text-red-400 hover:bg-[#3a3a3a] hover:text-red-300 transition-colors text-sm rounded-lg"
+              >
+                <LogOut className="w-4 h-4" />
+                <span>ログアウト</span>
+              </button>
+            </div>
+
+            {/* Plan Section */}
+            <div className="bg-[#2a2a2a] border border-[#3a3a3a] rounded-lg p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h4 className="text-lg font-semibold text-[#e0e0e0]">
+                  {subscriptionPlan}
+                </h4>
+                <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
+                  プランを管理
+                </Button>
+              </div>
+
+              {/* Credits Section */}
+              <div className="flex items-center justify-between py-3">
+                <div className="flex items-center space-x-3">
+                  <Zap className="w-5 h-5 text-yellow-500" />
+                  <div>
+                    <p className="text-[#e0e0e0] font-medium">クレジット</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-[#e0e0e0] font-medium">{credits.toLocaleString()}</p>
+                </div>
+              </div>
+            </div>
           </div>
         );
 
@@ -181,6 +220,28 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
           <div className="space-y-6">
             <h3 className="text-lg font-semibold text-[#e0e0e0] mb-4">使用状況</h3>
             <p className="text-[#a0a0a0]">使用状況の詳細はこちらで確認できます。</p>
+          </div>
+        );
+
+      case 'help':
+        return (
+          <div className="space-y-6">
+            <h3 className="text-lg font-semibold text-[#e0e0e0] mb-4">ヘルプを取得</h3>
+            <div className="bg-[#2a2a2a] border border-[#3a3a3a] rounded-lg p-6">
+              <p className="text-[#c0c0c0] mb-4">
+                EmBldの使い方やよくある質問については、ヘルプページをご確認ください。
+              </p>
+              <button
+                onClick={() => {
+                  onClose();
+                  window.open('/help', '_blank');
+                }}
+                className="inline-flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+              >
+                <span>ヘルプページを開く</span>
+                <ExternalLink className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         );
 
@@ -220,42 +281,53 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 {/* Header */}
                 <div className="p-6 border-b border-[#3a3a3a]">
                   <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                      <span className="text-white font-bold text-sm">E</span>
-                    </div>
-                    <span className="text-[#e0e0e0] font-semibold">embld</span>
+                    <img 
+                      src="/images/EnBld_logo_icon_monochrome.svg"
+                      alt="EMBLD Icon"
+                      className="w-8 h-8 brightness-0 invert"
+                    />
+                    <span className="text-[#e0e0e0] font-semibold">EMBLD</span>
                   </div>
                 </div>
 
                 {/* Menu Items */}
                 <div className="p-4 space-y-1">
-                  {menuItems.map((item) => {
+                  {menuItems.map((item, index) => {
                     const IconComponent = item.icon;
+                    const isHelp = item.id === 'help';
+                    const showDivider = index > 0 && menuItems[index - 1].id === 'usage';
+                    
                     return (
-                      <button
-                        key={item.id}
-                        onClick={() => setActiveSection(item.id)}
-                        className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-left transition-colors ${
-                          activeSection === item.id
-                            ? 'bg-[#3a3a3a] text-[#e0e0e0]'
-                            : 'text-[#a0a0a0] hover:bg-[#3a3a3a] hover:text-[#e0e0e0]'
-                        }`}
-                      >
-                        <IconComponent className="w-5 h-5" />
-                        <span className="text-sm">{item.label}</span>
-                      </button>
+                      <React.Fragment key={item.id}>
+                        {showDivider && <div className="border-t border-[#3a3a3a] my-2"></div>}
+                        <button
+                          onClick={() => {
+                            if (isHelp) {
+                              onClose();
+                              window.open('/help', '_blank');
+                            } else {
+                              setActiveSection(item.id);
+                            }
+                          }}
+                          className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-left transition-colors ${
+                            activeSection === item.id
+                              ? 'bg-[#3a3a3a] text-[#e0e0e0]'
+                              : 'text-[#a0a0a0] hover:bg-[#3a3a3a] hover:text-[#e0e0e0]'
+                          }`}
+                        >
+                          <div className="flex items-center space-x-3">
+                            <IconComponent className="w-5 h-5" />
+                            <span className="text-sm">{item.label}</span>
+                          </div>
+                          {isHelp && (
+                            <ExternalLink className="w-4 h-4" />
+                          )}
+                        </button>
+                      </React.Fragment>
                     );
                   })}
                 </div>
 
-                {/* Help Section */}
-                <div className="absolute bottom-4 left-4 right-4">
-                  <button className="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-left transition-colors text-[#a0a0a0] hover:bg-[#3a3a3a] hover:text-[#e0e0e0]">
-                    <HelpCircle className="w-5 h-5" />
-                    <span className="text-sm">ヘルプを取得</span>
-                    <ExternalLink className="w-4 h-4 ml-auto" />
-                  </button>
-                </div>
               </div>
 
               {/* Right Content */}
