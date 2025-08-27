@@ -10,7 +10,6 @@ import { motion, AnimatePresence } from 'motion/react';
 import { 
   MessageSquare, 
   Calendar, 
-  Archive,
   Trash2,
   Search,
   Filter,
@@ -34,7 +33,6 @@ export default function AgentHistoryPage() {
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [filteredSessions, setFilteredSessions] = useState<ChatSession[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [showArchived, setShowArchived] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSidebarLocked, setIsSidebarLocked] = useState(false);
@@ -51,7 +49,7 @@ export default function AgentHistoryPage() {
     if (user) {
       fetchSessions();
     }
-  }, [user, showArchived]);
+  }, [user]);
 
   useEffect(() => {
     const filtered = sessions.filter(session =>
@@ -64,20 +62,15 @@ export default function AgentHistoryPage() {
     try {
       setIsLoading(true);
       
-      let query = supabase
+      const { data, error } = await supabase
         .from('chat_sessions')
         .select(`
           *,
           chat_messages (count)
         `)
         .eq('user_id', user?.id)
+        .eq('is_archived', false)
         .order('updated_at', { ascending: false });
-
-      if (!showArchived) {
-        query = query.eq('is_archived', false);
-      }
-
-      const { data, error } = await query;
 
       if (error) throw error;
       
@@ -95,28 +88,6 @@ export default function AgentHistoryPage() {
     }
   };
 
-  const archiveSession = async (sessionId: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    
-    try {
-      const { error } = await supabase
-        .from('chat_sessions')
-        .update({ is_archived: true })
-        .eq('id', sessionId);
-
-      if (error) throw error;
-      
-      if (!showArchived) {
-        setSessions(prev => prev.filter(s => s.id !== sessionId));
-      } else {
-        setSessions(prev => prev.map(s => 
-          s.id === sessionId ? { ...s, is_archived: true } : s
-        ));
-      }
-    } catch (error) {
-      console.error('Error archiving session:', error);
-    }
-  };
 
   const deleteSession = async (sessionId: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -206,18 +177,6 @@ export default function AgentHistoryPage() {
                 className="w-full pl-10 pr-4 py-3 bg-[#2a2a2a] border border-[#3a3a3a] rounded-lg text-[#e0e0e0] placeholder-[#a0a0a0] focus:outline-none focus:border-[#0066cc]"
               />
             </div>
-            
-            <button
-              onClick={() => setShowArchived(!showArchived)}
-              className={`flex items-center gap-2 px-4 py-3 rounded-lg transition-colors ${
-                showArchived
-                  ? "bg-[#3a3a3a] text-[#e0e0e0]"
-                  : "bg-[#2a2a2a] text-[#a0a0a0] hover:text-[#e0e0e0]"
-              }`}
-            >
-              <Archive className="w-5 h-5" />
-              <span>アーカイブ済み</span>
-            </button>
           </div>
 
           {/* Chat List */}
@@ -243,15 +202,9 @@ export default function AgentHistoryPage() {
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
-                        <MessageSquare className="w-5 h-5 text-blue-500" />
                         <h3 className="text-lg font-medium text-[#e0e0e0]">
                           {session.title}
                         </h3>
-                        {session.is_archived && (
-                          <span className="px-2 py-1 bg-[#3a3a3a] text-[#a0a0a0] text-xs rounded">
-                            アーカイブ済み
-                          </span>
-                        )}
                       </div>
                       
                       <div className="flex items-center gap-4 text-sm text-[#a0a0a0]">
@@ -273,15 +226,6 @@ export default function AgentHistoryPage() {
                     </div>
                     
                     <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      {!session.is_archived && (
-                        <button
-                          onClick={(e) => archiveSession(session.id, e)}
-                          className="p-2 hover:bg-[#3a3a3a] rounded transition-colors"
-                          title="アーカイブ"
-                        >
-                          <Archive className="w-4 h-4 text-[#a0a0a0]" />
-                        </button>
-                      )}
                       <button
                         onClick={(e) => deleteSession(session.id, e)}
                         className="p-2 hover:bg-[#3a3a3a] rounded transition-colors"
