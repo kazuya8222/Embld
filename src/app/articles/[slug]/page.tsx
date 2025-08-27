@@ -299,20 +299,22 @@ export default function ArticlePage() {
           >
             <ReactMarkdown
               components={{
-                code({ node, inline, className, children, ...props }) {
+                code(props) {
+                  const { children, className, node, ...rest } = props;
                   const match = /language-(\w+)/.exec(className || '');
-                  return !inline && match ? (
+                  const isInline = !match;
+                  
+                  return !isInline ? (
                     <SyntaxHighlighter
                       style={vscDarkPlus}
                       language={match[1]}
                       PreTag="div"
                       className="rounded-lg"
-                      {...props}
                     >
                       {String(children).replace(/\n$/, '')}
                     </SyntaxHighlighter>
                   ) : (
-                    <code className={`${className} bg-[#2a2a2a] px-1 py-0.5 rounded text-[#e0e0e0]`} {...props}>
+                    <code className={`${className} bg-[#2a2a2a] px-1 py-0.5 rounded text-[#e0e0e0]`} {...rest}>
                       {children}
                     </code>
                   );
