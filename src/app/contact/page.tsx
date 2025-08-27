@@ -135,7 +135,7 @@ export default function ContactPage() {
               <div className="flex gap-4 justify-center pt-4">
                 <button
                   onClick={() => setSubmitStatus('idle')}
-                  className="px-6 py-3 border border-[#3a3a3a] text-[#e0e0e0] rounded-lg hover:bg-[#3a3a3a] transition-colors">
+                  className="px-6 py-3 border border-[#3a3a3a] text-[#e0e0e0] rounded-lg hover:bg-[#3a3a3a] transition-colors"
                 >
                   内容を修正する
                 </button>
