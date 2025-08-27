@@ -15,10 +15,12 @@ import {
 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { SettingsModal } from '../settings/SettingsModal';
+import { PricingModal } from '../pricing/PricingModal';
 
 export function UserProfileDropdown() {
   const [isOpen, setIsOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isPricingOpen, setIsPricingOpen] = useState(false);
   const { user, userProfile, signOut } = useAuth();
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -158,6 +160,10 @@ export function UserProfileDropdown() {
                   <Button 
                     variant="secondary" 
                     size="sm"
+                    onClick={() => {
+                      setIsOpen(false);
+                      setIsPricingOpen(true);
+                    }}
                     className="bg-[#e0e0e0] text-black hover:bg-[#c0c0c0] px-3 py-1 text-xs h-7"
                   >
                     アップグレード
@@ -228,6 +234,12 @@ export function UserProfileDropdown() {
       <SettingsModal 
         isOpen={isSettingsOpen} 
         onClose={() => setIsSettingsOpen(false)} 
+      />
+      
+      {/* Pricing Modal */}
+      <PricingModal 
+        isOpen={isPricingOpen} 
+        onClose={() => setIsPricingOpen(false)} 
       />
     </>
   );
