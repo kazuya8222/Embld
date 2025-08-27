@@ -21,7 +21,7 @@ export function UserProfileDropdown() {
   const [isOpen, setIsOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isPricingOpen, setIsPricingOpen] = useState(false);
-  const { user, userProfile, credits, signOut } = useAuth();
+  const { user, userProfile, credits, signOut, refreshCredits } = useAuth();
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Close dropdown when clicking outside
@@ -93,10 +93,14 @@ export function UserProfileDropdown() {
           </button>
           
           {/* Credits */}
-          <div className="flex items-center space-x-2 px-3 py-2 bg-[#2a2a2a] rounded-lg">
+          <button 
+            onClick={refreshCredits}
+            className="flex items-center space-x-2 px-3 py-2 bg-[#2a2a2a] rounded-lg hover:bg-[#3a3a3a] transition-colors"
+            title="クリックでクレジットを更新"
+          >
             <Sparkles className="w-4 h-4 text-blue-400" />
             <span className="text-[#e0e0e0] text-sm">{credits.toLocaleString()}</span>
-          </div>
+          </button>
 
           {/* User Avatar */}
           <button

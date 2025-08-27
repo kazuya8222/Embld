@@ -60,10 +60,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // クレジット残高を取得する関数
   const refreshCredits = async () => {
+    console.log('=== RefreshCredits Called ===');
     if (!user) {
+      console.log('No user found, setting credits to 0');
       setCredits(0);
       return;
     }
+    
+    console.log('Fetching credits for user:', user.id);
     
     try {
       const { data, error } = await supabase
@@ -72,11 +76,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .eq('id', user.id)
         .single();
       
+      console.log('Credits fetch result:', { data, error });
+      
       if (error) {
         console.error('Error fetching credits:', error);
         setCredits(0);
       } else {
-        setCredits(data?.credits_balance || 0);
+        const creditBalance = data?.credits_balance || 0;
+        console.log('Setting credits to:', creditBalance);
+        setCredits(creditBalance);
       }
     } catch (error) {
       console.error('Error fetching credits:', error);
@@ -97,7 +105,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const { data: profile, error } = await supabase
         .from('users')
-        .select('google_avatar_url, email, created_at, is_admin, is_developer')
+        .select('google_avatar_url, email, created_at, is_admin, is_developer, credits_balance')
         .eq('id', user.id)
         .single()
       
@@ -123,8 +131,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         setUserProfile(profile)
         
-        // クレジット情報も更新
-        refreshCredits()
+        // クレジット情報を直接更新（プロフィールから取得済み）
+        const creditBalance = profile.credits_balance || 0;
+        console.log('Setting credits from profile refresh:', creditBalance);
+        setCredits(creditBalance);
       }
     } catch (error) {
       console.error('RefreshProfile error:', error)
@@ -216,7 +226,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       const { data: profile, error } = await supabase
         .from('users')
-        .select('google_avatar_url, email, created_at, is_admin, is_developer')
+        .select('google_avatar_url, email, created_at, is_admin, is_developer, credits_balance')
         .eq('id', user.id)
         .single()
       
@@ -243,8 +253,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         setUserProfile(profile)
         
-        // クレジット情報も取得
-        refreshCredits()
+        // クレジット情報を直接更新（プロフィールから取得済み）
+        const creditBalance = profile.credits_balance || 0;
+        console.log('Setting credits from fetchUserProfile:', creditBalance);
+        setCredits(creditBalance);
       }
     } catch (error) {
       console.error('AuthProvider: Exception during profile fetch:', error)
@@ -347,6 +359,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       subscription.unsubscribe()
     }
   }, [fetchUserProfile, refreshCredits])
+
+  // ユーザーがログイン状態の場合、定期的にクレジットを更新
+  useEffect(() => {
+    if (user && !loading) {
+      console.log('User is authenticated, refreshing credits...');
+      refreshCredits();
+    }
+  }, [user, loading, refreshCredits])
 
   // Prevent hydration mismatch by not rendering until hydrated
   if (!hydrated) {
