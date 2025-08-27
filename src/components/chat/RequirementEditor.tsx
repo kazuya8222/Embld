@@ -40,12 +40,13 @@ interface RequirementEditorProps {
   agentState?: InterviewState | null;
   initialActiveTab?: TabType;
   onTabChange?: (tab: TabType) => void;
+  onSubmissionSuccess?: () => void;
 }
 
 
 type TabType = 'overview' | 'personas' | 'interviews' | 'requirements' | 'analysis' | 'pitch' | 'evaluation';
 
-export function RequirementEditor({ chatId, agentState, initialActiveTab, onTabChange }: RequirementEditorProps) {
+export function RequirementEditor({ chatId, agentState, initialActiveTab, onTabChange, onSubmissionSuccess }: RequirementEditorProps) {
   const { user } = useAuth();
   const [content, setContent] = useState('');
   const [title, setTitle] = useState('要件定義書');
@@ -214,6 +215,9 @@ export function RequirementEditor({ chatId, agentState, initialActiveTab, onTabC
       
       setSubmissionStatus('submitted');
       setSubmittedAt(new Date());
+      
+      // Call success callback to navigate to proposals page
+      onSubmissionSuccess?.();
       
     } catch (error) {
       console.error('Error submitting proposal:', error);

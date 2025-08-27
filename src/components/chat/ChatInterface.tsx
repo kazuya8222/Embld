@@ -25,6 +25,7 @@ import {
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '../auth/AuthProvider';
 import { Sidebar } from '../common/Sidebar';
+import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils/cn';
 import { RequirementEditor } from './RequirementEditor';
 import { 
@@ -74,6 +75,7 @@ type AgentType = 'service_builder' | 'code_assistant' | 'business_advisor';
 
 export function ChatInterface({ chatId }: ChatInterfaceProps) {
   const { user } = useAuth();
+  const router = useRouter();
   const [messages, setMessages] = useState<Message[]>([]);
   const [session, setSession] = useState<ChatSession | null>(null);
   const [input, setInput] = useState('');
@@ -1139,6 +1141,11 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
     setShowRequirementEditor(true);
   };
 
+  const handleSubmissionSuccess = () => {
+    // Navigate to proposals page after successful submission
+    router.push('/proposals');
+  };
+
   const shouldShowSidebar = isSidebarLocked || isSidebarHovered;
 
   return (
@@ -1449,6 +1456,7 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
                     agentState={agentState} 
                     initialActiveTab={requirementEditorActiveTab}
                     onTabChange={setRequirementEditorActiveTab}
+                    onSubmissionSuccess={handleSubmissionSuccess}
                   />
                 </div>
               </div>
