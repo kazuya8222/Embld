@@ -70,55 +70,95 @@ async function getUserCurrentPlan(userId: string): Promise<string | null> {
 async function addUserCredits(userId: string, creditsToAdd: number, reason: string): Promise<boolean> {
   const supabase = createSupabaseWebhookClient();
   
-  console.log(`Adding ${creditsToAdd} credits for user ${userId} (reason: ${reason})`);
+  console.log(`=== ADDING CREDITS ===`);
+  console.log(`User ID: ${userId}`);
+  console.log(`Credits to add: ${creditsToAdd}`);
+  console.log(`Reason: ${reason}`);
+  console.log(`Timestamp: ${new Date().toISOString()}`);
   
-  // 現在のクレジットを取得
-  const { data: currentUser, error: fetchError } = await supabase
-    .from('users')
-    .select('credits_balance')
-    .eq('id', userId)
-    .single();
-  
-  if (fetchError) {
-    console.error('Failed to fetch current credits:', fetchError);
+  try {
+    // 現在のクレジットを取得
+    const { data: currentUser, error: fetchError } = await supabase
+      .from('users')
+      .select('credits_balance, email')
+      .eq('id', userId)
+      .single();
+    
+    console.log('Fetch current credits result:', { currentUser, fetchError });
+    
+    if (fetchError) {
+      console.error('Failed to fetch current credits:', fetchError);
+      return false;
+    }
+    
+    if (!currentUser) {
+      console.error('User not found in database:', userId);
+      return false;
+    }
+    
+    const currentCredits = currentUser.credits_balance || 0;
+    const newBalance = currentCredits + creditsToAdd;
+    
+    console.log(`User: ${currentUser.email}`);
+    console.log(`Current credits: ${currentCredits}`);
+    console.log(`Credits to add: ${creditsToAdd}`);
+    console.log(`New balance: ${newBalance}`);
+    
+    // クレジットを更新
+    const { data: updateData, error: updateError } = await supabase
+      .from('users')
+      .update({
+        credits_balance: newBalance,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', userId)
+      .select('credits_balance');
+    
+    console.log('Credits update result:', { updateData, updateError });
+    
+    if (updateError) {
+      console.error('Failed to update credits:', updateError);
+      return false;
+    }
+    
+    if (!updateData || updateData.length === 0) {
+      console.error('No rows updated - user may not exist or update failed silently');
+      return false;
+    }
+    
+    console.log(`Credits successfully updated to: ${updateData[0].credits_balance}`);
+    
+    // トランザクション記録
+    const { data: transactionData, error: transactionError } = await supabase
+      .from('credit_transactions')
+      .insert({
+        user_id: userId,
+        amount: creditsToAdd, // 追加分のみ記録
+        transaction_type: 'subscription',
+        description: reason,
+        metadata: { 
+          timestamp: new Date().toISOString(),
+          previous_balance: currentCredits,
+          new_balance: newBalance
+        }
+      })
+      .select('id');
+    
+    console.log('Transaction record result:', { transactionData, transactionError });
+    
+    if (transactionError) {
+      console.error('Failed to record transaction (but credits were updated):', transactionError);
+      // Don't return false here since credits were updated successfully
+    } else {
+      console.log(`Transaction recorded with ID: ${transactionData?.[0]?.id}`);
+    }
+    
+    console.log('=== CREDITS ADDED SUCCESSFULLY ===');
+    return true;
+  } catch (error) {
+    console.error('Exception during credit addition:', error);
     return false;
   }
-  
-  const currentCredits = currentUser?.credits_balance || 0;
-  const newBalance = currentCredits + creditsToAdd;
-  
-  console.log(`Current: ${currentCredits}, Adding: ${creditsToAdd}, New Balance: ${newBalance}`);
-  
-  // クレジットを更新
-  const { error: updateError } = await supabase
-    .from('users')
-    .update({
-      credits_balance: newBalance,
-      updated_at: new Date().toISOString()
-    })
-    .eq('id', userId);
-  
-  if (updateError) {
-    console.error('Failed to update credits:', updateError);
-    return false;
-  }
-  
-  // トランザクション記録
-  await supabase
-    .from('credit_transactions')
-    .insert({
-      user_id: userId,
-      amount: creditsToAdd, // 追加分のみ記録
-      transaction_type: 'subscription',
-      description: reason,
-      metadata: { 
-        timestamp: new Date().toISOString(),
-        previous_balance: currentCredits,
-        new_balance: newBalance
-      }
-    });
-  
-  return true;
 }
 
 // サブスクリプション情報を更新
@@ -378,22 +418,112 @@ export async function POST(request: NextRequest) {
 
       /**
        * チェックアウト完了時（Stripe Checkoutを使用する場合）
-       * 注: customer.subscription.createdと重複しないよう注意
+       * 注: customer.subscription.createdが送信されない場合があるため、ここで処理
        */
       case 'checkout.session.completed':
         const session = event.data.object as Stripe.Checkout.Session;
-        console.log('Checkout session completed:', session.id);
+        console.log('=== CHECKOUT SESSION COMPLETED ===');
+        console.log('Session ID:', session.id);
+        console.log('Session mode:', session.mode);
+        console.log('Session metadata:', JSON.stringify(session.metadata, null, 2));
+        console.log('Session customer:', session.customer);
+        console.log('Session subscription:', session.subscription);
         
-        // サブスクリプションモードの場合は、customer.subscription.createdで処理されるため
-        // ここでは何もしない（重複防止）
+        // サブスクリプションモードの場合、クレジット付与処理
         if (session.mode === 'subscription') {
-          console.log('Subscription checkout handled by customer.subscription.created event');
+          console.log('Processing subscription checkout session...');
+          
+          if (!session.metadata?.userId || !session.metadata?.planName) {
+            console.error('Missing required metadata in checkout session:', {
+              userId: session.metadata?.userId,
+              planName: session.metadata?.planName,
+              allMetadata: session.metadata
+            });
+            
+            // If metadata is missing from session, try to get it from the subscription
+            if (session.subscription) {
+              console.log('Attempting to retrieve subscription metadata...');
+              try {
+                const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
+                console.log('Subscription metadata:', JSON.stringify(subscription.metadata, null, 2));
+                
+                if (subscription.metadata?.userId && subscription.metadata?.planName) {
+                  const userId = subscription.metadata.userId;
+                  const planName = subscription.metadata.planName;
+                  const credits = PLAN_CREDITS[planName as keyof typeof PLAN_CREDITS] || 0;
+                  
+                  console.log(`Found metadata in subscription: user ${userId}, plan ${planName}, credits ${credits}`);
+                  
+                  // サブスクリプション情報を更新
+                  const updated = await updateSubscription(
+                    userId,
+                    planName,
+                    'active',
+                    session.customer as string
+                  );
+                  
+                  if (updated) {
+                    console.log('Subscription updated successfully via subscription metadata');
+                    
+                    // クレジット付与
+                    if (credits > 0) {
+                      const creditAdded = await addUserCredits(userId, credits, `${planName} subscription started via checkout`);
+                      if (creditAdded) {
+                        console.log(`Successfully added ${credits} credits to user ${userId} via subscription metadata`);
+                      } else {
+                        console.error(`Failed to add credits for user ${userId} via subscription metadata`);
+                      }
+                    }
+                  }
+                } else {
+                  console.error('No metadata found in subscription either');
+                }
+              } catch (subError) {
+                console.error('Failed to retrieve subscription:', subError);
+              }
+            }
+          } else {
+            // Original logic when session has metadata
+            const userId = session.metadata.userId;
+            const planName = session.metadata.planName;
+            const credits = PLAN_CREDITS[planName as keyof typeof PLAN_CREDITS] || 0;
+            
+            console.log(`Processing with session metadata: user ${userId}, plan ${planName}, credits ${credits}`);
+            
+            // サブスクリプション情報を更新
+            const updated = await updateSubscription(
+              userId,
+              planName,
+              'active',
+              session.customer as string
+            );
+            
+            if (updated) {
+              console.log('Subscription updated successfully via session metadata');
+              
+              // クレジット付与
+              if (credits > 0) {
+                const creditAdded = await addUserCredits(userId, credits, `${planName} subscription started via checkout`);
+                if (creditAdded) {
+                  console.log(`Successfully added ${credits} credits to user ${userId} via session metadata`);
+                } else {
+                  console.error(`Failed to add credits for user ${userId} via session metadata`);
+                }
+              }
+            }
+          }
+        } else {
+          console.log(`Non-subscription mode: ${session.mode}, skipping credit processing`);
         }
         
         // イベント処理を記録
         await recordEventProcessed(event.id, event.type, {
           sessionId: session.id,
-          mode: session.mode
+          mode: session.mode,
+          userId: session.metadata?.userId,
+          planName: session.metadata?.planName,
+          customer: session.customer,
+          subscription: session.subscription
         });
         break;
 
