@@ -10,9 +10,6 @@ export async function POST(request: NextRequest) {
   try {
     // Validate environment variables
     if (!process.env.STRIPE_SECRET_KEY) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('STRIPE_SECRET_KEY is not set');
-      }
       return NextResponse.json(
         { error: 'Service configuration error' },
         { status: 500 }
@@ -20,9 +17,6 @@ export async function POST(request: NextRequest) {
     }
 
     if (!process.env.NEXT_PUBLIC_APP_URL) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('NEXT_PUBLIC_APP_URL is not set');
-      }
       return NextResponse.json(
         { error: 'Service configuration error' },
         { status: 500 }
@@ -36,11 +30,6 @@ export async function POST(request: NextRequest) {
         { error: 'Price ID and plan name are required' },
         { status: 400 }
       );
-    }
-
-    // Only log in development
-    if (process.env.NODE_ENV === 'development') {
-      console.log('Creating checkout session for:', { priceId, planName });
     }
 
     // Get authenticated user
@@ -81,16 +70,12 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ url: session.url });
   } catch (error) {
-    console.error('Error creating checkout session:', error);
     
     // Provide more specific error information
     let errorMessage = 'Internal server error';
     let statusCode = 500;
     
     if (error instanceof Stripe.errors.StripeError) {
-      console.error('Stripe Error Type:', error.type);
-      console.error('Stripe Error Code:', error.code);
-      console.error('Stripe Error Message:', error.message);
       
       switch (error.type) {
         case 'StripeInvalidRequestError':
@@ -115,15 +100,7 @@ export async function POST(request: NextRequest) {
     }
     
     return NextResponse.json(
-      { 
-        error: errorMessage,
-        ...(process.env.NODE_ENV === 'development' && {
-          debug: {
-            type: error instanceof Error ? error.constructor.name : 'Unknown',
-            message: error instanceof Error ? error.message : 'Unknown error'
-          }
-        })
-      },
+      { error: errorMessage },
       { status: statusCode }
     );
   }

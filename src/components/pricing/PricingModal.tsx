@@ -95,15 +95,6 @@ export function PricingModal({ isOpen, onClose }: PricingModalProps) {
     setLoading(priceId);
     
     try {
-      // Demo mode: Show alert instead of actual payment
-      if (process.env.NODE_ENV === 'development') {
-        setTimeout(() => {
-          alert(`デモモード: ${planName}プランの決済画面に移動します。\n実際の決済は行われません。`);
-          setLoading(null);
-          onClose();
-        }, 1000);
-        return;
-      }
 
       const response = await fetch('/api/stripe/create-checkout-session', {
         method: 'POST',
@@ -118,13 +109,11 @@ export function PricingModal({ isOpen, onClose }: PricingModalProps) {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: `HTTP ${response.status}` }));
-        console.error('Checkout session creation failed:', response.status, errorData);
         throw new Error(errorData.error || `HTTP error: ${response.status}`);
       }
 
-      const { url, error, debug } = await response.json();
+      const { url, error } = await response.json();
       if (error) {
-        console.error('Stripe checkout error:', { error, debug });
         throw new Error(error);
       }
       
@@ -134,7 +123,6 @@ export function PricingModal({ isOpen, onClose }: PricingModalProps) {
         throw new Error('No checkout URL received');
       }
     } catch (error) {
-      console.error('Error creating checkout session:', error);
       alert('決済セッションの作成に失敗しました。しばらくしてから再度お試しください。');
     } finally {
       setLoading(null);

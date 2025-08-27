@@ -18,9 +18,6 @@ export async function POST(request: NextRequest) {
     try {
       event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
     } catch (err: any) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Webhook signature verification failed.', err.message);
-      }
       return NextResponse.json(
         { error: 'Invalid signature' },
         { status: 400 }
@@ -46,9 +43,6 @@ export async function POST(request: NextRequest) {
             })
             .eq('id', checkoutSession.metadata.userId);
 
-          if (error && process.env.NODE_ENV === 'development') {
-            console.error('Error updating user subscription:', error);
-          }
         }
         break;
 
@@ -64,9 +58,6 @@ export async function POST(request: NextRequest) {
             })
             .eq('id', updatedSubscription.metadata.userId);
 
-          if (error && process.env.NODE_ENV === 'development') {
-            console.error('Error updating subscription status:', error);
-          }
         }
         break;
 
@@ -83,9 +74,6 @@ export async function POST(request: NextRequest) {
             })
             .eq('id', deletedSubscription.metadata.userId);
 
-          if (error && process.env.NODE_ENV === 'development') {
-            console.error('Error updating canceled subscription:', error);
-          }
         }
         break;
 
@@ -101,23 +89,15 @@ export async function POST(request: NextRequest) {
             })
             .eq('id', failedInvoice.subscription_details.metadata.userId);
 
-          if (error && process.env.NODE_ENV === 'development') {
-            console.error('Error updating failed payment status:', error);
-          }
         }
         break;
 
       default:
-        if (process.env.NODE_ENV === 'development') {
-          console.log(`Unhandled event type ${event.type}`);
-        }
+        // Unhandled event type - silently ignore
     }
 
     return NextResponse.json({ received: true });
   } catch (error) {
-    if (process.env.NODE_ENV === 'development') {
-      console.error('Webhook error:', error);
-    }
     return NextResponse.json(
       { error: 'Webhook handler failed' },
       { status: 500 }
