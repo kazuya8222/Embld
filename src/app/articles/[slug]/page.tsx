@@ -197,12 +197,7 @@ export default function ArticlePage() {
       <div className="pt-16">
         <div className="max-w-4xl mx-auto p-6">
           {/* Back Button */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6 }}
-            className="mb-8"
-          >
+          <div className="mb-8">
             <Link href="/articles">
               <Button 
                 variant="ghost" 
@@ -212,15 +207,10 @@ export default function ArticlePage() {
                 記事一覧に戻る
               </Button>
             </Link>
-          </motion.div>
+          </div>
 
           {/* Article Header */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            className="mb-8"
-          >
+          <div className="mb-8">
             {article.is_featured && (
               <Badge className="bg-gradient-to-r from-blue-600 to-purple-600 text-[#e0e0e0] mb-4">
                 FEATURED
@@ -272,31 +262,21 @@ export default function ArticlePage() {
                 ))}
               </div>
             )}
-          </motion.div>
+          </div>
 
           {/* Featured Image */}
           {article.featured_image && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="mb-8"
-            >
+            <div className="mb-8">
               <img
                 src={article.featured_image}
                 alt={article.title}
                 className="w-full h-64 md:h-80 object-cover rounded-lg"
               />
-            </motion.div>
+            </div>
           )}
 
           {/* Article Content */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-            className="prose prose-lg prose-invert max-w-none mb-12"
-          >
+          <div className="prose prose-lg prose-invert max-w-none mb-12">
             <ReactMarkdown
               components={{
                 code(props) {
@@ -345,15 +325,10 @@ export default function ArticlePage() {
             >
               {article.content}
             </ReactMarkdown>
-          </motion.div>
+          </div>
 
           {/* Action Buttons */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            className="flex items-center gap-4 mb-12 p-4 bg-[#2a2a2a] rounded-lg"
-          >
+          <div className="flex items-center gap-4 mb-12 p-4 bg-[#2a2a2a] rounded-lg">
             <Button
               onClick={handleLike}
               variant="ghost"
@@ -388,20 +363,15 @@ export default function ArticlePage() {
               <Share2 className="w-5 h-5" />
               <span>シェア</span>
             </Button>
-          </motion.div>
+          </div>
 
           {/* Related Articles Section (placeholder) */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.5 }}
-            className="border-t border-[#3a3a3a] pt-12"
-          >
+          <div className="border-t border-[#3a3a3a] pt-12">
             <h3 className="text-xl font-bold text-[#e0e0e0] mb-6">関連記事</h3>
             <div className="text-[#a0a0a0]">
               関連記事機能は準備中です。
             </div>
-          </motion.div>
+          </div>
         </div>
       </div>
     </div>

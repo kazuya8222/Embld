@@ -183,12 +183,7 @@ export default function EmbldProductDetailPage() {
       <div className="pt-16">
         <div className="max-w-6xl mx-auto p-6">
           {/* Back Button */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-            className="mb-6"
-          >
+          <div className="mb-6">
             <Button 
               variant="ghost" 
               onClick={() => router.back()}
@@ -197,15 +192,10 @@ export default function EmbldProductDetailPage() {
               <ArrowLeft className="w-4 h-4 mr-2" />
               戻る
             </Button>
-          </motion.div>
+          </div>
 
           {/* Header Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="mb-8"
-          >
+          <div className="mb-8">
             <div className="flex items-start justify-between mb-4">
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-3">
@@ -240,17 +230,12 @@ export default function EmbldProductDetailPage() {
               </div>
               
             </div>
-          </motion.div>
+          </div>
 
           {/* Main Content Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Images Section */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-              className="lg:col-span-2"
-            >
+            <div className="lg:col-span-2">
               <div className="bg-[#2a2a2a] rounded-lg p-6 border border-[#3a3a3a]">
                 <h2 className="text-xl font-semibold text-[#e0e0e0] mb-4">スクリーンショット</h2>
                 
@@ -307,15 +292,10 @@ export default function EmbldProductDetailPage() {
                   </p>
                 </div>
               </div>
-            </motion.div>
+            </div>
 
             {/* Info Sidebar */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="space-y-6"
-            >
+            <div className="space-y-6">
               {/* Tech Stack */}
               {product.tech_stack && product.tech_stack.length > 0 && (
                 <div className="bg-[#2a2a2a] rounded-lg p-6 border border-[#3a3a3a]">
@@ -390,7 +370,7 @@ export default function EmbldProductDetailPage() {
                   </div>
                 </div>
               </div>
-            </motion.div>
+            </div>
           </div>
         </div>
       </div>
