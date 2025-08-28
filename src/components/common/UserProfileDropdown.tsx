@@ -21,7 +21,7 @@ export function UserProfileDropdown() {
   const [isOpen, setIsOpen] = useState(false);
   const [isAccountOpen, setIsAccountOpen] = useState(false);
   const [isPricingOpen, setIsPricingOpen] = useState(false);
-  const { user, userProfile, credits, signOut, refreshCredits } = useAuth();
+  const { user, userProfile, credits, subscriptionPlan, signOut, refreshCredits } = useAuth();
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Close dropdown when clicking outside
@@ -160,7 +160,7 @@ export function UserProfileDropdown() {
               {/* Plan Section */}
               <div className="p-3 border-b border-[#3a3a3a]">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-[#a0a0a0] font-medium text-sm">無料</span>
+                  <span className="text-[#a0a0a0] font-medium text-sm">{subscriptionPlan}</span>
                   <Button 
                     variant="secondary" 
                     size="sm"
@@ -170,7 +170,7 @@ export function UserProfileDropdown() {
                     }}
                     className="bg-[#e0e0e0] text-black hover:bg-[#c0c0c0] px-3 py-1 text-xs h-7"
                   >
-                    アップグレード
+                    プランを管理
                   </Button>
                 </div>
                 

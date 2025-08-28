@@ -176,16 +176,13 @@ export function PricingModal({ isOpen, onClose }: PricingModalProps) {
                     </button>
                     <button
                       onClick={() => setBillingPeriod('yearly')}
-                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors relative ${
+                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                         billingPeriod === 'yearly'
                           ? 'bg-[#0066cc] text-[#e0e0e0]'
                           : 'bg-[#3a3a3a] text-[#a0a0a0] hover:text-[#e0e0e0]'
                       }`}
                     >
                       年間
-                      <span className="absolute -top-1 -right-1 bg-[#0066cc] text-white text-xs px-1.5 py-0.5 rounded">
-                        17% 節約
-                      </span>
                     </button>
                   </div>
                 </div>

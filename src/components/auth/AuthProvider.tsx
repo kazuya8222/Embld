@@ -24,7 +24,7 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   userProfile: null,
   credits: 0,
-  subscriptionPlan: '無料',
+  subscriptionPlan: '無料プラン',
   loading: true,
   signOut: async () => {},
   refreshProfile: async () => {},
@@ -36,7 +36,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [userProfile, setUserProfile] = useState<any | null>(null)
   const [credits, setCredits] = useState<number>(0)
-  const [subscriptionPlan, setSubscriptionPlan] = useState<string>('無料')
+  const [subscriptionPlan, setSubscriptionPlan] = useState<string>('無料プラン')
   const [loading, setLoading] = useState(true)
   const [hydrated, setHydrated] = useState(false)
   const hasInitialized = useRef(false)
@@ -93,22 +93,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (data?.subscription_plan) {
           const plan = data.subscription_plan;
           if (plan === 'free') {
-            setSubscriptionPlan('無料');
+            setSubscriptionPlan('無料プラン');
           } else if (plan === 'Embld Basic') {
-            setSubscriptionPlan('Embld Basic');
+            setSubscriptionPlan('ベーシックプラン');
           } else if (plan === 'Embld Plus') {
-            setSubscriptionPlan('Embld Plus');
+            setSubscriptionPlan('プラスプラン');
           } else {
             setSubscriptionPlan(plan);
           }
         } else {
-          setSubscriptionPlan('無料');
+          setSubscriptionPlan('無料プラン');
         }
       }
     } catch (error) {
       console.error('Error fetching credits:', error);
       setCredits(0);
-      setSubscriptionPlan('無料');
+      setSubscriptionPlan('無料プラン');
     }
   };
 
