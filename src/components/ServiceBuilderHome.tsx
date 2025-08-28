@@ -34,37 +34,59 @@ export function ServiceBuilderHome() {
   const handleSubmit = async (value?: string) => {
     const ideaValue = value || input;
     if (ideaValue.trim()) {
-      // Create new chat session and navigate to it
       try {
-        const supabase = createClient();
-        const { data: { user } } = await supabase.auth.getUser();
+        // First check if user has enough credits
+        const checkResponse = await fetch('/api/chat/sessions', {
+          method: 'GET'
+        });
         
-        if (!user) {
+        if (checkResponse.status === 401) {
           router.push('/auth/login');
           return;
         }
-
-        const { data, error } = await supabase
-          .from('chat_sessions')
-          .insert([
-            {
-              user_id: user.id,
-              title: ideaValue.length > 50 ? ideaValue.substring(0, 50) + '...' : ideaValue,
-              initial_message: ideaValue
-            }
-          ])
-          .select()
-          .single();
-
-        if (error) throw error;
         
-        if (data) {
-          console.log('Created new chat session with initial message:', data.id);
+        const checkData = await checkResponse.json();
+        
+        if (!checkData.canStart) {
+          alert(`クレジットが不足しています。\nAIエージェントチャットの開始には${checkData.creditCost}クレジットが必要です。\n現在のクレジット: ${checkData.currentCredits}`);
+          return;
+        }
+        
+        // Skip confirmation dialog - proceed directly
+        
+        // Create new chat session with credit deduction
+        const response = await fetch('/api/chat/sessions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            title: ideaValue.length > 50 ? ideaValue.substring(0, 50) + '...' : ideaValue,
+            initialMessage: ideaValue
+          })
+        });
+        
+        if (response.status === 402) {
+          const data = await response.json();
+          alert(`クレジットが不足しています。\n必要クレジット: ${data.required}\n現在のクレジット: ${data.current}`);
+          return;
+        }
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error('Chat session creation failed:', response.status, errorData);
+          throw new Error(`Failed to create chat session: ${errorData.error || response.statusText}`);
+        }
+        
+        const { session, remainingCredits } = await response.json();
+        
+        if (session) {
           // Navigate to the new chat
-          router.push(`/agents/${data.id}`);
+          router.push(`/agents/${session.id}`);
         }
       } catch (error) {
         console.error('Error creating chat session:', error);
+        alert('チャットの開始に失敗しました。もう一度お試しください。');
       }
     }
   };

@@ -34,6 +34,7 @@ import { cn } from '@/lib/utils/cn';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '../auth/AuthProvider';
 import { InterviewState, Persona, Interview } from '@/lib/types/agent';
+// Credit functions moved to API endpoints
 
 interface RequirementEditorProps {
   chatId: string;
@@ -274,6 +275,28 @@ export function RequirementEditor({ chatId, agentState, initialActiveTab, onTabC
       return;
     }
     
+    // Check credit balance
+    const PROPOSAL_SUBMIT_COST = 100;
+    console.log('Checking credit balance...');
+    
+    const creditsResponse = await fetch('/api/credits?action=balance');
+    if (!creditsResponse.ok) {
+      console.error('Failed to fetch credits:', creditsResponse.status);
+      alert('クレジット残高の取得に失敗しました。');
+      return;
+    }
+    
+    const creditsData = await creditsResponse.json();
+    const currentCredits = creditsData.credits;
+    console.log('Current credits:', currentCredits);
+    
+    if (currentCredits < PROPOSAL_SUBMIT_COST) {
+      alert(`クレジットが不足しています。\n必要クレジット: ${PROPOSAL_SUBMIT_COST}\n現在のクレジット: ${currentCredits}`);
+      return;
+    }
+    
+    // Skip confirmation dialog - proceed directly with submission
+    
     setIsSubmitting(true);
     try {
       // Parse the pitch document to extract structured data
@@ -333,6 +356,43 @@ export function RequirementEditor({ chatId, agentState, initialActiveTab, onTabC
         }
         proposalId = insertData.id;
       }
+      
+      // Deduct credits for proposal submission
+      console.log('Deducting credits for proposal submission...');
+      
+      const deductResponse = await fetch('/api/credits', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'deduct',
+          amount: PROPOSAL_SUBMIT_COST,
+          transactionType: 'proposal_submission',
+          description: '企画書提出',
+          metadata: {
+            proposal_id: proposalId,
+            chat_session_id: chatId,
+            service_name: pitchData.service_name
+          }
+        })
+      });
+      
+      console.log('Credit deduction response:', deductResponse.status);
+      
+      if (!deductResponse.ok) {
+        const errorData = await deductResponse.json();
+        console.error('Credit deduction failed:', errorData);
+        
+        // If credit deduction fails, rollback the proposal status
+        await supabase
+          .from('proposals')
+          .update({ status: 'draft' as const })
+          .eq('id', proposalId);
+        
+        throw new Error(`クレジット処理に失敗しました: ${errorData.error}`);
+      }
+      
+      const deductResult = await deductResponse.json();
+      console.log('Credits deducted successfully:', deductResult);
       
       setSubmissionStatus('submitted');
       setSubmittedAt(new Date());
