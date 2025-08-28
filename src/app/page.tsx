@@ -169,12 +169,6 @@ export default function LandingPage() {
 
       {/* ヒーローセクション - Manusスタイル */}
       <section className="pt-12 pb-20 bg-white min-h-screen flex items-center relative overflow-hidden">
-        {/* Animated background dots */}
-        <div className="absolute inset-0">
-          <div className="stars"></div>
-          <div className="twinkling"></div>
-        </div>
-
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
           {/* メインヘッドライン */}
           <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
@@ -184,7 +178,7 @@ export default function LandingPage() {
           
           {/* サブヘッドライン */}
           <p className="text-xl md:text-2xl text-gray-700 mb-12 max-w-3xl mx-auto leading-relaxed">
-            EMBLDは、アイデアを収益へつなぐAIプラットフォームです。
+          EMBLDは、あなたのアイデアを収益性、実現可能性、法務リスクなどを考慮し収益の上がるアプリビジネスへ仕上げるAIエージェントです。
           </p>
           
           {/* プロンプトバー */}
@@ -196,7 +190,7 @@ export default function LandingPage() {
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     placeholder="欲しいアプリを一言で書いてください。"
-                    className="flex-1 text-lg bg-transparent border-0 focus:outline-none placeholder-gray-500 text-black resize-none overflow-hidden leading-relaxed"
+                    className="flex-1 text-lg bg-transparent border-0 focus:outline-none placeholder-gray-400 text-black resize-none overflow-hidden leading-relaxed"
                     onKeyDown={handleKeyDown}
                     disabled={isLoading}
                     rows={1}
@@ -232,61 +226,7 @@ export default function LandingPage() {
           
         </div>
         
-        {/* CSS アニメーション */}
-        <style jsx>{`
-          .stars {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 120%;
-            transform: rotate(-45deg);
-            background-image: 
-              radial-gradient(2px 2px at 20px 30px, rgba(0,0,0,0.3), transparent),
-              radial-gradient(2px 2px at 40px 70px, rgba(0,0,0,0.25), transparent),
-              radial-gradient(1px 1px at 90px 40px, rgba(0,0,0,0.35), transparent),
-              radial-gradient(1px 1px at 130px 80px, rgba(0,0,0,0.3), transparent),
-              radial-gradient(2px 2px at 160px 30px, rgba(0,0,0,0.25), transparent);
-            background-repeat: repeat;
-            background-size: 200px 100px;
-            animation: move-stars 20s linear infinite;
-          }
-          
-          .twinkling {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 120%;
-            transform: rotate(-45deg);
-            background-image: 
-              radial-gradient(1px 1px at 25px 25px, rgba(0,0,0,0.4), transparent),
-              radial-gradient(1px 1px at 50px 75px, rgba(0,0,0,0.3), transparent),
-              radial-gradient(1px 1px at 75px 25px, rgba(0,0,0,0.35), transparent),
-              radial-gradient(1px 1px at 100px 75px, rgba(0,0,0,0.25), transparent);
-            background-repeat: repeat;
-            background-size: 150px 100px;
-            animation: move-twinkling 30s linear infinite;
-          }
-          
-          @keyframes move-stars {
-            from { 
-              transform: rotate(-45deg) translateY(0px); 
-            }
-            to { 
-              transform: rotate(-45deg) translateY(-2000px); 
-            }
-          }
-          
-          @keyframes move-twinkling {
-            from { 
-              transform: rotate(-45deg) translateY(0px); 
-            }
-            to { 
-              transform: rotate(-45deg) translateY(-1000px); 
-            }
-          }
-        `}</style>
+
       </section>
 
       {/* サービス紹介セクション */}
@@ -299,18 +239,13 @@ export default function LandingPage() {
           </div>
           
           <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-900 mb-12">
-            あなたのアイデアがサービスに。
+            あなたのアイデアがアプリビジネスに。
           </h2>
           
           <p className="text-center text-gray-600 mb-16 max-w-3xl mx-auto">
-            サービスで発生した収益があなたに還元されます。
-            アイデアを投稿すると、他のユーザによって評価・改善案提出が行われます。
-            <br />
-            それらを基に、β版開発が行われ、リリース前のテスト・改善まで行います。
-            <br />
-            以上が完了したら、リリースし、収益化が始まります。サービスにより発生した収益を分配します。
-            <br />
-            サービス開発は、優秀なエンジニアが担当するので、開発の質に関しては心配不要です。
+            EMBLDは、あなたのアイデアや不満、欲求をもとにアプリビジネスへとつなげる<br/>要件定義書を作成するAIエージェントです。<br/>
+            提出した要件定義書が承認されれば、EMBLDチームが無償で開発から保守・運用まで担当。<br/>
+            完成したアプリから生まれた収益の70%をあなたに還元します。
           </p>
 
           {/* 動画プレースホルダー */}
@@ -338,72 +273,54 @@ export default function LandingPage() {
             </span>
           </div>
           
-          <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-900 mb-8">
-            質の高いサービス開発に簡単に参画
+          <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-900 mb-16">
+            EMBLDの4つの強み
           </h2>
-          
-          <p className="text-center text-gray-600 mb-16 max-w-3xl mx-auto text-lg">
-            誰でも簡単に、質の高いサービス開発に参画できる仕組みを提供しています
-          </p>
 
-          {/* 3つの特徴を横並びで表示 */}
-          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {/* 特徴1: 短時間でアイデアを投稿 */}
+          {/* 4つの特徴を2×2のグリッドで表示 */}
+          <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            {/* 特徴1: アイデアから収益化までワンストップ */}
             <div className="bg-gray-100 rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow">
-              <div className="flex justify-center mb-6">
-                <div className="w-32 h-32">
-                  <img 
-                    src="/images/Shiny Happy - Soda.svg"
-                    alt="隙間時間にアイデアを投稿"
-                    className="w-full h-full object-contain"
-                  />
-                </div>
-              </div>
               <h3 className="text-xl font-bold text-gray-900 mb-4 text-center">
-                隙間時間にアイデアを投稿
+                アイデアから収益化までワンストップ
               </h3>
               <p className="text-gray-600 text-center leading-relaxed">
-                隙間時間で気軽に投稿できます。
-                <br />
-                通勤時間や休憩時間を有効活用しましょう。
+                EMBLDは、アイデアの段階からリリース後の収益化までを一気通貫でサポートします。
+                思いつきを入力するだけで、AIが要件定義書を作成し、開発・運用までスムーズに進みます。
               </p>
             </div>
 
-                        {/* 特徴2: 自社開発AIがサービス化をサポート */}
+            {/* 特徴2: AIがリスクと収益性を診断 */}
             <div className="bg-gray-100 rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow">
-              <div className="flex justify-center mb-6">
-                <div className="w-32 h-32">
-                  <img 
-                    src="/images/Shiny Happy - Graph.svg"
-                    alt="AIがサービス化をサポート"
-                    className="w-full h-full object-contain"
-                  />
-                </div>
-              </div>
               <h3 className="text-xl font-bold text-gray-900 mb-4 text-center">
-                AIがサービス化をサポート
+                AIがリスクと収益性を診断
               </h3>
               <p className="text-gray-600 text-center leading-relaxed">
-                 AIがアイデアの質を向上。あなたの思いつきを企画案レベルまでブラッシュアップします。誰でも質の高い提案が可能に。
+                法務リスク・収益性・実現可能性をAIが自動でチェック。
+                ただの「思いつき」ではなく、ビジネスとして成立する形に整えます。
               </p>
             </div>
 
-            {/* 特徴3: 開発は優秀なエンジニアが担当 */}
+            {/* 特徴3: 無償で開発、収益を還元 */}
             <div className="bg-gray-100 rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow">
-              <div className="flex justify-center mb-6">
-                <div className="w-32 h-32">
-                  <img 
-                    src="/images/Shiny Happy - Lamp.svg"
-                    alt="開発は優秀なエンジニアが担当"
-                    className="w-full h-full object-contain"
-                  />
-                </div>
-              </div>
               <h3 className="text-xl font-bold text-gray-900 mb-4 text-center">
-                開発は優秀なエンジニアが担当
+                無償で開発、収益を還元
               </h3>
               <p className="text-gray-600 text-center leading-relaxed">
-                サービスの使用感はプロのエンジニアが担保。技術的な心配は不要で、アイデアに集中できる環境を提供します。
+                承認されたアイデアは、EMBLDチームが開発費ゼロで開発を担当。
+                完成したアプリの収益の70%はアイデア提供者に還元されます。
+              </p>
+            </div>
+
+            {/* 特徴4: 誰でも使える */}
+            <div className="bg-gray-100 rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow">
+              <h3 className="text-xl font-bold text-gray-900 mb-4 text-center">
+                誰でも使える
+              </h3>
+              <p className="text-gray-600 text-center leading-relaxed">
+                エンジニアにとっては「要件定義書ジェネレーター」として、
+                非エンジニアにとっては「アイデアをアプリに変える仕組み」として。
+                知識がなくても誰でも挑戦できます。
               </p>
             </div>
           </div>
@@ -434,7 +351,7 @@ export default function LandingPage() {
           </div>
           
           <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-900 mb-16">
-            エンビルドの使い方
+            EMBLDの使い方
           </h2>
 
           <div className="max-w-5xl mx-auto space-y-24 mb-16">
@@ -451,16 +368,15 @@ export default function LandingPage() {
                   </div>
                   <div className="rounded-b-3xl p-10 pt-16 -mt-8">
                     <h3 className="text-3xl font-bold text-gray-900 mb-4 text-center">
-                      1. アイデアを投稿
+                      1. アイデアを入力
                     </h3>
                     <p className="text-xl font-semibold text-gray-800 text-center mb-3">
-                      「こんなサービスがあれば良いのに」を投稿する
+                      「こんなサービスがあれば良いのに」を入力する
                     </p>
                     <p className="text-lg text-gray-600 text-center leading-relaxed">
-                      簡単なアイデアを投稿してください。
+                      簡単なアイデアを入力してください。
                       その簡単なアイデアを企画案になるまで、
-                      自社開発のAIがサポートします。
-                      みんながわかる形にすることを目指します。
+                      自社開発のAIエージェントがアイデアを収益性の高い企画書に磨き上げます。
                     </p>
                   </div>
                 </div>
@@ -480,16 +396,15 @@ export default function LandingPage() {
                   </div>
                   <div className="rounded-b-3xl p-10 pt-16 -mt-8">
                     <h3 className="text-3xl font-bold text-gray-900 mb-4 text-center">
-                      2. アイデアのブラッシュアップ
+                      2. 企画書を提出
                     </h3>
                     <p className="text-xl font-semibold text-gray-800 text-center mb-3">
-                      他ユーザーの評価や改善案をもらう
+                      EMBLDチームに開発を依頼する
                     </p>
                     <p className="text-lg text-gray-600 text-center leading-relaxed">
-                      投稿されたアイデアは、コミュニティ内で
-                      共有されます。他のユーザーからの
-                      評価や改善案を受け取り、
-                      より良いアイデアに磨き上げます。
+                      企画書を提出し、EMBLDチームに開発を依頼します。<br/>
+                      審査の後、承認されれば開発が始まります。<br/>
+                      もちろん、作成した企画書をもとに自身で開発することも可能です。
                     </p>
                   </div>
                 </div>
@@ -509,16 +424,15 @@ export default function LandingPage() {
                   </div>
                   <div className="rounded-b-3xl p-10 pt-16 -mt-8">
                     <h3 className="text-3xl font-bold text-gray-900 mb-4 text-center">
-                      3. サービスのテスト
+                      3. アプリの改善
                     </h3>
                     <p className="text-xl font-semibold text-gray-800 text-center mb-3">
-                      開発されたサービスをテスト
+                      開発されたアプリを改善
                     </p>
                     <p className="text-lg text-gray-600 text-center leading-relaxed">
-                      開発されたサービスのテストをし、
-                      使用感からさらなるブラッシュアップを
-                      行います。実際に使ってみて、
-                      より使いやすいサービスに改善します。
+                      EMBLDチームによるアプリの開発が完了すると、
+                      ユーザーのフィードバックをもとにアプリを改善します。
+                      あなたの意見をもとにより良いアプリに仕上げます。
                     </p>
                   </div>
                 </div>
@@ -541,23 +455,18 @@ export default function LandingPage() {
                       4. 収益を受け取る
                     </h3>
                     <p className="text-xl font-semibold text-gray-800 text-center mb-3">
-                      サービス収益の30%が還元
+                      アプリ収益の70%が還元
                     </p>
                     <p className="text-lg text-gray-600 text-center leading-relaxed">
                       アプリがリリースされ収益が発生すると、
-                      その30%があなたに還元されます。
-                      毎月自動的に振り込まれ、
-                      振込手数料も0円です。
+                      その70%があなたに還元されます。<br/>
+                      あなたが寝ている間も収益が発生します。
                     </p>
                   </div>
                 </div>
               </div>
             </ScrollFadeIn>
           </div>
-
-          <p className="text-center text-sm text-gray-500">
-            ※一部のアイデアは市場性や技術的な観点から採用されない場合もあります。
-          </p>
         </div>
       </section>
 
@@ -580,10 +489,6 @@ export default function LandingPage() {
             無料で始める
             <ArrowRight className="w-5 h-5" />
           </Link>
-          
-          <p className="text-sm text-gray-600 mt-4">
-            ※クレジットカード不要・月額費用なし
-          </p>
         </div>
       </section>
 
