@@ -9,7 +9,6 @@ import {
   LogOut,
   ExternalLink,
   Sparkles,
-  ArrowUpRight,
   Bell,
   HelpCircle
 } from 'lucide-react';
@@ -151,9 +150,6 @@ export function UserProfileDropdown() {
                       {getUserEmail()}
                     </p>
                   </div>
-                  <button className="p-1.5 text-[#a0a0a0] hover:text-[#e0e0e0] transition-colors">
-                    <ArrowUpRight className="w-3.5 h-3.5" />
-                  </button>
                 </div>
               </div>
 
@@ -185,7 +181,6 @@ export function UserProfileDropdown() {
                   </div>
                   <div className="flex items-center space-x-2">
                     <span className="text-[#e0e0e0] font-semibold text-sm">{credits.toLocaleString()}</span>
-                    <ArrowUpRight className="w-3.5 h-3.5 text-[#a0a0a0]" />
                   </div>
                 </div>
               </div>
