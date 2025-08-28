@@ -30,36 +30,22 @@ export function CommunityShowcase() {
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const query = `
-          SELECT 
-            id,
-            title,
-            description,
-            images,
-            view_count,
-            like_count,
-            category,
-            user_id,
-            demo_url,
-            github_url,
-            tags,
-            tech_stack
-          FROM embld_products
-          WHERE is_public = true 
-            AND approval_status = 'approved'
-          ORDER BY like_count DESC, view_count DESC
-          LIMIT 6
-        `;
-        
-        const response = await fetch('/api/community/posts', {
-          method: 'POST',
+        const response = await fetch('/api/embld-products', {
+          method: 'GET',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ query })
         });
         
         if (response.ok) {
-          const data = await response.json();
-          setPosts(data.posts || []);
+          const result = await response.json();
+          const allPosts = result.data || [];
+          // Get first 6 posts sorted by like count and view count
+          const sortedPosts = allPosts
+            .sort((a: OwnerPost, b: OwnerPost) => 
+              (b.like_count || 0) - (a.like_count || 0) || 
+              (b.view_count || 0) - (a.view_count || 0)
+            )
+            .slice(0, 6);
+          setPosts(sortedPosts);
         }
       } catch (error) {
         console.error('Failed to fetch community posts:', error);
@@ -111,7 +97,8 @@ export function CommunityShowcase() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: index * 0.1 }}
           >
-            <Card className="bg-[#2a2a2a] border-[#3a3a3a] hover:bg-[#3a3a3a] transition-all duration-300 group cursor-pointer overflow-hidden">
+            <Link href={`/embld-products/${post.id}`}>
+              <Card className="bg-[#2a2a2a] border-[#3a3a3a] hover:bg-[#3a3a3a] transition-all duration-300 group cursor-pointer overflow-hidden">
               <div className="relative">
                 {/* Project Image */}
                 <div className="aspect-video bg-gradient-to-br from-[#3a3a3a] to-[#2a2a2a] relative overflow-hidden">
@@ -146,7 +133,7 @@ export function CommunityShowcase() {
                       size="sm"
                       className="bg-[#e0e0e0] text-black hover:bg-[#c0c0c0]"
                     >
-                      View Details
+                      詳細を見る
                     </Button>
                   </div>
                 </div>
@@ -199,6 +186,7 @@ export function CommunityShowcase() {
                 </CardContent>
               </div>
             </Card>
+            </Link>
           </motion.div>
         ))}
       </div>
