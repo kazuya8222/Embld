@@ -388,6 +388,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [user, loading, refreshCredits])
 
+  // クレジット取引のリアルタイム監視
+  useEffect(() => {
+    if (!user || loading) return;
+
+    console.log('Setting up real-time credit transaction subscription for user:', user.id);
+    
+    // クレジット取引テーブルの変更を監視
+    const creditSubscription = supabase
+      .channel(`credit_transactions_${user.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'credit_transactions',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          console.log('Credit transaction detected:', payload.new);
+          // 新しい取引があったらクレジット残高を更新
+          refreshCredits();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      console.log('Unsubscribing from credit transaction subscription');
+      supabase.removeChannel(creditSubscription);
+    };
+  }, [user, loading, refreshCredits])
+
   // Prevent hydration mismatch by not rendering until hydrated
   if (!hydrated) {
     return (

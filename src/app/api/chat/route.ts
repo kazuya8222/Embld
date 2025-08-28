@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { AgentWorkflow } from '@/lib/agent/workflow';
+import { deductCredits } from '@/lib/credits';
 import { 
   AgentChatRequest,
   InterviewState,
@@ -108,6 +109,8 @@ export async function POST(req: NextRequest) {
       nextNode: result.nextNode,
       hasChoices: 'choices' in result.response ? result.response.choices?.length : 'N/A'
     });
+
+    // Credits are already deducted when creating chat session, no need to deduct here
 
     // Apply any state patch from ModelPlan responses
     let finalState = result.nextState;

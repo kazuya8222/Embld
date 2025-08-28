@@ -1,9 +1,10 @@
 'use client'
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Button } from '../ui/button';
 import { useAuth } from '../auth/AuthProvider';
+import { createClient } from '@/lib/supabase/client';
 import { 
   X, 
   LogOut,
@@ -15,8 +16,127 @@ interface AccountModalProps {
   onClose: () => void;
 }
 
+interface UsageStats {
+  totalChats: number;
+  monthlyChats: number;
+  totalProposals: number;
+  totalProducts: number;
+  monthlyCreditsUsed: number;
+}
+
 export function AccountModal({ isOpen, onClose }: AccountModalProps) {
   const { user, userProfile, credits, subscriptionPlan, signOut } = useAuth();
+  const [usageStats, setUsageStats] = useState<UsageStats>({
+    totalChats: 0,
+    monthlyChats: 0,
+    totalProposals: 0,
+    totalProducts: 0,
+    monthlyCreditsUsed: 0
+  });
+  const [creditHistory, setCreditHistory] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const supabase = createClient();
+
+  useEffect(() => {
+    if (isOpen && user) {
+      fetchUsageStats();
+      fetchCreditHistory();
+    }
+  }, [isOpen, user]);
+
+  const fetchUsageStats = async () => {
+    if (!user) return;
+    
+    setLoading(true);
+    try {
+      const now = new Date();
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+      // Get total chat sessions
+      const { count: totalChats } = await supabase
+        .from('chat_sessions')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id);
+
+      // Get monthly chat sessions
+      const { count: monthlyChats } = await supabase
+        .from('chat_sessions')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .gte('created_at', startOfMonth.toISOString());
+
+      // Get total proposals
+      const { count: totalProposals } = await supabase
+        .from('proposals')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id);
+
+      // Get total products
+      const { count: totalProducts } = await supabase
+        .from('embld_products')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id);
+
+      // Get monthly credits used
+      const { data: monthlyTransactions } = await supabase
+        .from('credit_transactions')
+        .select('amount')
+        .eq('user_id', user.id)
+        .gte('created_at', startOfMonth.toISOString())
+        .lt('amount', 0); // Only negative amounts (usage)
+
+      const monthlyCreditsUsed = monthlyTransactions?.reduce(
+        (total, transaction) => total + Math.abs(transaction.amount), 
+        0
+      ) || 0;
+
+      setUsageStats({
+        totalChats: totalChats || 0,
+        monthlyChats: monthlyChats || 0,
+        totalProposals: totalProposals || 0,
+        totalProducts: totalProducts || 0,
+        monthlyCreditsUsed
+      });
+    } catch (error) {
+      console.error('Failed to fetch usage stats:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchCreditHistory = async () => {
+    if (!user) return;
+    
+    try {
+      const { data: transactions } = await supabase
+        .from('credit_transactions')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      setCreditHistory(transactions || []);
+    } catch (error) {
+      console.error('Failed to fetch credit history:', error);
+    }
+  };
+
+  const getTransactionTypeLabel = (transactionType: string): string => {
+    switch (transactionType) {
+      case 'chat_usage':
+        return 'チャット使用';
+      case 'proposal_creation':
+        return '企画書作成';
+      case 'subscription_bonus':
+        return 'サブスクリプションボーナス';
+      case 'monthly_bonus':
+        return '月次ボーナス';
+      case 'refund':
+        return '返金';
+      default:
+        return transactionType;
+    }
+  };
 
   return (
     <AnimatePresence>
@@ -127,11 +247,15 @@ export function AccountModal({ isOpen, onClose }: AccountModalProps) {
                         <div className="space-y-3">
                           <div className="flex justify-between">
                             <span className="text-[#a0a0a0] dark:text-[#a0a0a0] text-gray-600">チャット回数</span>
-                            <span className="text-[#e0e0e0] dark:text-[#e0e0e0] text-gray-900 font-medium">0回</span>
+                            <span className="text-[#e0e0e0] dark:text-[#e0e0e0] text-gray-900 font-medium">
+                              {loading ? '...' : `${usageStats.monthlyChats}回`}
+                            </span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-[#a0a0a0] dark:text-[#a0a0a0] text-gray-600">使用クレジット</span>
-                            <span className="text-[#e0e0e0] dark:text-[#e0e0e0] text-gray-900 font-medium">0</span>
+                            <span className="text-[#e0e0e0] dark:text-[#e0e0e0] text-gray-900 font-medium">
+                              {loading ? '...' : usageStats.monthlyCreditsUsed}
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -141,15 +265,21 @@ export function AccountModal({ isOpen, onClose }: AccountModalProps) {
                         <div className="space-y-3">
                           <div className="flex justify-between">
                             <span className="text-[#a0a0a0] dark:text-[#a0a0a0] text-gray-600">総チャット数</span>
-                            <span className="text-[#e0e0e0] dark:text-[#e0e0e0] text-gray-900 font-medium">0回</span>
+                            <span className="text-[#e0e0e0] dark:text-[#e0e0e0] text-gray-900 font-medium">
+                              {loading ? '...' : `${usageStats.totalChats}回`}
+                            </span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-[#a0a0a0] dark:text-[#a0a0a0] text-gray-600">作成した企画書数</span>
-                            <span className="text-[#e0e0e0] dark:text-[#e0e0e0] text-gray-900 font-medium">0個</span>
+                            <span className="text-[#e0e0e0] dark:text-[#e0e0e0] text-gray-900 font-medium">
+                              {loading ? '...' : `${usageStats.totalProposals}個`}
+                            </span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-[#a0a0a0] dark:text-[#a0a0a0] text-gray-600">作成したプロダクト数</span>
-                            <span className="text-[#e0e0e0] dark:text-[#e0e0e0] text-gray-900 font-medium">0個</span>
+                            <span className="text-[#e0e0e0] dark:text-[#e0e0e0] text-gray-900 font-medium">
+                              {loading ? '...' : `${usageStats.totalProducts}個`}
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -157,7 +287,39 @@ export function AccountModal({ isOpen, onClose }: AccountModalProps) {
 
                     <div className="bg-[#2a2a2a] dark:bg-[#2a2a2a] bg-gray-50 border border-[#3a3a3a] dark:border-[#3a3a3a] border-gray-200 rounded-lg p-6">
                       <h4 className="text-lg font-semibold text-[#e0e0e0] dark:text-[#e0e0e0] text-gray-900 mb-4">クレジット履歴</h4>
-                      <p className="text-[#a0a0a0] dark:text-[#a0a0a0] text-gray-600">クレジットの使用履歴がここに表示されます。</p>
+                      {loading ? (
+                        <p className="text-[#a0a0a0] dark:text-[#a0a0a0] text-gray-600">読み込み中...</p>
+                      ) : creditHistory.length === 0 ? (
+                        <p className="text-[#a0a0a0] dark:text-[#a0a0a0] text-gray-600">クレジットの使用履歴がありません。</p>
+                      ) : (
+                        <div className="space-y-3 max-h-48 overflow-y-auto">
+                          {creditHistory.map((transaction) => (
+                            <div key={transaction.id} className="flex items-center justify-between py-2 border-b border-[#3a3a3a] last:border-0">
+                              <div className="flex-1">
+                                <p className="text-[#e0e0e0] dark:text-[#e0e0e0] text-gray-900 text-sm font-medium">
+                                  {transaction.description || getTransactionTypeLabel(transaction.transaction_type)}
+                                </p>
+                                <p className="text-[#a0a0a0] dark:text-[#a0a0a0] text-gray-600 text-xs">
+                                  {new Date(transaction.created_at).toLocaleDateString('ja-JP', {
+                                    year: 'numeric',
+                                    month: 'short',
+                                    day: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                  })}
+                                </p>
+                              </div>
+                              <div className={`text-sm font-medium ${
+                                transaction.amount > 0 
+                                  ? 'text-green-400' 
+                                  : 'text-red-400'
+                              }`}>
+                                {transaction.amount > 0 ? '+' : ''}{transaction.amount}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>

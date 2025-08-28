@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
+import { deductCredits } from '@/lib/credits';
 
 export async function POST(request: NextRequest) {
   try {
@@ -56,6 +57,26 @@ export async function POST(request: NextRequest) {
     if (error) {
       console.error('Database error:', error);
       return NextResponse.json({ error: 'Failed to save proposal' }, { status: 500 });
+    }
+
+    // Deduct credits for proposal creation (5 credits per proposal)
+    const creditDeducted = await deductCredits(
+      user.id,
+      5,
+      'proposal_creation',
+      `Proposal created: ${serviceName}`,
+      {
+        proposal_id: proposal.id,
+        service_name: serviceName,
+        timestamp: new Date().toISOString()
+      }
+    );
+
+    if (!creditDeducted) {
+      console.warn('Failed to deduct credits for proposal creation');
+      // Continue even if credit deduction fails - proposal is already saved
+    } else {
+      console.log('Successfully deducted 5 credits for proposal creation');
     }
 
     return NextResponse.json({ 
