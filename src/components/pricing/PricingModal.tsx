@@ -28,12 +28,8 @@ const pricingPlans: PricingPlan[] = [
     name: 'Free',
     price: 0,
     period: 'month',
-    badge: 'ベータ',
     features: [
-      '毎日 300 クレジットのリフレッシュ',
-      'チャットモードへのアクセス',
-      '1個の同時実行タスク',
-      '1件のスケジュールタスク'
+      '毎月30クレジットのリフレッシュ'
     ],
     highlights: [],
     priceId: '',
@@ -43,17 +39,10 @@ const pricingPlans: PricingPlan[] = [
     name: 'Embld Basic',
     price: 2000,
     period: 'month',
-    badge: 'ベータ',
     features: [
-      '毎日 300 クレジットのリフレッシュ',
+      '毎月30クレジットのリフレッシュ',
       '200クレジット/月（購入時付与）',
-      'チャットモードへの無制限アクセス',
-      'Agentモードで高度なモデルを使用',
-      '3個の同時実行タスク',
-      '3件のスケジュールタスク',
-      '画像生成',
-      '動画生成',
-      'スライド生成'
+      'チャットモードへの無制限アクセス'
     ],
     highlights: ['200クレジット/月（購入時付与）'],
     priceId: 'price_1S0fMFFaYIdITkPyE5hOS7lh', // Embld Basic plan price ID
@@ -63,22 +52,14 @@ const pricingPlans: PricingPlan[] = [
     name: 'Embld Plus',
     price: 6000,
     period: 'month',
-    badge: 'ベータ',
     popular: true,
     features: [
-      '毎日 300 クレジットのリフレッシュ',
+      '毎月30クレジットのリフレッシュ',
       '600クレジット/月（購入時付与）',
       'チャットモードへの無制限アクセス',
-      'Agentモードで高度なモデルを使用',
-      '5個の同時実行タスク',
-      '5件のスケジュールタスク',
-      '画像生成',
-      '動画生成',
-      'スライド生成',
-      '独占データソース',
       'ベータ機能の早期アクセス'
     ],
-    highlights: ['600クレジット/月（購入時付与）', '独占データソース'],
+    highlights: ['600クレジット/月（購入時付与）'],
     priceId: 'price_1S0fNIFaYIdITkPyitTY8NhK', // Embld Plus plan price ID
   }
 ];
@@ -162,29 +143,6 @@ export function PricingModal({ isOpen, onClose }: PricingModalProps) {
                     プランアップグレードでクレジット追加
                   </h2>
                   
-                  {/* Billing Period Toggle */}
-                  <div className="flex items-center justify-center gap-4 mt-4">
-                    <button
-                      onClick={() => setBillingPeriod('monthly')}
-                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                        billingPeriod === 'monthly'
-                          ? 'bg-[#3a3a3a] text-[#e0e0e0]'
-                          : 'text-[#a0a0a0] hover:text-[#e0e0e0]'
-                      }`}
-                    >
-                      毎月
-                    </button>
-                    <button
-                      onClick={() => setBillingPeriod('yearly')}
-                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                        billingPeriod === 'yearly'
-                          ? 'bg-[#0066cc] text-[#e0e0e0]'
-                          : 'bg-[#3a3a3a] text-[#a0a0a0] hover:text-[#e0e0e0]'
-                      }`}
-                    >
-                      年間
-                    </button>
-                  </div>
                 </div>
                 
                 <button
