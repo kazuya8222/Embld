@@ -478,7 +478,7 @@ export default function LandingPage() {
           </h2>
           
           <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-            アイデアを投稿して、
+            アイデアを入力して、
             あなたのアイデアが収益を生み出す瞬間を体験してください。
           </p>
           
@@ -509,59 +509,59 @@ export default function LandingPage() {
             {/* Q1 */}
             <div className="bg-gray-50 rounded-lg p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                Q. アイデアを投稿するのに費用はかかりますか？
+                Q. EMBLDはどんなサービスですか？
               </h3>
               <p className="text-gray-600">
-                A. いいえ、アイデアの投稿は完全無料です。月額費用や初期費用は一切かかりません。
-                収益が発生した場合のみ、その30%を還元する仕組みです。
+                A. EMBLDは、あなたのアイデアを要件定義書に変換するAIエージェントです。
+                作成された要件定義書が承認されれば、EMBLDチームが無償で開発・運用を行い、
+                アプリから生まれる収益の70%をアイデア提供者に還元します。
               </p>
             </div>
             
             {/* Q2 */}
             <div className="bg-gray-50 rounded-lg p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                Q. どんなアイデアでも投稿できますか？
+                Q. 要件定義書の作成に費用はかかりますか？
               </h3>
               <p className="text-gray-600">
-                A. 基本的にはどんなアイデアでも投稿可能です。
-                ただし、法令に違反するものや公序良俗に反するものは採用されません。
-                また、技術的に実現困難なものや市場性が見込めないものは開発されない場合があります。
+                A. 基本的な要件定義書の作成は無料です。
+                AIエージェントとのチャットには一定のクレジットを消費しますが、
+                初回登録時に無料クレジットが付与されます。
               </p>
             </div>
             
             {/* Q3 */}
             <div className="bg-gray-50 rounded-lg p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                Q. アイデアが採用されなかった場合はどうなりますか？
+                Q. 要件定義書はどのように審査されますか？
               </h3>
               <p className="text-gray-600">
-                A. アイデアが採用されなかった場合でも、費用は一切発生しません。
-                また、フィードバックを参考に改善して再投稿することも可能です。
-                何度でも挑戦できます。
+                A. AIが法務リスク・収益性・実現可能性を自動診断した後、
+                EMBLDチームが市場性や技術的な観点から最終審査を行います。
+                審査結果は通常1週間以内にお知らせします。
               </p>
             </div>
             
             {/* Q4 */}
             <div className="bg-gray-50 rounded-lg p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                Q. 収益の支払いはどのように行われますか？
+                Q. 収益の70%はどのように支払われますか？
               </h3>
               <p className="text-gray-600">
-                A. サービスから収益が発生した場合、その30%が毎月自動的にあなたの指定口座に振り込まれます。
-                振込手数料は弊社が負担するため、0円です。
-                最低支払い金額は1,000円からとなります。
+                A. アプリから収益が発生した場合、その70%が毎月自動的にあなたの指定口座に振り込まれます。
+                振込手数料はEMBLDが負担します。
+                最低支払い金額は5,000円からとなります。
               </p>
             </div>
             
             {/* Q5 */}
             <div className="bg-gray-50 rounded-lg p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                Q. 開発の進捗は確認できますか？
+                Q. 作成した要件定義書を自分で開発に使うことはできますか？
               </h3>
               <p className="text-gray-600">
-                A. はい、マイページから開発の進捗状況をリアルタイムで確認できます。
-                また、重要な節目では通知も送られるため、
-                常に最新の状況を把握できます。
+                A. はい、可能です。AIが作成した要件定義書は自由にダウンロード・利用できます。
+                自身での開発や、他の開発チームへの依頼にもご活用いただけます。
               </p>
             </div>
           </div>

@@ -32,8 +32,8 @@ export function Footer() {
           <div>
             <h3 className="font-semibold text-white mb-3">サービス</h3>
             <ul className="space-y-2 text-sm">
-              <li><Link href="/ideas/new" className="text-gray-400 hover:text-white transition-colors">企画書作成</Link></li>
-              <li><Link href="/owners" className="text-gray-400 hover:text-white transition-colors">プロダクト一覧</Link></li>
+              <li><Link href="/home" className="text-gray-400 hover:text-white transition-colors">企画書作成</Link></li>
+              <li><Link href="/embld-products" className="text-gray-400 hover:text-white transition-colors">プロダクト一覧</Link></li>
             </ul>
           </div>
           
