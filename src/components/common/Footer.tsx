@@ -24,8 +24,8 @@ export function Footer() {
               <span className="text-2xl font-black text-white">EMBLD</span>
             </div>
             <p className="text-sm">
-              アイデアと開発者をつなぐ
-              収益シェアプラットフォーム
+              アイデアをアプリビジネスに<br />
+              変えるAIエージェント
             </p>
           </div>
           
