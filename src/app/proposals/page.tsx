@@ -116,19 +116,9 @@ export default function ProposalsPage() {
       <div className="flex-1 overflow-auto">
         <div className="max-w-6xl mx-auto p-6">
           {/* Header */}
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h1 className="text-3xl font-bold text-[#e0e0e0] mb-2">企画書一覧</h1>
-              <p className="text-[#a0a0a0]">作成した企画書を管理できます</p>
-            </div>
-            
-            <Button
-              onClick={() => router.push('/home')}
-              className="bg-[#0066cc] text-[#e0e0e0] hover:bg-[#0052a3]"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              新しい企画書を作成
-            </Button>
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-[#e0e0e0] mb-2">企画書一覧</h1>
+            <p className="text-[#a0a0a0]">作成した企画書を管理できます</p>
           </div>
 
           {/* Proposals Grid */}

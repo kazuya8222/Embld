@@ -1,14 +1,15 @@
 'use client'
 
 import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { TopBar } from '@/components/common/TopBar';
 import { Sidebar } from '@/components/common/Sidebar';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Eye, Heart, Rocket } from 'lucide-react';
+import { Eye, Heart, Rocket, ChevronRight, Calendar, Plus } from 'lucide-react';
 import Link from 'next/link';
 
 interface UserProduct {
@@ -28,6 +29,7 @@ interface UserProduct {
 
 export default function ProductsPage() {
   const { user } = useAuth();
+  const router = useRouter();
   const [products, setProducts] = useState<UserProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -79,17 +81,10 @@ export default function ProductsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#1a1a1a] p-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="animate-pulse">
-            <div className="h-8 bg-[#2a2a2a] rounded w-1/4 mb-2"></div>
-            <div className="h-4 bg-[#2a2a2a] rounded w-1/2 mb-8"></div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[...Array(6)].map((_, i) => (
-                <div key={i} className="bg-[#2a2a2a] rounded-lg h-64"></div>
-              ))}
-            </div>
-          </div>
+      <div className="h-screen flex flex-col bg-[#1a1a1a]">
+        <TopBar onMenuToggle={handleMenuToggle} onMenuHover={handleMenuHover} />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-[#e0e0e0]">読み込み中...</div>
         </div>
       </div>
     );
@@ -109,10 +104,7 @@ export default function ProductsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#1a1a1a] relative">
-      {/* TopBar */}
-      <TopBar onMenuToggle={handleMenuToggle} onMenuHover={handleMenuHover} />
-      
+    <div className="h-screen flex flex-col bg-[#1a1a1a] relative overflow-hidden">
       {/* Sidebar Overlay */}
       <AnimatePresence>
         {shouldShowSidebar && (
@@ -130,123 +122,80 @@ export default function ProductsPage() {
         )}
       </AnimatePresence>
 
+      {/* TopBar */}
+      <TopBar onMenuToggle={handleMenuToggle} onMenuHover={handleMenuHover} />
+
       {/* Main Content */}
-      <div className="pt-16">
-        <div className="max-w-7xl mx-auto p-6">
+      <div className="flex-1 overflow-auto">
+        <div className="max-w-6xl mx-auto p-6">
           {/* Header */}
           <div className="mb-8">
-            <motion.h1
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              className="text-3xl font-bold text-[#e0e0e0] mb-2"
-            >
-              あなたのプロダクト
-            </motion.h1>
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-              className="text-[#a0a0a0]"
-            >
-              開発したプロダクトを管理しましょう
-            </motion.p>
+            <h1 className="text-3xl font-bold text-[#e0e0e0] mb-2">プロダクト一覧</h1>
+            <p className="text-[#a0a0a0]">開発したプロダクトを管理できます</p>
           </div>
 
+          {/* Products Grid */}
           {products.length === 0 ? (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-              className="flex flex-col items-center justify-center py-20"
-            >
-              <Rocket className="w-16 h-16 text-[#5a5a5a] mb-6" />
-              <h2 className="text-xl font-semibold text-[#e0e0e0] mb-2">
-                まだプロダクトがないです。
-              </h2>
-            </motion.div>
+            <div className="text-center py-12">
+              <Rocket className="w-16 h-16 text-[#5a5a5a] mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-[#a0a0a0] mb-2">
+                プロダクトがありません
+              </h3>
+              <p className="text-[#808080] mb-6">
+                まずは企画書を作成してみましょう
+              </p>
+              <Button
+                onClick={() => router.push('/home')}
+                className="bg-[#0066cc] text-[#e0e0e0] hover:bg-[#0052a3]"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                まずは企画書を作成
+              </Button>
+            </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {products.map((product, index) => (
-                <motion.div
-                  key={product.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.3 + index * 0.1 }}
-                >
-                  <Link href={`/products/${product.id}`}>
-                    <Card className="bg-[#2a2a2a] border-[#3a3a3a] hover:bg-[#3a3a3a] transition-all duration-300 group cursor-pointer overflow-hidden">
-                      <div className="relative">
-                        {/* Project Image */}
-                        <div className="aspect-video bg-gradient-to-br from-[#3a3a3a] to-[#2a2a2a] relative overflow-hidden">
-                          {product.images && product.images.length > 0 ? (
-                            <img 
-                              src={product.images[0]} 
-                              alt={product.title}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center">
-                              <div className="text-[#a0a0a0] text-lg font-medium">
-                                {product.title.charAt(0).toUpperCase()}
-                              </div>
-                            </div>
-                          )}
-                          
-                          {/* Category Badge */}
+                <div key={product.id}>
+                  <Card className="bg-[#2a2a2a] border-[#3a3a3a] hover:border-[#4a4a4a] transition-colors cursor-pointer group">
+                    <Link href={`/products/${product.id}`}>
+                      <CardHeader className="pb-3">
+                        <div className="flex items-start justify-between">
+                          <Rocket className="w-6 h-6 text-blue-400 flex-shrink-0" />
+                          <ChevronRight className="w-4 h-4 text-[#808080] group-hover:text-[#e0e0e0] transition-colors" />
+                        </div>
+                      </CardHeader>
+                      
+                      <CardContent>
+                        <CardTitle className="text-lg text-[#e0e0e0] mb-2 line-clamp-2 group-hover:text-blue-400 transition-colors">
+                          {product.title || '無題のプロダクト'}
+                        </CardTitle>
+                        
+                        <p className="text-[#a0a0a0] text-sm mb-4 line-clamp-3">
+                          {product.description ? 
+                            product.description.slice(0, 100) + (product.description.length > 100 ? '...' : '')
+                            : '説明が設定されていません'
+                          }
+                        </p>
+                        
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center text-xs text-[#808080]">
+                            <Calendar className="w-3 h-3 mr-1" />
+                            {new Date(product.created_at).toLocaleDateString('ja-JP', {
+                              year: 'numeric',
+                              month: 'short',
+                              day: 'numeric'
+                            })}
+                          </div>
                           {product.category && (
-                            <Badge 
-                              variant="secondary" 
-                              className="absolute top-3 left-3 bg-black/50 text-[#e0e0e0] border-0"
-                            >
+                            <span className="text-xs px-2 py-1 rounded-full bg-blue-500/20 text-blue-400">
                               {product.category}
-                            </Badge>
+                            </span>
                           )}
                         </div>
-
-                        <CardContent className="p-4">
-                          {/* Title & Description */}
-                          <div className="mb-3">
-                            <h3 className="text-[#e0e0e0] font-semibold text-lg mb-2 line-clamp-1">
-                              {product.title}
-                            </h3>
-                            <p className="text-[#a0a0a0] text-sm line-clamp-2">
-                              {product.description}
-                            </p>
-                          </div>
-
-                          {/* Tech Stack Tags */}
-                          {product.tech_stack && product.tech_stack.length > 0 && (
-                            <div className="flex flex-wrap gap-1 mb-3">
-                              {product.tech_stack.slice(0, 3).map((tech, i) => (
-                                <Badge key={i} variant="outline" className="text-xs border-[#3a3a3a] text-[#a0a0a0]">
-                                  {tech}
-                                </Badge>
-                              ))}
-                              {product.tech_stack.length > 3 && (
-                                <Badge variant="outline" className="text-xs border-[#3a3a3a] text-[#a0a0a0]">
-                                  +{product.tech_stack.length - 3}
-                                </Badge>
-                              )}
-                            </div>
-                          )}
-
-                          {/* Stats */}
-                          <div className="flex items-center gap-4 text-sm text-[#a0a0a0]">
-                            <div className="flex items-center gap-1">
-                              <Eye className="w-4 h-4" />
-                              <span>{product.view_count || 0}</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <Heart className="w-4 h-4" />
-                              <span>{product.like_count || 0}</span>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </div>
-                    </Card>
-                  </Link>
-                </motion.div>
+                      </CardContent>
+                    </Link>
+                  </Card>
+                </div>
               ))}
             </div>
           )}
