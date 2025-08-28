@@ -144,7 +144,11 @@ export function AccountModal({ isOpen, onClose }: AccountModalProps) {
                             <span className="text-[#e0e0e0] dark:text-[#e0e0e0] text-gray-900 font-medium">0回</span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-[#a0a0a0] dark:text-[#a0a0a0] text-gray-600">作成したアイデア数</span>
+                            <span className="text-[#a0a0a0] dark:text-[#a0a0a0] text-gray-600">作成した企画書数</span>
+                            <span className="text-[#e0e0e0] dark:text-[#e0e0e0] text-gray-900 font-medium">0個</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-[#a0a0a0] dark:text-[#a0a0a0] text-gray-600">作成したプロダクト数</span>
                             <span className="text-[#e0e0e0] dark:text-[#e0e0e0] text-gray-900 font-medium">0個</span>
                           </div>
                         </div>
