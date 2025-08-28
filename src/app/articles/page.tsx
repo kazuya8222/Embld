@@ -151,22 +151,12 @@ export default function ArticlesPage() {
           {/* Header */}
           <div className="flex items-center justify-between mb-8">
             <div>
-              <motion.h1
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
-                className="text-3xl font-bold text-[#e0e0e0] mb-2"
-              >
+              <h1 className="text-3xl font-bold text-[#e0e0e0] mb-2">
                 記事一覧
-              </motion.h1>
-              <motion.p
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.1 }}
-                className="text-[#a0a0a0]"
-              >
+              </h1>
+              <p className="text-[#a0a0a0]">
                 技術記事やチュートリアルをご覧ください
-              </motion.p>
+              </p>
             </div>
             <div className="flex items-center gap-3">
               {/* View Mode Toggle */}
@@ -215,14 +205,9 @@ export default function ArticlesPage() {
               : 'grid-cols-1'
           }`}>
             {filteredArticles.map((article, index) => (
-              <motion.div
-                key={article.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.1 + index * 0.05 }}
-              >
+              <div key={article.id}>
                 <Link href={`/articles/${article.slug}`}>
-                  <Card className="bg-[#2a2a2a] border-[#3a3a3a] hover:bg-[#3a3a3a] transition-all duration-300 group cursor-pointer overflow-hidden">
+                  <Card className="bg-[#2a2a2a] border-[#3a3a3a] hover:bg-[#3a3a3a] transition-colors group cursor-pointer overflow-hidden">
                     {article.is_featured && (
                       <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-[#e0e0e0] text-xs font-semibold px-3 py-1">
                         FEATURED
@@ -237,7 +222,7 @@ export default function ArticlesPage() {
                           <img 
                             src={article.featured_image} 
                             alt={article.title}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            className="w-full h-full object-cover"
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">
@@ -261,7 +246,7 @@ export default function ArticlesPage() {
                       <CardContent className="p-4">
                         {/* Title & Excerpt */}
                         <div className="mb-3">
-                          <h3 className="text-[#e0e0e0] font-semibold text-lg mb-2 line-clamp-2 group-hover:text-blue-400 transition-colors">
+                          <h3 className="text-[#e0e0e0] font-semibold text-lg mb-2 line-clamp-2">
                             {article.title}
                           </h3>
                           <p className="text-[#a0a0a0] text-sm line-clamp-3">
@@ -311,7 +296,7 @@ export default function ArticlesPage() {
                     </div>
                   </Card>
                 </Link>
-              </motion.div>
+              </div>
             ))}
           </div>
 

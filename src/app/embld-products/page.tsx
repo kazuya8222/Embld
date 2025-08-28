@@ -143,22 +143,12 @@ export default function EmbldProductsPage() {
           {/* Header */}
           <div className="flex items-center justify-between mb-8">
             <div>
-              <motion.h1
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
-                className="text-3xl font-bold text-[#e0e0e0] mb-2"
-              >
+              <h1 className="text-3xl font-bold text-[#e0e0e0] mb-2">
                 Embld プロダクト一覧
-              </motion.h1>
-              <motion.p
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.1 }}
-                className="text-[#a0a0a0]"
-              >
+              </h1>
+              <p className="text-[#a0a0a0]">
                 Embldで開発された全てのプロダクトを探索しましょう
-              </motion.p>
+              </p>
             </div>
             <div className="flex items-center gap-3">
               {/* View Mode Toggle */}
@@ -207,14 +197,9 @@ export default function EmbldProductsPage() {
               : 'grid-cols-1'
           }`}>
             {filteredProducts.map((product, index) => (
-              <motion.div
-                key={product.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.1 + index * 0.05 }}
-              >
+              <div key={product.id}>
                 <Link href={`/embld-products/${product.id}`}>
-                  <Card className="bg-[#2a2a2a] border-[#3a3a3a] hover:bg-[#3a3a3a] transition-all duration-300 group cursor-pointer overflow-hidden">
+                  <Card className="bg-[#2a2a2a] border-[#3a3a3a] hover:bg-[#3a3a3a] transition-colors group cursor-pointer overflow-hidden">
                     {product.featured && (
                       <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-[#e0e0e0] text-xs font-semibold px-3 py-1">
                         FEATURED
@@ -229,7 +214,7 @@ export default function EmbldProductsPage() {
                           <img 
                             src={product.images[0]} 
                             alt={product.title}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            className="w-full h-full object-cover"
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">
@@ -250,7 +235,7 @@ export default function EmbldProductsPage() {
                         )}
                         
                         {/* View Details Button */}
-                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                           <Button 
                             variant="secondary" 
                             size="sm"
@@ -264,7 +249,7 @@ export default function EmbldProductsPage() {
                       <CardContent className="p-4">
                         {/* Title & Description */}
                         <div className="mb-3">
-                          <h3 className="text-[#e0e0e0] font-semibold text-lg mb-2 line-clamp-1 group-hover:text-blue-400 transition-colors">
+                          <h3 className="text-[#e0e0e0] font-semibold text-lg mb-2 line-clamp-1">
                             {product.title}
                           </h3>
                           <p className="text-[#a0a0a0] text-sm line-clamp-2">
@@ -303,7 +288,7 @@ export default function EmbldProductsPage() {
                     </div>
                   </Card>
                 </Link>
-              </motion.div>
+              </div>
             ))}
           </div>
 
