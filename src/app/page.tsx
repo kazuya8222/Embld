@@ -1,4 +1,9 @@
+'use client'
+
 import Link from 'next/link'
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { useAuth } from '@/components/auth/AuthProvider'
 import { 
   ArrowRight, 
   Users, 
@@ -20,62 +25,128 @@ import { ScrollFadeIn } from '@/components/ScrollFadeIn'
 import { Footer } from '@/components/common/Footer'
 import { ScrollHandler } from '@/components/ScrollHandler'
 
-export default async function LandingPage() {
+export default function LandingPage() {
+  const { user } = useAuth()
+  const router = useRouter()
+  const [input, setInput] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+
+  const handleSubmit = async () => {
+    if (!input.trim()) return
+
+    // Check authentication
+    if (!user) {
+      router.push('/auth/login')
+      return
+    }
+
+    if (isLoading) return
+
+    setIsLoading(true)
+
+    try {
+      // First check if user has enough credits
+      const checkResponse = await fetch('/api/chat/sessions', {
+        method: 'GET'
+      })
+      
+      if (checkResponse.status === 401) {
+        router.push('/auth/login')
+        return
+      }
+      
+      const checkData = await checkResponse.json()
+      
+      if (!checkData.canStart) {
+        alert(`クレジットが不足しています。\nAIエージェントチャットの開始には${checkData.creditCost}クレジットが必要です。\n現在のクレジット: ${checkData.currentCredits}`)
+        return
+      }
+      
+      // Create new chat session with credit deduction
+      const response = await fetch('/api/chat/sessions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          title: input.length > 50 ? input.substring(0, 50) + '...' : input,
+          initialMessage: input
+        })
+      })
+      
+      if (response.status === 402) {
+        const data = await response.json()
+        alert(`クレジットが不足しています。\n必要クレジット: ${data.required}\n現在のクレジット: ${data.current}`)
+        return
+      }
+      
+      if (!response.ok) {
+        const errorData = await response.json()
+        console.error('Chat session creation failed:', response.status, errorData)
+        throw new Error(`Failed to create chat session: ${errorData.error || response.statusText}`)
+      }
+      
+      const { session } = await response.json()
+      
+      if (session) {
+        // Navigate to the new chat
+        router.push(`/agents/${session.id}`)
+      }
+    } catch (error) {
+      console.error('Error creating chat session:', error)
+      alert('チャットの開始に失敗しました。もう一度お試しください。')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      handleSubmit()
+    }
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+    <div className="min-h-screen bg-white">
       <ScrollHandler />
-      {/* 背景の装飾パターン */}
-      <div className="fixed inset-0 -z-10 overflow-hidden">
-        {/* シンプルな背景要素 */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-blue-100 rounded-full filter blur-3xl opacity-20"></div>
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-purple-100 rounded-full filter blur-3xl opacity-20"></div>
-        
-        {/* グリッドパターン */}
-        <div 
-          className="absolute inset-0 opacity-30"
-          style={{
-            backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 79px, rgba(0,0,0,0.02) 79px, rgba(0,0,0,0.02) 80px), repeating-linear-gradient(90deg, transparent, transparent 79px, rgba(0,0,0,0.02) 79px, rgba(0,0,0,0.02) 80px)',
-            backgroundSize: '80px 80px'
-          }}
-        ></div>
-      </div>
       {/* ヘッダー */}
-      <header className="fixed top-0 w-full bg-gray-900 backdrop-blur-sm z-50 border-b border-gray-800">
+      <header className="w-full bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-3">
               <img 
                 src="/images/EnBld_logo_icon_monochrome.svg"
                 alt="EMBLD Icon"
-                className="h-10 w-10 brightness-0 invert"
+                className="h-10 w-10"
               />
-              <span className="text-2xl font-black text-white">EMBLD</span>
+              <span className="text-2xl font-black text-black">EMBLD</span>
             </div>
             <nav className="hidden md:flex items-center space-x-8 mr-8">
               <Link 
                 href="#service" 
-                className="flex items-center gap-2 pb-1 border-b-2 border-transparent text-gray-400 hover:text-white transition-all font-medium"
+                className="flex items-center gap-2 pb-1 border-b-2 border-transparent text-gray-600 hover:text-black transition-all font-medium"
               >
                 <Info className="w-4 h-4" />
                 サービス紹介
               </Link>
               <Link 
                 href="#features" 
-                className="flex items-center gap-2 pb-1 border-b-2 border-transparent text-gray-400 hover:text-white transition-all font-medium"
+                className="flex items-center gap-2 pb-1 border-b-2 border-transparent text-gray-600 hover:text-black transition-all font-medium"
               >
                 <Settings className="w-4 h-4" />
                 サービス特徴
               </Link>
               <Link 
                 href="#how-it-works" 
-                className="flex items-center gap-2 pb-1 border-b-2 border-transparent text-gray-400 hover:text-white transition-all font-medium"
+                className="flex items-center gap-2 pb-1 border-b-2 border-transparent text-gray-600 hover:text-black transition-all font-medium"
               >
                 <ClipboardList className="w-4 h-4" />
                 利用手順
               </Link>
               <Link 
                 href="#faq" 
-                className="flex items-center gap-2 pb-1 border-b-2 border-transparent text-gray-400 hover:text-white transition-all font-medium"
+                className="flex items-center gap-2 pb-1 border-b-2 border-transparent text-gray-600 hover:text-black transition-all font-medium"
               >
                 <HelpCircle className="w-4 h-4" />
                 FAQ
@@ -84,7 +155,7 @@ export default async function LandingPage() {
             <div className="flex items-center space-x-4">
               <Link
                 href="/home"
-                className="bg-white text-black px-6 py-2.5 rounded-full text-sm font-bold hover:shadow-lg transition-all border border-gray-200"
+                className="bg-black text-white px-6 py-2.5 rounded-full text-sm font-bold hover:shadow-lg transition-all border border-gray-200"
               >
                 無料で始める
               </Link>
@@ -96,56 +167,133 @@ export default async function LandingPage() {
       {/* メインコンテンツ */}
       <div className="relative z-10">
 
-      {/* ヒーローセクション - 透過背景 */}
-      <section className="pt-32 pb-20 bg-transparent">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            {/* 左側：テキストコンテンツ */}
-            <div>
+      {/* ヒーローセクション - Manusスタイル */}
+      <section className="pt-12 pb-20 bg-white min-h-screen flex items-center relative overflow-hidden">
+        {/* Animated background dots */}
+        <div className="absolute inset-0">
+          <div className="stars"></div>
+          <div className="twinkling"></div>
+        </div>
 
-              
-              <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-8 leading-tight">
-                アイデアが収入に。<br />
-                個人開発時代の<br />
-                新しい稼ぎ方を実現
-              </h1>
-              
-              <p className="text-xl text-gray-600 mb-10 leading-relaxed">
-                アイデアを投稿するだけで、サービス収益の30%を還元。<br />
-                サービス化に上限はありません。素晴らしいアイデアはいくつでもサービス化いたします。
-              </p>
-              
-              <Link
-                href="/home"
-                className="inline-flex items-center gap-2 bg-white text-black px-10 py-4 rounded-full font-bold text-lg hover:shadow-lg transition-all transform hover:scale-105 border border-gray-200"
-              >
-                無料で始める
-                <ArrowRight className="w-5 h-5" />
-              </Link>
-            </div>
-            
-            {/* 右側：イラスト */}
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+          {/* メインヘッドライン */}
+          <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
+            アイデアをアプリビジネスに<br />
+            変えるAIエージェント
+          </h1>
+          
+          {/* サブヘッドライン */}
+          <p className="text-xl md:text-2xl text-gray-700 mb-12 max-w-3xl mx-auto leading-relaxed">
+            EMBLDは、アイデアを収益へつなぐAIプラットフォームです。
+          </p>
+          
+          {/* プロンプトバー */}
+          <div className="max-w-6xl mx-auto mb-8">
             <div className="relative">
-              <div className="relative aspect-square">
-                <img 
-                  src="/images/Shiny Happy - Party Time.svg"
-                  alt="エンビルドで収益化を実現"
-                  className="w-full h-full object-contain floating-animation scale-110"
-                />
+              <div className="bg-white rounded-3xl shadow-lg border border-gray-200 overflow-hidden">
+                <div className="flex items-start gap-4 p-6">
+                  <textarea
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    placeholder="欲しいアプリを一言で書いてください。"
+                    className="flex-1 text-lg bg-transparent border-0 focus:outline-none placeholder-gray-500 text-black resize-none overflow-hidden leading-relaxed"
+                    onKeyDown={handleKeyDown}
+                    disabled={isLoading}
+                    rows={1}
+                    style={{
+                      minHeight: '1.5rem',
+                      height: 'auto'
+                    }}
+                    onInput={(e) => {
+                      const target = e.target as HTMLTextAreaElement;
+                      target.style.height = 'auto';
+                      target.style.height = target.scrollHeight + 'px';
+                    }}
+                  />
+                  <button 
+                    className={`p-3 rounded-full text-white transition-colors ${
+                      isLoading || !input.trim() 
+                        ? 'bg-gray-400 cursor-not-allowed' 
+                        : 'bg-black hover:bg-gray-800'
+                    }`}
+                    onClick={handleSubmit}
+                    disabled={isLoading || !input.trim()}
+                  >
+                    {isLoading ? (
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <ArrowRight className="w-5 h-5 rotate-90" />
+                    )}
+                  </button>
+                </div>
               </div>
-              {/* 装飾的な要素 */}
-              <div className="absolute -top-4 -right-4 w-24 h-24 bg-blue-100 rounded-full opacity-50 animate-pulse"></div>
-              <div className="absolute -bottom-4 -left-4 w-32 h-32 bg-green-100 rounded-full opacity-50 animate-pulse" style={{ animationDelay: '1s' }}></div>
             </div>
           </div>
+          
         </div>
+        
+        {/* CSS アニメーション */}
+        <style jsx>{`
+          .stars {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 120%;
+            transform: rotate(-45deg);
+            background-image: 
+              radial-gradient(2px 2px at 20px 30px, rgba(0,0,0,0.3), transparent),
+              radial-gradient(2px 2px at 40px 70px, rgba(0,0,0,0.25), transparent),
+              radial-gradient(1px 1px at 90px 40px, rgba(0,0,0,0.35), transparent),
+              radial-gradient(1px 1px at 130px 80px, rgba(0,0,0,0.3), transparent),
+              radial-gradient(2px 2px at 160px 30px, rgba(0,0,0,0.25), transparent);
+            background-repeat: repeat;
+            background-size: 200px 100px;
+            animation: move-stars 20s linear infinite;
+          }
+          
+          .twinkling {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 120%;
+            transform: rotate(-45deg);
+            background-image: 
+              radial-gradient(1px 1px at 25px 25px, rgba(0,0,0,0.4), transparent),
+              radial-gradient(1px 1px at 50px 75px, rgba(0,0,0,0.3), transparent),
+              radial-gradient(1px 1px at 75px 25px, rgba(0,0,0,0.35), transparent),
+              radial-gradient(1px 1px at 100px 75px, rgba(0,0,0,0.25), transparent);
+            background-repeat: repeat;
+            background-size: 150px 100px;
+            animation: move-twinkling 30s linear infinite;
+          }
+          
+          @keyframes move-stars {
+            from { 
+              transform: rotate(-45deg) translateY(0px); 
+            }
+            to { 
+              transform: rotate(-45deg) translateY(-2000px); 
+            }
+          }
+          
+          @keyframes move-twinkling {
+            from { 
+              transform: rotate(-45deg) translateY(0px); 
+            }
+            to { 
+              transform: rotate(-45deg) translateY(-1000px); 
+            }
+          }
+        `}</style>
       </section>
 
       {/* サービス紹介セクション */}
-      <section id="service" className="py-20 bg-white/80 backdrop-blur-sm">
+      <section id="service" className="py-20 bg-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-4">
-            <span className="inline-block bg-orange-500 text-white px-6 py-2 rounded-full text-sm font-bold mb-6">
+            <span className="inline-block bg-black text-white px-6 py-2 rounded-full text-sm font-bold mb-6">
               サービス紹介
             </span>
           </div>
@@ -182,10 +330,10 @@ export default async function LandingPage() {
       </section>
 
       {/* サービス特徴セクション */}
-      <section id="features" className="py-20 bg-gray-50">
+      <section id="features" className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-4">
-            <span className="inline-block bg-orange-500 text-white px-6 py-2 rounded-full text-sm font-bold mb-6">
+            <span className="inline-block bg-black text-white px-6 py-2 rounded-full text-sm font-bold mb-6">
               サービス特徴
             </span>
           </div>
@@ -263,7 +411,7 @@ export default async function LandingPage() {
       </section>
 
       {/* 利用手順セクション */}
-      <section id="how-it-works" className="py-20 relative overflow-hidden bg-gray-100">
+      <section id="how-it-works" className="py-20 relative overflow-hidden bg-white">
         {/* 波形の背景パターン */}
         <div className="absolute inset-0 z-0">
           <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none" viewBox="0 0 1440 800">
@@ -280,7 +428,7 @@ export default async function LandingPage() {
         
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center mb-4">
-            <span className="inline-block bg-orange-500 text-white px-6 py-2 rounded-full text-sm font-bold mb-6">
+            <span className="inline-block bg-black text-white px-6 py-2 rounded-full text-sm font-bold mb-6">
               利用手順
             </span>
           </div>
@@ -414,26 +562,26 @@ export default async function LandingPage() {
       </section>
 
       {/* CTA セクション - 登録を促す */}
-      <section className="py-20 bg-gray-900">
+      <section className="py-20 bg-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
+          <h2 className="text-3xl md:text-4xl font-bold text-black mb-6">
             今すぐアイデアを収益化しよう
           </h2>
           
-          <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
+          <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
             アイデアを投稿して、
             あなたのアイデアが収益を生み出す瞬間を体験してください。
           </p>
           
           <Link
             href="/home"
-            className="inline-flex items-center gap-2 bg-white text-black px-8 py-4 rounded-full font-bold text-lg hover:shadow-lg transition-all transform hover:scale-105 border border-gray-200"
+            className="inline-flex items-center gap-2 bg-black text-white px-8 py-4 rounded-full font-bold text-lg hover:shadow-lg transition-all transform hover:scale-105 border border-gray-200"
           >
             無料で始める
             <ArrowRight className="w-5 h-5" />
           </Link>
           
-          <p className="text-sm text-gray-400 mt-4">
+          <p className="text-sm text-gray-600 mt-4">
             ※クレジットカード不要・月額費用なし
           </p>
         </div>
@@ -443,7 +591,7 @@ export default async function LandingPage() {
       <section id="faq" className="py-20 bg-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-4">
-            <span className="inline-block bg-orange-500 text-white px-6 py-2 rounded-full text-sm font-bold mb-6">
+            <span className="inline-block bg-black text-white px-6 py-2 rounded-full text-sm font-bold mb-6">
               FAQ
             </span>
           </div>

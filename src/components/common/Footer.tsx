@@ -8,19 +8,10 @@ export function Footer() {
 
   const handleFaqClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault()
-    // Navigate to home page first, then scroll to FAQ
-    if (window.location.pathname !== '/') {
-      router.push('/?scrollTo=faq')
-    } else {
-      // Already on home page, just scroll
-      const faqSection = document.getElementById('faq')
-      if (faqSection) {
-        faqSection.scrollIntoView({ behavior: 'smooth' })
-      }
-    }
+    router.push('/help')
   }
   return (
-    <footer className="bg-gray-900 text-gray-300 py-12">
+    <footer className="bg-[#1a1a1a] text-gray-300 py-12">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid md:grid-cols-4 gap-8 mb-8">
           <div>
@@ -49,7 +40,7 @@ export function Footer() {
           <div>
             <h3 className="font-semibold text-white mb-3">サポート</h3>
             <ul className="space-y-2 text-sm">
-              <li><a href="/#faq" onClick={handleFaqClick} className="text-gray-400 hover:text-white transition-colors cursor-pointer">FAQ</a></li>
+              <li><a href="/help" onClick={handleFaqClick} className="text-gray-400 hover:text-white transition-colors cursor-pointer">FAQ</a></li>
               <li><Link href="/contact" className="text-gray-400 hover:text-white transition-colors">お問い合わせ</Link></li>
             </ul>
           </div>
