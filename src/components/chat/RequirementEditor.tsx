@@ -193,34 +193,159 @@ export function RequirementEditor({ chatId, agentState, initialActiveTab, onTabC
     }
   };
 
+  const parsePitchDocument = (pitchContent: string) => {
+    // Parse the pitch document content
+    const sections: any = {
+      service_name: '',
+      problem_statement: '',
+      solution_description: '',
+      target_users: '',
+      main_features: [],
+      business_model: '',
+      recruitment_message: ''
+    };
+
+    // Extract service name
+    const nameMatch = pitchContent.match(/^#\s*🚀\s*プロジェクト企画書:\s*(.+)$/m);
+    if (nameMatch) {
+      sections.service_name = nameMatch[1].trim();
+    }
+
+    // Extract problem statement
+    const problemMatch = pitchContent.match(/##\s*😵.*?解決したい課題[\s\S]*?>\s*(.+?)(?=\n\n|##|\z)/);
+    if (problemMatch) {
+      sections.problem_statement = problemMatch[1].trim();
+    }
+
+    // Extract solution description  
+    const solutionMatch = pitchContent.match(/##\s*✨.*?解決策[\s\S]*?>\s*(.+?)(?=\n\n|##|\z)/);
+    if (solutionMatch) {
+      sections.solution_description = solutionMatch[1].trim();
+    }
+
+    // Extract target users
+    const targetMatch = pitchContent.match(/##\s*🎯\s*ターゲットユーザー[\s\S]*?-\s*\*\*こんな人にピッタリ:\*\*\s*(.+?)(?=\n\n|##|\z)/);
+    if (targetMatch) {
+      sections.target_users = targetMatch[1].trim();
+    }
+
+    // Extract main features
+    const featuresMatch = pitchContent.match(/##\s*🛠️.*?主要機能[\s\S]*?\n((?:-\s*\*\*.+?\*\*:.+?\n?)+)/);
+    if (featuresMatch) {
+      const features = featuresMatch[1].split('\n')
+        .filter(line => line.trim())
+        .map(line => {
+          const match = line.match(/-\s*\*\*(.+?)\*\*:\s*(.+)/);
+          if (match) {
+            return {
+              name: match[1].trim(),
+              description: match[2].trim()
+            };
+          }
+          return null;
+        })
+        .filter(Boolean);
+      sections.main_features = features;
+    }
+
+    // Extract business model
+    const businessMatch = pitchContent.match(/##\s*💰.*?ビジネス[\s\S]*?-\s*(.+?)(?=\n\n|##|\z)/);
+    if (businessMatch) {
+      sections.business_model = businessMatch[1].trim();
+    }
+
+    // Extract recruitment message
+    const recruitmentMatch = pitchContent.match(/##\s*🤝.*?作りませんか[\s\S]*?-\s*(.+?)(?=\n\n|\z)/);
+    if (recruitmentMatch) {
+      sections.recruitment_message = recruitmentMatch[1].trim();
+    }
+
+    return sections;
+  };
+
   const submitProposal = async () => {
-    if (!user || !agentState) return;
+    if (!user) {
+      alert('ログインが必要です。');
+      return;
+    }
+    
+    if (!agentState || !agentState.pitch_document) {
+      alert('企画書が生成されていません。先に企画書を生成してください。');
+      return;
+    }
     
     setIsSubmitting(true);
     try {
-      // First ensure the latest content is saved
-      await saveAgentStateToProposals();
+      // Parse the pitch document to extract structured data
+      const pitchData = parsePitchDocument(agentState.pitch_document);
       
-      // Update status to submitted
-      const { error } = await supabase
+      // Check if proposal already exists
+      const { data: existing, error: fetchError } = await supabase
         .from('proposals')
-        .update({
-          status: 'submitted',
-          submitted_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        })
-        .eq('chat_session_id', chatId);
+        .select('id')
+        .eq('chat_session_id', chatId)
+        .maybeSingle();  // Use maybeSingle instead of single to avoid error when no data
 
-      if (error) throw error;
+      if (fetchError && fetchError.code !== 'PGRST116') {
+        throw fetchError;
+      }
+
+      const proposalData = {
+        user_id: user.id,
+        chat_session_id: chatId,
+        service_name: pitchData.service_name || 'サービス名未設定',
+        problem_statement: pitchData.problem_statement || '',
+        solution_description: pitchData.solution_description || '',
+        target_users: pitchData.target_users || '',
+        main_features: pitchData.main_features || [],
+        business_model: pitchData.business_model || '',
+        recruitment_message: pitchData.recruitment_message || '',
+        status: 'submitted' as const,
+        submitted_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+
+      let proposalId: string;
+      
+      if (existing) {
+        // Update existing proposal
+        const { data: updateData, error: updateError } = await supabase
+          .from('proposals')
+          .update(proposalData)
+          .eq('id', existing.id)
+          .select('id')
+          .single();
+
+        if (updateError) {
+          throw updateError;
+        }
+        proposalId = updateData.id;
+      } else {
+        // Create new proposal
+        const { data: insertData, error: insertError } = await supabase
+          .from('proposals')
+          .insert([proposalData])
+          .select('id')
+          .single();
+
+        if (insertError) {
+          throw insertError;
+        }
+        proposalId = insertData.id;
+      }
       
       setSubmissionStatus('submitted');
       setSubmittedAt(new Date());
       
-      // Call success callback to navigate to proposals page
-      onSubmissionSuccess?.();
+      // Navigate to the proposal page
+      window.location.href = `/proposals/${proposalId}`;
       
-    } catch (error) {
-      console.error('Error submitting proposal:', error);
+    } catch (error: any) {
+      let errorMessage = '企画書の提出に失敗しました。';
+      if (error?.message) {
+        errorMessage += `\n詳細: ${error.message}`;
+      }
+      alert(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -385,16 +510,13 @@ ${legal ? `**結果:** ${legal.is_compliant ? '✅ 法的リスクは低い' : '
 
   // Check if proposal is ready for submission
   const isProposalComplete = (): boolean => {
-    if (!agentState) return false;
+    if (!agentState) {
+      return false;
+    }
     
-    return !!(
-      agentState.professional_requirements_doc && 
-      agentState.personas && agentState.personas.length > 0 &&
-      agentState.interviews && agentState.interviews.length > 0 &&
-      agentState.consultant_analysis_report &&
-      agentState.pitch_document &&
-      (agentState.profitability || agentState.feasibility || agentState.legal)
-    );
+    // Only require pitch document for submission
+    // Other documents are optional/for reference
+    return !!agentState.pitch_document;
   };
 
   const currentTabContent = getTabContent(activeTab);

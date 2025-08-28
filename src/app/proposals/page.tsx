@@ -14,7 +14,10 @@ import Link from 'next/link';
 interface Proposal {
   id: string;
   service_name: string;
-  service_overview: string;
+  problem_statement: string;
+  solution_description: string;
+  status: 'draft' | 'submitted' | 'approved' | 'rejected';
+  submitted_at: string | null;
   created_at: string;
 }
 
@@ -56,7 +59,7 @@ export default function ProposalsPage() {
 
         const { data, error } = await supabase
           .from('proposals')
-          .select('id, service_name, service_overview, created_at')
+          .select('id, service_name, problem_statement, solution_description, status, submitted_at, created_at')
           .eq('user_id', user.id)
           .order('created_at', { ascending: false });
 
@@ -170,19 +173,33 @@ export default function ProposalsPage() {
                         </CardTitle>
                         
                         <p className="text-[#a0a0a0] text-sm mb-4 line-clamp-3">
-                          {proposal.service_overview ? 
-                            proposal.service_overview.slice(0, 100) + (proposal.service_overview.length > 100 ? '...' : '')
-                            : '概要がありません'
+                          {proposal.problem_statement ? 
+                            proposal.problem_statement.slice(0, 100) + (proposal.problem_statement.length > 100 ? '...' : '')
+                            : '課題が設定されていません'
                           }
                         </p>
                         
-                        <div className="flex items-center text-xs text-[#808080]">
-                          <Calendar className="w-3 h-3 mr-1" />
-                          {new Date(proposal.created_at).toLocaleDateString('ja-JP', {
-                            year: 'numeric',
-                            month: 'short',
-                            day: 'numeric'
-                          })}
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center text-xs text-[#808080]">
+                            <Calendar className="w-3 h-3 mr-1" />
+                            {new Date(proposal.created_at).toLocaleDateString('ja-JP', {
+                              year: 'numeric',
+                              month: 'short',
+                              day: 'numeric'
+                            })}
+                          </div>
+                          {proposal.status && (
+                            <span className={`text-xs px-2 py-1 rounded-full ${
+                              proposal.status === 'submitted' ? 'bg-blue-500/20 text-blue-400' :
+                              proposal.status === 'approved' ? 'bg-green-500/20 text-green-400' :
+                              proposal.status === 'rejected' ? 'bg-red-500/20 text-red-400' :
+                              'bg-gray-500/20 text-gray-400'
+                            }`}>
+                              {proposal.status === 'submitted' ? '審査中' :
+                               proposal.status === 'approved' ? '承認済み' :
+                               proposal.status === 'rejected' ? '却下' : '下書き'}
+                            </span>
+                          )}
                         </div>
                       </CardContent>
                     </Link>

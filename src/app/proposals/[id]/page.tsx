@@ -12,13 +12,22 @@ import { motion, AnimatePresence } from 'motion/react';
 
 interface Proposal {
   id: string;
-  service_overview: string;
-  problem: string;
-  ideal: string;
-  solution: string;
-  features: string;
   service_name: string;
+  problem_statement: string;
+  solution_description: string;
+  target_users: string;
+  main_features: Array<{
+    name: string;
+    description: string;
+  }>;
+  business_model: string;
+  recruitment_message: string;
+  status: 'draft' | 'submitted' | 'approved' | 'rejected';
+  submitted_at: string | null;
+  reviewed_at: string | null;
+  reviewer_notes: string | null;
   created_at: string;
+  updated_at: string;
 }
 
 interface ProposalPageProps {
@@ -101,12 +110,14 @@ export default function ProposalPage({ params }: ProposalPageProps) {
       const { error } = await supabase
         .from('proposals')
         .update({
-          service_overview: editedProposal.service_overview,
-          problem: editedProposal.problem,
-          ideal: editedProposal.ideal,
-          solution: editedProposal.solution,
-          features: editedProposal.features,
           service_name: editedProposal.service_name,
+          problem_statement: editedProposal.problem_statement,
+          solution_description: editedProposal.solution_description,
+          target_users: editedProposal.target_users,
+          main_features: editedProposal.main_features,
+          business_model: editedProposal.business_model,
+          recruitment_message: editedProposal.recruitment_message,
+          updated_at: new Date().toISOString()
         })
         .eq('id', params.id);
 
@@ -134,33 +145,55 @@ export default function ProposalPage({ params }: ProposalPageProps) {
 
   if (loading) {
     return (
-      <div className="h-screen bg-gray-900 flex items-center justify-center">
-        <div className="text-white">読み込み中...</div>
+      <div className="h-screen bg-[#1a1a1a] flex items-center justify-center">
+        <div className="text-[#e0e0e0]">読み込み中...</div>
       </div>
     );
   }
 
   if (error || !proposal) {
     return (
-      <div className="h-screen bg-gray-900 flex items-center justify-center">
+      <div className="h-screen bg-[#1a1a1a] flex items-center justify-center">
         <div className="text-center">
           <div className="text-red-400 mb-4">{error || '企画書が見つかりませんでした'}</div>
-          <Button onClick={() => router.push('/home')}>ホームに戻る</Button>
+          <Button onClick={() => router.push('/home')} className="bg-[#0066cc] text-[#e0e0e0] hover:bg-[#0052a3]">ホームに戻る</Button>
         </div>
       </div>
     );
   }
 
-  const sections = [
-    { title: 'サービス概要', content: proposal.service_overview },
-    { title: '課題', content: proposal.problem },
-    { title: '理想', content: proposal.ideal },
-    { title: '解決策', content: proposal.solution },
-    { title: '機能詳細', content: proposal.features },
-  ];
+  const getStatusBadge = () => {
+    if (!proposal) return null;
+    switch (proposal.status) {
+      case 'submitted':
+        return (
+          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-blue-500/20 text-blue-400 text-sm">
+            審査中
+          </span>
+        );
+      case 'approved':
+        return (
+          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-green-500/20 text-green-400 text-sm">
+            承認済み
+          </span>
+        );
+      case 'rejected':
+        return (
+          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-red-500/20 text-red-400 text-sm">
+            却下
+          </span>
+        );
+      default:
+        return (
+          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#5a5a5a]/20 text-[#808080] text-sm">
+            下書き
+          </span>
+        );
+    }
+  };
 
   return (
-    <div className="h-screen flex flex-col bg-gray-900 relative overflow-hidden">
+    <div className="h-screen flex flex-col bg-[#1a1a1a] relative overflow-hidden">
       {/* Sidebar Overlay */}
       <AnimatePresence>
         {shouldShowSidebar && (
@@ -191,7 +224,7 @@ export default function ProposalPage({ params }: ProposalPageProps) {
                 onClick={() => router.push('/home')}
                 variant="ghost"
                 size="sm"
-                className="text-gray-400 hover:text-white hover:bg-gray-800"
+                className="text-[#808080] hover:text-[#e0e0e0] hover:bg-[#2a2a2a]"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 戻る
@@ -202,17 +235,20 @@ export default function ProposalPage({ params }: ProposalPageProps) {
                     type="text"
                     value={editedProposal?.service_name || ''}
                     onChange={(e) => handleFieldChange('service_name', e.target.value)}
-                    className="text-2xl font-bold text-white bg-gray-800 border border-gray-600 rounded px-3 py-2 mb-2"
+                    className="text-2xl font-bold text-[#e0e0e0] bg-[#2a2a2a] border border-[#3a3a3a] rounded px-3 py-2 mb-2"
                     placeholder="サービス名を入力"
                   />
                 ) : (
-                  <h1 className="text-2xl font-bold text-white">
-                    {proposal.service_name || '企画書'}
+                  <h1 className="text-2xl font-bold text-[#e0e0e0]">
+                    🚀 {proposal.service_name || '企画書'}
                   </h1>
                 )}
-                <p className="text-sm text-gray-400">
-                  作成日: {new Date(proposal.created_at).toLocaleDateString('ja-JP')}
-                </p>
+                <div className="flex items-center gap-4">
+                  <p className="text-sm text-[#808080]">
+                    作成日: {new Date(proposal.created_at).toLocaleDateString('ja-JP')}
+                  </p>
+                  {getStatusBadge()}
+                </div>
               </div>
             </div>
             
@@ -244,7 +280,7 @@ export default function ProposalPage({ params }: ProposalPageProps) {
                   onClick={handleEdit}
                   variant="outline"
                   size="sm"
-                  className="text-gray-300 border-gray-600 hover:bg-gray-800"
+                  className="text-[#a0a0a0] border-[#5a5a5a] hover:bg-[#2a2a2a]"
                 >
                   <Edit className="w-4 h-4 mr-2" />
                   編集
@@ -255,42 +291,172 @@ export default function ProposalPage({ params }: ProposalPageProps) {
 
           {/* Content */}
           <div className="space-y-6">
-            {sections.map((section, index) => {
-              const fieldMap: Record<string, keyof Proposal> = {
-                'サービス概要': 'service_overview',
-                '課題': 'problem',
-                '理想': 'ideal',
-                '解決策': 'solution',
-                '機能詳細': 'features'
-              };
-              const fieldKey = fieldMap[section.title];
-              
-              return (
-                <motion.div
-                  key={section.title}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  className="bg-gray-800 rounded-lg p-6 border border-gray-700"
-                >
-                  <h2 className="text-lg font-semibold text-orange-400 mb-3">
-                    {section.title}
-                  </h2>
-                  {isEditing ? (
-                    <Textarea
-                      value={editedProposal?.[fieldKey] || ''}
-                      onChange={(e) => handleFieldChange(fieldKey, e.target.value)}
-                      className="w-full min-h-[120px] bg-gray-700 border-gray-600 text-gray-300 focus:border-orange-400"
-                      placeholder={`${section.title}を入力してください`}
-                    />
-                  ) : (
-                    <div className="text-gray-300 whitespace-pre-wrap leading-relaxed">
-                      {section.content || '内容が生成されていません'}
+            {/* Problem Statement */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="bg-[#2a2a2a] rounded-lg p-6 border border-[#3a3a3a]"
+            >
+              <h2 className="text-lg font-semibold text-[#ff9500] mb-3">
+                😵 解決したい課題
+              </h2>
+              {isEditing ? (
+                <Textarea
+                  value={editedProposal?.problem_statement || ''}
+                  onChange={(e) => handleFieldChange('problem_statement', e.target.value)}
+                  className="w-full min-h-[120px] bg-[#1a1a1a] border-[#3a3a3a] text-[#e0e0e0] focus:border-[#ff9500]"
+                  placeholder="解決したい課題を入力してください"
+                />
+              ) : (
+                <div className="text-[#a0a0a0] whitespace-pre-wrap leading-relaxed">
+                  {proposal.problem_statement || '内容が生成されていません'}
+                </div>
+              )}
+            </motion.div>
+
+            {/* Solution */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="bg-gradient-to-br from-[#0066cc]/20 to-purple-900/20 rounded-lg p-6 border border-[#0066cc]/30"
+            >
+              <h2 className="text-lg font-semibold text-[#4da6ff] mb-3">
+                ✨ 僕たちの解決策
+              </h2>
+              {isEditing ? (
+                <Textarea
+                  value={editedProposal?.solution_description || ''}
+                  onChange={(e) => handleFieldChange('solution_description', e.target.value)}
+                  className="w-full min-h-[120px] bg-[#1a1a1a] border-[#3a3a3a] text-[#e0e0e0] focus:border-[#ff9500]"
+                  placeholder="解決策を入力してください"
+                />
+              ) : (
+                <div className="text-[#a0a0a0] whitespace-pre-wrap leading-relaxed">
+                  {proposal.solution_description || '内容が生成されていません'}
+                </div>
+              )}
+            </motion.div>
+
+            {/* Target Users */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="bg-[#2a2a2a] rounded-lg p-6 border border-[#3a3a3a]"
+            >
+              <h2 className="text-lg font-semibold text-[#52c41a] mb-3">
+                🎯 ターゲットユーザー
+              </h2>
+              {isEditing ? (
+                <Textarea
+                  value={editedProposal?.target_users || ''}
+                  onChange={(e) => handleFieldChange('target_users', e.target.value)}
+                  className="w-full min-h-[120px] bg-[#1a1a1a] border-[#3a3a3a] text-[#e0e0e0] focus:border-[#ff9500]"
+                  placeholder="ターゲットユーザーを入力してください"
+                />
+              ) : (
+                <div className="text-[#a0a0a0] whitespace-pre-wrap leading-relaxed">
+                  {proposal.target_users || '内容が生成されていません'}
+                </div>
+              )}
+            </motion.div>
+
+            {/* Main Features */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="bg-[#2a2a2a] rounded-lg p-6 border border-[#3a3a3a]"
+            >
+              <h2 className="text-lg font-semibold text-[#ff9500] mb-3">
+                🛠️ 主要機能
+              </h2>
+              <div className="space-y-3">
+                {proposal.main_features && proposal.main_features.length > 0 ? (
+                  proposal.main_features.map((feature, index) => (
+                    <div key={index} className="bg-[#1a1a1a]/50 rounded-lg p-3 border border-[#3a3a3a]">
+                      <h3 className="font-semibold text-[#4da6ff] mb-1">
+                        {feature.name}
+                      </h3>
+                      <p className="text-[#a0a0a0] text-sm">
+                        {feature.description}
+                      </p>
                     </div>
-                  )}
-                </motion.div>
-              );
-            })}
+                  ))
+                ) : (
+                  <div className="text-[#5a5a5a]">
+                    機能が登録されていません
+                  </div>
+                )}
+              </div>
+            </motion.div>
+
+            {/* Business Model */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              className="bg-[#2a2a2a] rounded-lg p-6 border border-[#3a3a3a]"
+            >
+              <h2 className="text-lg font-semibold text-[#faad14] mb-3">
+                💰 ビジネスモデル
+              </h2>
+              {isEditing ? (
+                <Textarea
+                  value={editedProposal?.business_model || ''}
+                  onChange={(e) => handleFieldChange('business_model', e.target.value)}
+                  className="w-full min-h-[120px] bg-[#1a1a1a] border-[#3a3a3a] text-[#e0e0e0] focus:border-[#ff9500]"
+                  placeholder="ビジネスモデルを入力してください"
+                />
+              ) : (
+                <div className="text-[#a0a0a0] whitespace-pre-wrap leading-relaxed">
+                  {proposal.business_model || '内容が生成されていません'}
+                </div>
+              )}
+            </motion.div>
+
+            {/* Recruitment Message */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6 }}
+              className="bg-gradient-to-br from-purple-900/20 to-pink-900/20 rounded-lg p-6 border border-purple-500/30"
+            >
+              <h2 className="text-lg font-semibold text-[#b37feb] mb-3">
+                🤝 一緒に作りませんか？
+              </h2>
+              {isEditing ? (
+                <Textarea
+                  value={editedProposal?.recruitment_message || ''}
+                  onChange={(e) => handleFieldChange('recruitment_message', e.target.value)}
+                  className="w-full min-h-[120px] bg-[#1a1a1a] border-[#3a3a3a] text-[#e0e0e0] focus:border-[#ff9500]"
+                  placeholder="募集メッセージを入力してください"
+                />
+              ) : (
+                <div className="text-[#a0a0a0] whitespace-pre-wrap leading-relaxed">
+                  {proposal.recruitment_message || '内容が生成されていません'}
+                </div>
+              )}
+            </motion.div>
+
+            {/* Reviewer Notes (if any) */}
+            {proposal.reviewer_notes && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.7 }}
+                className="bg-[#faad14]/10 rounded-lg p-6 border border-[#faad14]/30"
+              >
+                <h2 className="text-lg font-semibold text-[#faad14] mb-3">
+                  📝 レビュアーからのフィードバック
+                </h2>
+                <div className="text-[#a0a0a0] whitespace-pre-wrap leading-relaxed">
+                  {proposal.reviewer_notes}
+                </div>
+              </motion.div>
+            )}
           </div>
         </div>
       </div>
