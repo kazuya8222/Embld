@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Check, CreditCard, Calendar, Zap } from 'lucide-react';
 import { Button } from '../ui/button';
+import { useAuth } from '@/components/auth/AuthProvider';
 
 interface PricingModalProps {
   isOpen: boolean;
@@ -67,6 +68,19 @@ const pricingPlans: PricingPlan[] = [
 export function PricingModal({ isOpen, onClose }: PricingModalProps) {
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
   const [loading, setLoading] = useState<string | null>(null);
+  const { subscriptionPlan } = useAuth();
+
+  // プラン名のマッピング関数
+  const getCurrentPlanId = () => {
+    if (subscriptionPlan === '無料プラン') return 'free';
+    if (subscriptionPlan === 'ベーシックプラン') return 'basic';
+    if (subscriptionPlan === 'プラスプラン') return 'plus';
+    return 'free'; // デフォルト
+  };
+
+  const isCurrentPlan = (planId: string) => {
+    return getCurrentPlanId() === planId;
+  };
 
   const handleUpgrade = async (priceId: string, planName: string) => {
     if (!priceId) return;
@@ -196,7 +210,7 @@ export function PricingModal({ isOpen, onClose }: PricingModalProps) {
 
                       {/* Action Button */}
                       <div className="mb-6">
-                        {plan.id === 'free' ? (
+                        {isCurrentPlan(plan.id) ? (
                           <Button
                             disabled
                             className="w-full bg-[#5a5a5a] text-[#a0a0a0] cursor-not-allowed"
