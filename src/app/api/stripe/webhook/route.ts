@@ -325,17 +325,18 @@ export async function POST(request: NextRequest) {
         if (deletedSubscription.metadata?.userId) {
           const userId = deletedSubscription.metadata.userId;
           
-          // サブスクリプションステータスのみ更新（クレジットは維持）
+          // プランをfreeに変更、クレジットは維持
           const supabase = createSupabaseWebhookClient();
           await supabase
             .from('users')
             .update({
+              subscription_plan: 'free',
               subscription_status: 'canceled',
               updated_at: new Date().toISOString()
             })
             .eq('id', userId);
           
-          console.log(`Subscription canceled for user ${userId}, credits maintained until expiry`);
+          console.log(`Subscription canceled for user ${userId}, plan changed to free, credits maintained`);
           
           // イベント処理を記録
           await recordEventProcessed(event.id, event.type, {

@@ -148,56 +148,19 @@ export default function BillingSuccessPage() {
                   新しい機能をお楽しみください。
                 </motion.p>
 
-                {/* Session Details */}
-                {sessionData && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: 0.5 }}
-                    className="bg-[#2a2a2a] rounded-lg p-6 mb-8 text-left max-w-md mx-auto"
-                  >
-                    <div className="flex items-center gap-2 mb-4">
-                      <CreditCard className="w-5 h-5 text-[#0066cc]" />
-                      <h3 className="font-semibold text-[#e0e0e0]">決済詳細</h3>
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span className="text-[#a0a0a0]">プラン:</span>
-                        <span className="text-[#e0e0e0]">{sessionData.planName}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-[#a0a0a0]">金額:</span>
-                        <span className="text-[#e0e0e0]">${sessionData.amount}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-[#a0a0a0]">決済ID:</span>
-                        <span className="text-[#e0e0e0] text-sm font-mono">
-                          {sessionData.sessionId?.slice(-8)}
-                        </span>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
 
                 {/* Action Buttons */}
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, delay: 0.6 }}
-                  className="flex flex-col sm:flex-row gap-4 justify-center items-center"
+                  className="flex justify-center"
                 >
                   <Button
                     onClick={() => router.push('/home')}
                     className="bg-[#0066cc] text-[#e0e0e0] hover:bg-[#0052a3] px-8 py-3"
                   >
                     ホームに戻る
-                  </Button>
-                  <Button
-                    onClick={() => router.push('/billing')}
-                    variant="outline"
-                    className="border-[#3a3a3a] text-[#a0a0a0] hover:bg-[#3a3a3a] px-8 py-3"
-                  >
-                    請求情報を確認
                   </Button>
                 </motion.div>
               </>
