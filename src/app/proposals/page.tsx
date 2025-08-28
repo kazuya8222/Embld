@@ -8,7 +8,6 @@ import { Sidebar } from '@/components/common/Sidebar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FileText, Plus, Calendar, ChevronRight } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
 import Link from 'next/link';
 
 interface Proposal {
@@ -93,21 +92,15 @@ export default function ProposalsPage() {
   return (
     <div className="h-screen flex flex-col bg-[#1a1a1a] relative overflow-hidden">
       {/* Sidebar Overlay */}
-      <AnimatePresence>
-        {shouldShowSidebar && (
-          <motion.div
-            initial={{ x: -264, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: -264, opacity: 0 }}
-            transition={{ duration: 0.2, ease: "easeOut" }}
-            className="fixed left-0 top-0 z-50"
-            onMouseEnter={() => handleMenuHover(true)}
-            onMouseLeave={() => handleMenuHover(false)}
-          >
-            <Sidebar onLockToggle={handleMenuToggle} />
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {shouldShowSidebar && (
+        <div
+          className="fixed left-0 top-0 z-50"
+          onMouseEnter={() => handleMenuHover(true)}
+          onMouseLeave={() => handleMenuHover(false)}
+        >
+          <Sidebar onLockToggle={handleMenuToggle} />
+        </div>
+      )}
 
       {/* TopBar */}
       <TopBar onMenuToggle={handleMenuToggle} onMenuHover={handleMenuHover} />
@@ -142,12 +135,7 @@ export default function ProposalsPage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {proposals.map((proposal, index) => (
-                <motion.div
-                  key={proposal.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                >
+                <div key={proposal.id}>
                   <Card className="bg-[#2a2a2a] border-[#3a3a3a] hover:border-[#4a4a4a] transition-colors cursor-pointer group">
                     <Link href={`/proposals/${proposal.id}`}>
                       <CardHeader className="pb-3">
@@ -194,7 +182,7 @@ export default function ProposalsPage() {
                       </CardContent>
                     </Link>
                   </Card>
-                </motion.div>
+                </div>
               ))}
             </div>
           )}
