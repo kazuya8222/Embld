@@ -8,7 +8,7 @@ import { Sidebar } from '@/components/common/Sidebar';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ArrowLeft, Edit, Save, X } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import { AnimatePresence } from 'motion/react';
 
 interface Proposal {
   id: string;
@@ -195,21 +195,15 @@ export default function ProposalPage({ params }: ProposalPageProps) {
   return (
     <div className="h-screen flex flex-col bg-[#1a1a1a] relative overflow-hidden">
       {/* Sidebar Overlay */}
-      <AnimatePresence>
-        {shouldShowSidebar && (
-          <motion.div
-            initial={{ x: -264, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: -264, opacity: 0 }}
-            transition={{ duration: 0.2, ease: "easeOut" }}
-            className="fixed left-0 top-0 z-50"
-            onMouseEnter={() => handleMenuHover(true)}
-            onMouseLeave={() => handleMenuHover(false)}
-          >
-            <Sidebar onLockToggle={handleMenuToggle} />
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {shouldShowSidebar && (
+        <div
+          className="fixed left-0 top-0 z-50"
+          onMouseEnter={() => handleMenuHover(true)}
+          onMouseLeave={() => handleMenuHover(false)}
+        >
+          <Sidebar onLockToggle={handleMenuToggle} />
+        </div>
+      )}
 
       {/* TopBar */}
       <TopBar onMenuToggle={handleMenuToggle} onMenuHover={handleMenuHover} />
@@ -292,12 +286,7 @@ export default function ProposalPage({ params }: ProposalPageProps) {
           {/* Content */}
           <div className="space-y-6">
             {/* Problem Statement */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="bg-[#2a2a2a] rounded-lg p-6 border border-[#3a3a3a]"
-            >
+            <div className="bg-[#2a2a2a] rounded-lg p-6 border border-[#3a3a3a]">
               <h2 className="text-lg font-semibold text-[#ff9500] mb-3">
                 😵 解決したい課題
               </h2>
@@ -313,15 +302,10 @@ export default function ProposalPage({ params }: ProposalPageProps) {
                   {proposal.problem_statement || '内容が生成されていません'}
                 </div>
               )}
-            </motion.div>
+            </div>
 
             {/* Solution */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="bg-gradient-to-br from-[#0066cc]/20 to-purple-900/20 rounded-lg p-6 border border-[#0066cc]/30"
-            >
+            <div className="bg-gradient-to-br from-[#0066cc]/20 to-purple-900/20 rounded-lg p-6 border border-[#0066cc]/30">
               <h2 className="text-lg font-semibold text-[#4da6ff] mb-3">
                 ✨ 僕たちの解決策
               </h2>
@@ -337,15 +321,10 @@ export default function ProposalPage({ params }: ProposalPageProps) {
                   {proposal.solution_description || '内容が生成されていません'}
                 </div>
               )}
-            </motion.div>
+            </div>
 
             {/* Target Users */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="bg-[#2a2a2a] rounded-lg p-6 border border-[#3a3a3a]"
-            >
+            <div className="bg-[#2a2a2a] rounded-lg p-6 border border-[#3a3a3a]">
               <h2 className="text-lg font-semibold text-[#52c41a] mb-3">
                 🎯 ターゲットユーザー
               </h2>
@@ -361,15 +340,10 @@ export default function ProposalPage({ params }: ProposalPageProps) {
                   {proposal.target_users || '内容が生成されていません'}
                 </div>
               )}
-            </motion.div>
+            </div>
 
             {/* Main Features */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-              className="bg-[#2a2a2a] rounded-lg p-6 border border-[#3a3a3a]"
-            >
+            <div className="bg-[#2a2a2a] rounded-lg p-6 border border-[#3a3a3a]">
               <h2 className="text-lg font-semibold text-[#ff9500] mb-3">
                 🛠️ 主要機能
               </h2>
@@ -391,15 +365,10 @@ export default function ProposalPage({ params }: ProposalPageProps) {
                   </div>
                 )}
               </div>
-            </motion.div>
+            </div>
 
             {/* Business Model */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
-              className="bg-[#2a2a2a] rounded-lg p-6 border border-[#3a3a3a]"
-            >
+            <div className="bg-[#2a2a2a] rounded-lg p-6 border border-[#3a3a3a]">
               <h2 className="text-lg font-semibold text-[#faad14] mb-3">
                 💰 ビジネスモデル
               </h2>
@@ -415,15 +384,10 @@ export default function ProposalPage({ params }: ProposalPageProps) {
                   {proposal.business_model || '内容が生成されていません'}
                 </div>
               )}
-            </motion.div>
+            </div>
 
             {/* Recruitment Message */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6 }}
-              className="bg-gradient-to-br from-purple-900/20 to-pink-900/20 rounded-lg p-6 border border-purple-500/30"
-            >
+            <div className="bg-gradient-to-br from-purple-900/20 to-pink-900/20 rounded-lg p-6 border border-purple-500/30">
               <h2 className="text-lg font-semibold text-[#b37feb] mb-3">
                 🤝 一緒に作りませんか？
               </h2>
@@ -439,23 +403,18 @@ export default function ProposalPage({ params }: ProposalPageProps) {
                   {proposal.recruitment_message || '内容が生成されていません'}
                 </div>
               )}
-            </motion.div>
+            </div>
 
             {/* Reviewer Notes (if any) */}
             {proposal.reviewer_notes && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.7 }}
-                className="bg-[#faad14]/10 rounded-lg p-6 border border-[#faad14]/30"
-              >
+              <div className="bg-[#faad14]/10 rounded-lg p-6 border border-[#faad14]/30">
                 <h2 className="text-lg font-semibold text-[#faad14] mb-3">
                   📝 レビュアーからのフィードバック
                 </h2>
                 <div className="text-[#a0a0a0] whitespace-pre-wrap leading-relaxed">
                   {proposal.reviewer_notes}
                 </div>
-              </motion.div>
+              </div>
             )}
           </div>
         </div>

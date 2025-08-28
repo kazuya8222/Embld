@@ -6,28 +6,24 @@ import { useState } from 'react';
 
 const faqData = [
   {
-    question: 'EmBldとは何ですか？',
-    answer: 'EmBldは、アプリのアイデアを投稿し、開発者と繋がることができるプラットフォームです。アイデア投稿者は売上の30%を受け取ることができます。'
+    question: 'EMBLDはどんなサービスですか？',
+    answer: 'EMBLDは、あなたのアイデアを要件定義書に変換するAIエージェントです。作成された要件定義書が承認されれば、EMBLDチームが無償で開発・運用を行い、アプリから生まれる収益の70%をアイデア提供者に還元します。'
   },
   {
-    question: 'アイデアを投稿するにはどうすればよいですか？',
-    answer: 'ホーム画面から「プロダクト」ページに移動し、新しいアイデアを投稿できます。AIアシスタントがアイデアの改善をお手伝いします。'
+    question: '要件定義書の作成に費用はかかりますか？',
+    answer: '基本的な要件定義書の作成は無料です。AIエージェントとのチャットには一定のクレジットを消費しますが、初回登録時に無料クレジットが付与されます。'
   },
   {
-    question: '料金はかかりますか？',
-    answer: 'アイデアの投稿は無料です。アプリが実際に開発・販売された場合のみ、売上の30%をお支払いします。'
+    question: '要件定義書はどのように審査されますか？',
+    answer: 'AIが法務リスク・収益性・実現可能性を自動診断した後、EMBLDチームが市場性や技術的な観点から最終審査を行います。審査結果は通常1週間以内にお知らせします。'
   },
   {
-    question: 'どのような種類のアイデアを投稿できますか？',
-    answer: 'モバイルアプリ、Webアプリ、デスクトップアプリなど、さまざまな種類のソフトウェアのアイデアを投稿できます。'
+    question: '収益の70%はどのように支払われますか？',
+    answer: 'アプリから収益が発生した場合、その70%が毎月自動的にあなたの指定口座に振り込まれます。振込手数料はEMBLDが負担します。最低支払い金額は5,000円からとなります。'
   },
   {
-    question: 'アイデアの著作権はどうなりますか？',
-    answer: 'アイデアの著作権は投稿者に帰属します。開発者との契約時に詳細な権利関係を明確にします。'
-  },
-  {
-    question: '開発者とどのように連絡を取れますか？',
-    answer: 'プラットフォーム内のメッセージ機能を通じて、開発者と安全にやり取りできます。'
+    question: '作成した要件定義書を自分で開発に使うことはできますか？',
+    answer: 'はい、可能です。AIが作成した要件定義書は自由にダウンロード・利用できます。自身での開発や、他の開発チームへの依頼にもご活用いただけます。'
   }
 ];
 
@@ -63,7 +59,7 @@ export default function HelpPage() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-[#e0e0e0] mb-4">ヘルプ</h1>
           <p className="text-[#a0a0a0] text-lg">
-            EmBldの使い方やよくある質問についてご確認いただけます。
+            EMBLDの使い方やよくある質問についてご確認いただけます。
           </p>
         </div>
 
@@ -82,7 +78,7 @@ export default function HelpPage() {
           <h2 className="text-2xl font-semibold text-[#e0e0e0] mb-6">その他の情報</h2>
           <div className="bg-[#2a2a2a] border border-[#3a3a3a] rounded-lg p-6 space-y-4">
             <p className="text-[#c0c0c0]">
-              EmBldのサービス利用に関する規約については、<a href="/legal/terms" className="text-blue-400 hover:text-blue-300 underline">利用規約</a>をご確認ください。
+              EMBLDのサービス利用に関する規約については、<a href="/legal/terms" className="text-blue-400 hover:text-blue-300 underline">利用規約</a>をご確認ください。
             </p>
             <p className="text-[#c0c0c0]">
               個人情報の取り扱いについては、<a href="/legal/privacy" className="text-blue-400 hover:text-blue-300 underline">プライバシーポリシー</a>をご覧ください。

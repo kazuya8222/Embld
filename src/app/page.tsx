@@ -111,7 +111,7 @@ export default function LandingPage() {
     <div className="min-h-screen bg-white">
       <ScrollHandler />
       {/* ヘッダー */}
-      <header className="w-full bg-white">
+      <header className="fixed top-0 left-0 right-0 w-full bg-white z-50 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-3">
@@ -165,10 +165,28 @@ export default function LandingPage() {
       </header>
 
       {/* メインコンテンツ */}
-      <div className="relative z-10">
+      <div className="relative z-10 pt-16">
 
       {/* ヒーローセクション - Manusスタイル */}
       <section className="pt-12 pb-20 bg-white min-h-screen flex items-center relative overflow-hidden">
+        {/* Interactive grid background */}
+        <div className="absolute inset-0">
+          <div className="grid-container">
+            {Array.from({ length: 24 }, (_, row) =>
+              Array.from({ length: 32 }, (_, col) => (
+                <div
+                  key={`${row}-${col}`}
+                  className="grid-cell"
+                  style={{
+                    left: `${col * 60}px`,
+                    top: `${row * 60}px`,
+                  }}
+                />
+              ))
+            )}
+          </div>
+        </div>
+
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
           {/* メインヘッドライン */}
           <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
@@ -226,7 +244,29 @@ export default function LandingPage() {
           
         </div>
         
-
+        {/* Interactive grid CSS */}
+        <style jsx>{`
+          .grid-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+          }
+          
+          .grid-cell {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            border: 1px solid rgba(0,0,0,0.08);
+            transition: background-color 0.2s ease;
+            cursor: pointer;
+          }
+          
+          .grid-cell:hover {
+            background-color: rgba(156, 163, 175, 0.15);
+          }
+        `}</style>
       </section>
 
       {/* サービス紹介セクション */}
