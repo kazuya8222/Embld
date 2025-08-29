@@ -9,16 +9,12 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
   ArrowLeft, 
-  Eye, 
-  Heart, 
   Calendar, 
-  Clock, 
-  User, 
-  Share2,
-  Bookmark,
-  MessageCircle
+  Clock
 } from 'lucide-react';
 import Link from 'next/link';
+import BlogImage from '@/components/blog/BlogImage';
+import RelatedBlogs from '@/components/blog/RelatedBlogs';
 import { createClient } from '@/lib/supabase/client';
 import { formatDistanceToNow } from 'date-fns';
 import { ja } from 'date-fns/locale';
@@ -26,7 +22,7 @@ import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
-interface Article {
+interface Blog {
   id: string;
   title: string;
   slug: string;
@@ -45,13 +41,11 @@ interface Article {
   updated_at: string;
 }
 
-export default function ArticlePage() {
+export default function BlogPage() {
   const params = useParams();
   const slug = params?.slug as string;
-  const [article, setArticle] = useState<Article | null>(null);
+  const [blog, setBlog] = useState<Blog | null>(null);
   const [loading, setLoading] = useState(true);
-  const [liked, setLiked] = useState(false);
-  const [bookmarked, setBookmarked] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSidebarLocked, setIsSidebarLocked] = useState(false);
   const [isSidebarHovered, setIsSidebarHovered] = useState(false);
@@ -72,78 +66,37 @@ export default function ArticlePage() {
   const shouldShowSidebar = isSidebarLocked || isSidebarHovered;
 
   useEffect(() => {
-    const fetchArticle = async () => {
+    const fetchBlog = async () => {
       if (!slug) return;
 
       try {
         const { data, error } = await supabase
-          .from('articles')
+          .from('blogs')
           .select('*')
           .eq('slug', slug)
           .eq('status', 'published')
           .single();
 
         if (error || !data) {
-          console.error('Error fetching article:', error);
+          console.error('Error fetching blog:', error);
           notFound();
           return;
         }
 
-        setArticle(data);
+        setBlog(data);
         
-        // Increment view count
-        await supabase
-          .from('articles')
-          .update({ view_count: data.view_count + 1 })
-          .eq('id', data.id);
 
       } catch (error) {
-        console.error('Failed to fetch article:', error);
+        console.error('Failed to fetch blog:', error);
         notFound();
       } finally {
         setLoading(false);
       }
     };
 
-    fetchArticle();
+    fetchBlog();
   }, [slug, supabase]);
 
-  const handleLike = async () => {
-    if (!article) return;
-
-    try {
-      const newLikeCount = liked ? article.like_count - 1 : article.like_count + 1;
-      
-      const { error } = await supabase
-        .from('articles')
-        .update({ like_count: newLikeCount })
-        .eq('id', article.id);
-
-      if (!error) {
-        setArticle({ ...article, like_count: newLikeCount });
-        setLiked(!liked);
-      }
-    } catch (error) {
-      console.error('Error updating like:', error);
-    }
-  };
-
-  const handleShare = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: article?.title,
-          text: article?.excerpt,
-          url: window.location.href,
-        });
-      } catch (error) {
-        console.log('Error sharing:', error);
-      }
-    } else {
-      // Fallback: copy to clipboard
-      navigator.clipboard.writeText(window.location.href);
-    }
-  };
 
   if (loading) {
     return (
@@ -167,7 +120,7 @@ export default function ArticlePage() {
     );
   }
 
-  if (!article) {
+  if (!blog) {
     return notFound();
   }
 
@@ -198,31 +151,26 @@ export default function ArticlePage() {
         <div className="max-w-4xl mx-auto p-6">
           {/* Back Button */}
           <div className="mb-8">
-            <Link href="/articles">
+            <Link href="/blogs">
               <Button 
                 variant="ghost" 
                 className="text-[#a0a0a0] hover:text-[#e0e0e0] hover:bg-[#3a3a3a] -ml-2"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
-                記事一覧に戻る
+                ブログ一覧に戻る
               </Button>
             </Link>
           </div>
 
           {/* Article Header */}
           <div className="mb-8">
-            {article.is_featured && (
-              <Badge className="bg-gradient-to-r from-blue-600 to-purple-600 text-[#e0e0e0] mb-4">
-                FEATURED
-              </Badge>
-            )}
             
             <h1 className="text-3xl md:text-4xl font-bold text-[#e0e0e0] mb-4 leading-tight">
-              {article.title}
+              {blog.title}
             </h1>
             
             <p className="text-lg text-[#a0a0a0] mb-6 leading-relaxed">
-              {article.excerpt}
+              {blog.excerpt}
             </p>
 
             {/* Article Meta */}
@@ -230,7 +178,7 @@ export default function ArticlePage() {
               <div className="flex items-center gap-2">
                 <Calendar className="w-4 h-4" />
                 <span>
-                  {formatDistanceToNow(new Date(article.published_at), {
+                  {formatDistanceToNow(new Date(blog.published_at), {
                     addSuffix: true,
                     locale: ja
                   })}
@@ -239,23 +187,15 @@ export default function ArticlePage() {
               
               <div className="flex items-center gap-2">
                 <Clock className="w-4 h-4" />
-                <span>約{Math.ceil(article.content.length / 500)}分で読めます</span>
+                <span>約{Math.ceil(blog.content.length / 500)}分で読めます</span>
               </div>
 
-              <div className="flex items-center gap-2">
-                <Eye className="w-4 h-4" />
-                <span>{article.view_count}回表示</span>
-              </div>
-
-              <Badge variant="outline" className="border-[#3a3a3a] text-[#a0a0a0]">
-                {article.category}
-              </Badge>
             </div>
 
             {/* Tags */}
-            {article.tags && article.tags.length > 0 && (
+            {blog.tags && blog.tags.length > 0 && (
               <div className="flex flex-wrap gap-2 mb-6">
-                {article.tags.map((tag, i) => (
+                {blog.tags.map((tag, i) => (
                   <Badge key={i} variant="outline" className="border-[#3a3a3a] text-[#a0a0a0]">
                     #{tag}
                   </Badge>
@@ -265,15 +205,16 @@ export default function ArticlePage() {
           </div>
 
           {/* Featured Image */}
-          {article.featured_image && (
-            <div className="mb-8">
-              <img
-                src={article.featured_image}
-                alt={article.title}
-                className="w-full h-64 md:h-80 object-cover rounded-lg"
-              />
-            </div>
-          )}
+          <div className="mb-8">
+            <BlogImage
+              src={blog.featured_image}
+              alt={blog.title}
+              className="w-full h-64 md:h-80 rounded-lg"
+              priority
+              width={800}
+              height={320}
+            />
+          </div>
 
           {/* Article Content */}
           <div className="prose prose-lg prose-invert max-w-none mb-12">
@@ -321,57 +262,28 @@ export default function ArticlePage() {
                     {children}
                   </a>
                 ),
+                img: ({ src, alt }) => (
+                  <BlogImage
+                    src={src}
+                    alt={alt || 'Blog image'}
+                    className="w-full h-auto rounded-lg my-6"
+                    width={800}
+                    height={400}
+                  />
+                ),
               }}
             >
-              {article.content}
+              {blog.content}
             </ReactMarkdown>
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex items-center gap-4 mb-12 p-4 bg-[#2a2a2a] rounded-lg">
-            <Button
-              onClick={handleLike}
-              variant="ghost"
-              className={`flex items-center gap-2 ${
-                liked 
-                  ? 'text-red-500 hover:text-red-400' 
-                  : 'text-[#a0a0a0] hover:text-[#e0e0e0]'
-              }`}
-            >
-              <Heart className={`w-5 h-5 ${liked ? 'fill-current' : ''}`} />
-              <span>{article.like_count}</span>
-            </Button>
-
-            <Button
-              onClick={() => setBookmarked(!bookmarked)}
-              variant="ghost"
-              className={`flex items-center gap-2 ${
-                bookmarked 
-                  ? 'text-yellow-500 hover:text-yellow-400' 
-                  : 'text-[#a0a0a0] hover:text-[#e0e0e0]'
-              }`}
-            >
-              <Bookmark className={`w-5 h-5 ${bookmarked ? 'fill-current' : ''}`} />
-              <span>ブックマーク</span>
-            </Button>
-
-            <Button
-              onClick={handleShare}
-              variant="ghost"
-              className="flex items-center gap-2 text-[#a0a0a0] hover:text-[#e0e0e0]"
-            >
-              <Share2 className="w-5 h-5" />
-              <span>シェア</span>
-            </Button>
-          </div>
-
-          {/* Related Articles Section (placeholder) */}
-          <div className="border-t border-[#3a3a3a] pt-12">
-            <h3 className="text-xl font-bold text-[#e0e0e0] mb-6">関連記事</h3>
-            <div className="text-[#a0a0a0]">
-              関連記事機能は準備中です。
-            </div>
-          </div>
+          {/* Related Blogs */}
+          <RelatedBlogs
+            currentBlogId={blog.id}
+            category={blog.category}
+            tags={blog.tags || []}
+            limit={3}
+          />
         </div>
       </div>
     </div>

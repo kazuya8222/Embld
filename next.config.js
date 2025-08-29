@@ -19,7 +19,7 @@ const nextConfig = {
   images: {
     // Next.js Image最適化でCDN配信
     loader: 'default',
-    domains: ['lh3.googleusercontent.com'],
+    domains: [],
     remotePatterns: [
       {
         protocol: 'https',
@@ -28,15 +28,23 @@ const nextConfig = {
         pathname: '/storage/v1/object/public/**',
       },
       {
-        protocol: 'https',
-        hostname: 'lh3.googleusercontent.com',
-        port: '',
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '3000',
+        pathname: '/**',
+      },
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '3001',
         pathname: '/**',
       },
     ],
     // 画像最適化設定
     formats: ['image/avif', 'image/webp'],
     minimumCacheTTL: 60 * 60 * 24 * 7, // 7日間キャッシュ
+    dangerouslyAllowSVG: true,
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
   // パフォーマンス最適化
   poweredByHeader: false,

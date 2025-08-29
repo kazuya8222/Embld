@@ -35,7 +35,7 @@ const topMenuItems = [
 
 const bottomMenuItems = [
   { icon: Grid3X3, label: 'プロダクト一覧', href: '/embld-products' },
-  { icon: FileText, label: '記事', href: '/articles' },
+  { icon: FileText, label: 'ブログ', href: '/blogs' },
 ];
 
 export function Sidebar({ className, onLockToggle, isLocked = false }: SidebarProps) {

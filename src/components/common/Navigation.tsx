@@ -82,15 +82,15 @@ export function Navigation() {
                 プロダクト一覧
               </Link>
               <Link
-                href="/articles"
+                href="/blogs"
                 className={`flex items-center gap-2 pb-1 border-b-2 transition-all font-medium ${
-                  pathname.startsWith('/articles')
+                  pathname.startsWith('/blogs')
                     ? 'text-white border-white'
                     : 'text-gray-400 border-transparent hover:text-white'
                 }`}
               >
                 <FileText className="w-4 h-4" />
-                記事一覧
+                ブログ一覧
               </Link>
             </nav>
 
@@ -238,12 +238,12 @@ export function Navigation() {
                 プロダクト一覧
               </Link>
               <Link
-                href="/articles"
+                href="/blogs"
                 className="block px-3 py-2 text-base font-medium text-gray-400 hover:text-white hover:bg-gray-800 rounded-md"
                 onClick={() => setIsMenuOpen(false)}
               >
                 <FileText className="inline h-4 w-4 mr-2" />
-                記事一覧
+                ブログ一覧
               </Link>
               {user ? (
                 <>
