@@ -355,12 +355,6 @@ export default function EmbldProductDetailPage() {
                         </div>
                       </div>
                     )
-                  ) : product.images && product.images.length > 0 ? (
-                    <img
-                      src={product.images[selectedImageIndex]}
-                      alt={`${product.title} - Screenshot ${selectedImageIndex + 1}`}
-                      className="w-full h-full object-cover"
-                    />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
                       <div className="text-center">
@@ -372,33 +366,6 @@ export default function EmbldProductDetailPage() {
                     </div>
                   )}
                 </div>
-
-                {product.images && product.images.length > 0 && (
-                  <div className="space-y-4">
-                    {/* Thumbnail Navigation */}
-                    {product.images.length > 1 && (
-                      <div className="flex gap-2 overflow-x-auto">
-                        {product.images.map((image, index) => (
-                          <button
-                            key={index}
-                            onClick={() => setSelectedImageIndex(index)}
-                            className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-colors ${
-                              selectedImageIndex === index 
-                                ? 'border-blue-600' 
-                                : 'border-[#3a3a3a] hover:border-[#5a5a5a]'
-                            }`}
-                          >
-                            <img
-                              src={image}
-                              alt={`Thumbnail ${index + 1}`}
-                              className="w-full h-full object-cover"
-                            />
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
               </div>
 
               {/* Description Section with Markdown Support */}
