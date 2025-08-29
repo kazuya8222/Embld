@@ -168,7 +168,7 @@ export function NotificationDropdown({ userId, initialUnreadCount = 0 }: Notific
             {loading ? (
               <div className="p-8 text-center">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
-                <p className="text-gray-500 mt-2">読み込み中...</p>
+                <p className="text-gray-500 mt-2">Loading...</p>
               </div>
             ) : notifications.length === 0 ? (
               <div className="p-8 text-center">

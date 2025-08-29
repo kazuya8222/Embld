@@ -182,7 +182,7 @@ export default function AgentHistoryPage() {
           {/* Chat List */}
           {isLoading ? (
             <div className="text-center py-12">
-              <div className="text-[#a0a0a0]">読み込み中...</div>
+              <div className="text-[#a0a0a0]">Loading...</div>
             </div>
           ) : filteredSessions.length === 0 ? (
             <div className="text-center py-12">

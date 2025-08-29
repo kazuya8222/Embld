@@ -95,7 +95,7 @@ export default async function IdeasPage({
         <p className="text-gray-600 mt-2">投稿されたアイデアの管理・承認</p>
       </div>
 
-      <Suspense fallback={<div>読み込み中...</div>}>
+      <Suspense fallback={<div>Loading...</div>}>
         <IdeasList 
           ideas={ideasWithCounts || []}
           currentPage={page}

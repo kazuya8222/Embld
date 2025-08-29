@@ -288,7 +288,7 @@ export function AccountModal({ isOpen, onClose }: AccountModalProps) {
                     <div className="bg-[#2a2a2a] dark:bg-[#2a2a2a] bg-gray-50 border border-[#3a3a3a] dark:border-[#3a3a3a] border-gray-200 rounded-lg p-6">
                       <h4 className="text-lg font-semibold text-[#e0e0e0] dark:text-[#e0e0e0] text-gray-900 mb-4">クレジット履歴</h4>
                       {loading ? (
-                        <p className="text-[#a0a0a0] dark:text-[#a0a0a0] text-gray-600">読み込み中...</p>
+                        <p className="text-[#a0a0a0] dark:text-[#a0a0a0] text-gray-600">Loading...</p>
                       ) : creditHistory.length === 0 ? (
                         <p className="text-[#a0a0a0] dark:text-[#a0a0a0] text-gray-600">クレジットの使用履歴がありません。</p>
                       ) : (

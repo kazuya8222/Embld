@@ -84,7 +84,7 @@ export default function ProductsPage() {
       <div className="h-screen flex flex-col bg-[#1a1a1a]">
         <TopBar onMenuToggle={handleMenuToggle} onMenuHover={handleMenuHover} />
         <div className="flex-1 flex items-center justify-center">
-          <div className="text-[#e0e0e0]">読み込み中...</div>
+          <div className="text-[#e0e0e0]">Loading...</div>
         </div>
       </div>
     );

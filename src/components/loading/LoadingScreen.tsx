@@ -2,8 +2,8 @@
 
 export function LoadingScreen() {
   return (
-    <div className="w-full bg-white min-h-[60vh]">
-      {/* 空の白い画面 */}
+    <div className="w-full bg-[#1a1a1a] min-h-screen flex items-center justify-center">
+      <div className="text-[#e0e0e0]">Loading...</div>
     </div>
   )
 }

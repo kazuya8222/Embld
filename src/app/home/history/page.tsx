@@ -228,7 +228,7 @@ export default function ChatHistoryPage() {
           {/* Chat List */}
           {isLoading ? (
             <div className="text-center py-12">
-              <div className="text-gray-400">読み込み中...</div>
+              <div className="text-gray-400">Loading...</div>
             </div>
           ) : filteredSessions.length === 0 ? (
             <div className="text-center py-12">

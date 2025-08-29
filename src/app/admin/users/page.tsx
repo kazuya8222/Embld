@@ -66,7 +66,7 @@ export default async function UsersPage({
         <p className="text-gray-600 mt-2">登録ユーザーの管理・権限設定</p>
       </div>
 
-      <Suspense fallback={<div>読み込み中...</div>}>
+      <Suspense fallback={<div>Loading...</div>}>
         <UsersList 
           users={users || []}
           currentPage={page}

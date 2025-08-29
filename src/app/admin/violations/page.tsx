@@ -89,7 +89,7 @@ export default async function ViolationsPage({
         <p className="text-gray-600 mt-2">ユーザーの違反履歴と対応状況の管理</p>
       </div>
 
-      <Suspense fallback={<div>読み込み中...</div>}>
+      <Suspense fallback={<div>Loading...</div>}>
         <ViolationsList 
           violations={violationsWithUserData || []}
           currentPage={page}

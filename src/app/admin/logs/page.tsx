@@ -80,7 +80,7 @@ export default async function LogsPage({
         <p className="text-gray-600 mt-2">管理者の操作履歴とシステムアクティビティ</p>
       </div>
 
-      <Suspense fallback={<div>読み込み中...</div>}>
+      <Suspense fallback={<div>Loading...</div>}>
         <AdminLogsList 
           logs={logsWithAdminData || []}
           currentPage={page}
