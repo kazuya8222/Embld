@@ -23,6 +23,7 @@ interface Blog {
   title: string;
   slug: string;
   excerpt: string;
+  content: string;
   tags: string[];
   status: 'draft' | 'published' | 'archived';
   view_count: number;
@@ -133,7 +134,7 @@ export default function AdminBlogsPage() {
     setEditingBlog(null);
   };
 
-  const handleModalSave = (updatedBlog: Blog) => {
+  const handleModalSave = (updatedBlog: any) => {
     fetchBlogs(); // リフレッシュ
     setIsModalOpen(false);
     setEditingBlog(null);

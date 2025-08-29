@@ -201,11 +201,11 @@ export default function BlogPage() {
           <div className="mb-8">
             
             <h1 className="text-3xl md:text-4xl font-bold text-[#e0e0e0] mb-4 leading-tight">
-              {blog.title}
+              {blog?.title}
             </h1>
             
             <p className="text-lg text-[#a0a0a0] mb-6 leading-relaxed">
-              {blog.excerpt}
+              {blog?.excerpt}
             </p>
 
             {/* Article Meta */}
@@ -213,7 +213,7 @@ export default function BlogPage() {
               <div className="flex items-center gap-2">
                 <Calendar className="w-4 h-4" />
                 <span>
-                  {formatDistanceToNow(new Date(blog.published_at), {
+                  {formatDistanceToNow(new Date(blog?.published_at || ''), {
                     addSuffix: true,
                     locale: ja
                   })}
@@ -222,15 +222,15 @@ export default function BlogPage() {
               
               <div className="flex items-center gap-2">
                 <Clock className="w-4 h-4" />
-                <span>約{Math.ceil(blog.content.length / 500)}分で読めます</span>
+                <span>約{Math.ceil((blog?.content?.length || 0) / 500)}分で読めます</span>
               </div>
 
             </div>
 
             {/* Tags */}
-            {blog.tags && blog.tags.length > 0 && (
+            {blog?.tags && blog?.tags.length > 0 && (
               <div className="flex flex-wrap gap-2 mb-6">
-                {blog.tags.map((tag, i) => (
+                {blog?.tags.map((tag, i) => (
                   <Badge key={i} variant="outline" className="border-[#3a3a3a] text-[#a0a0a0]">
                     #{tag}
                   </Badge>
@@ -242,8 +242,8 @@ export default function BlogPage() {
           {/* Featured Image */}
           <div className="mb-8">
             <BlogImage
-              src={blog.featured_image}
-              alt={blog.title}
+              src={blog?.featured_image}
+              alt={blog?.title}
               className="w-full h-64 md:h-80 rounded-lg"
               priority
               width={800}
@@ -308,15 +308,15 @@ export default function BlogPage() {
                 ),
               }}
             >
-              {blog.content}
+              {blog?.content}
             </ReactMarkdown>
           </div>
 
           {/* Related Blogs */}
           <RelatedBlogs
-            currentBlogId={blog.id}
-            category={blog.category}
-            tags={blog.tags || []}
+            currentBlogId={blog?.id || ''}
+            category={blog?.category || ''}
+            tags={blog?.tags || []}
             limit={3}
           />
         </div>
