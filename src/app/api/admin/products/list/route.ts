@@ -20,18 +20,18 @@ export async function GET(request: NextRequest) {
         demo_url,
         github_url,
         tags,
-        created_at
+        is_public,
+        created_at,
+        updated_at
       `)
-      .eq('is_public', true)
-      .order('like_count', { ascending: false })
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Error fetching embld products:', error);
+      console.error('Error fetching products:', error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({ data });
+    return NextResponse.json({ products: data });
   } catch (error) {
     console.error('API error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

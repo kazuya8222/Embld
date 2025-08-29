@@ -18,6 +18,7 @@ export async function GET(request: NextRequest) {
         title,
         description,
         images,
+        video_url,
         like_count,
         category,
         demo_url,

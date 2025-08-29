@@ -18,8 +18,10 @@ export async function GET(
       .select(`
         id,
         title,
+        overview,
         description,
-        images,
+        icon_url,
+        video_url,
         like_count,
         category,
         user_id,
@@ -27,13 +29,11 @@ export async function GET(
         github_url,
         tags,
         is_public,
-        approval_status,
         created_at,
         updated_at
       `)
       .eq('id', id)
       .eq('is_public', true)
-      .eq('approval_status', 'approved')
       .single();
 
     if (error) {

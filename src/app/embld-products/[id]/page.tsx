@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
 import { TopBar } from '@/components/common/TopBar';
@@ -18,25 +18,28 @@ import {
   Send,
   User
 } from 'lucide-react';
-import Link from 'next/link';
 import { likeProduct, addComment, getComments, checkUserLike, deleteComment } from '@/app/actions/embldProducts';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { formatDistanceToNow } from 'date-fns';
 import { ja } from 'date-fns/locale';
+import ReactMarkdown from 'react-markdown';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 interface Product {
   id: string;
   title: string;
+  overview?: string;
   description: string;
-  images: string[];
+  icon_url?: string;
   like_count: number;
   category: string;
   user_id: string;
   demo_url?: string;
   github_url?: string;
+  video_url?: string;
   tags: string[];
   is_public: boolean;
-  approval_status: string;
   created_at: string;
   updated_at: string;
 }
@@ -67,6 +70,7 @@ export default function EmbldProductDetailPage() {
   const [isLiked, setIsLiked] = useState(false);
   const [currentLikeCount, setCurrentLikeCount] = useState(0);
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
+  const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
   const { user } = useAuth();
 
   const handleMenuToggle = () => {
@@ -86,21 +90,21 @@ export default function EmbldProductDetailPage() {
   const fetchComments = async () => {
     const result = await getComments(productId);
     if (result.success) {
-      setComments((result.data || []) as Comment[]);
+      setComments((result.data || []) as unknown as Comment[]);
     }
   };
 
   const fetchUserLike = async () => {
     const result = await checkUserLike(productId);
     if (result.success) {
-      setIsLiked(result.liked);
+      setIsLiked(result.liked || false);
     }
   };
 
   const handleLike = async () => {
     const result = await likeProduct(productId);
     if (result.success) {
-      setIsLiked(result.liked);
+      setIsLiked(result.liked || false);
       setCurrentLikeCount(prev => result.liked ? prev + 1 : prev - 1);
     }
   };
@@ -268,9 +272,20 @@ export default function EmbldProductDetailPage() {
                     </Badge>
                   </div>
                 )}
-                <h1 className="text-3xl font-bold text-[#e0e0e0] mb-4">
-                  {product.title}
-                </h1>
+                <div className="flex items-center gap-4 mb-4">
+                  {product.icon_url && (
+                    <div className="w-12 h-12 rounded-lg overflow-hidden border border-[#3a3a3a] bg-[#2a2a2a] flex-shrink-0">
+                      <img
+                        src={product.icon_url}
+                        alt={`${product.title} icon`}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  )}
+                  <h1 className="text-3xl font-bold text-[#e0e0e0]">
+                    {product.title}
+                  </h1>
+                </div>
                 <div className="flex items-center gap-6 text-sm text-[#a0a0a0] mb-4">
                   <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4" />
@@ -287,28 +302,79 @@ export default function EmbldProductDetailPage() {
                     <span>{currentLikeCount.toLocaleString()} いいね</span>
                   </button>
                 </div>
+                
+                {/* Overview */}
+                {product.overview && (
+                  <p className="text-[#a0a0a0] leading-relaxed mt-4">{product.overview}</p>
+                )}
               </div>
               
             </div>
           </div>
 
-          {/* Main Content Grid */}
+          {/* Main Content */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Images Section */}
-            <div className="lg:col-span-2">
+            {/* Media and Description Section */}
+            <div className="lg:col-span-2 space-y-8">
+              {/* Media Section */}
               <div className="bg-[#2a2a2a] rounded-lg p-6 border border-[#3a3a3a]">
-                
-                {product.images && product.images.length > 0 ? (
-                  <div className="space-y-4">
-                    {/* Main Image */}
-                    <div className="aspect-video bg-gradient-to-br from-[#3a3a3a] to-[#2a2a2a] rounded-lg overflow-hidden">
-                      <img
-                        src={product.images[selectedImageIndex]}
-                        alt={`${product.title} - Screenshot ${selectedImageIndex + 1}`}
-                        className="w-full h-full object-cover"
+                {/* Video or Main Image */}
+                <div className="aspect-video bg-gradient-to-br from-[#3a3a3a] to-[#2a2a2a] rounded-lg overflow-hidden mb-4">
+                  {product.video_url ? (
+                    product.video_url.includes('youtube.com') || product.video_url.includes('vimeo.com') ? (
+                      <iframe
+                        src={product.video_url}
+                        title={`${product.title} - Demo Video`}
+                        className="w-full h-full"
+                        allowFullScreen
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                       />
+                    ) : (
+                      <div 
+                        className="relative w-full h-full cursor-pointer group"
+                        onClick={() => setIsVideoModalOpen(true)}
+                      >
+                        <video
+                          autoPlay
+                          muted
+                          loop
+                          playsInline
+                          preload="metadata"
+                          className="w-full h-full object-cover"
+                        >
+                          <source src={product.video_url} type="video/mp4" />
+                          <source src={product.video_url} type="video/webm" />
+                          <source src={product.video_url} type="video/quicktime" />
+                        </video>
+                        <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <div className="w-16 h-16 bg-white/90 rounded-full flex items-center justify-center">
+                            <svg className="w-6 h-6 text-gray-900 ml-1" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M8 5v14l11-7z"/>
+                            </svg>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  ) : product.images && product.images.length > 0 ? (
+                    <img
+                      src={product.images[selectedImageIndex]}
+                      alt={`${product.title} - Screenshot ${selectedImageIndex + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <div className="text-center">
+                        <div className="w-16 h-16 mx-auto mb-4 bg-[#4a4a4a] rounded-full flex items-center justify-center">
+                          <Monitor className="w-8 h-8 text-[#a0a0a0]" />
+                        </div>
+                        <p className="text-[#a0a0a0]">メディアがありません</p>
+                      </div>
                     </div>
-                    
+                  )}
+                </div>
+
+                {product.images && product.images.length > 0 && (
+                  <div className="space-y-4">
                     {/* Thumbnail Navigation */}
                     {product.images.length > 1 && (
                       <div className="flex gap-2 overflow-x-auto">
@@ -332,98 +398,79 @@ export default function EmbldProductDetailPage() {
                       </div>
                     )}
                   </div>
-                ) : (
-                  <div className="aspect-video bg-gradient-to-br from-[#3a3a3a] to-[#2a2a2a] rounded-lg flex items-center justify-center">
-                    <div className="text-center">
-                      <div className="w-16 h-16 mx-auto mb-4 bg-[#4a4a4a] rounded-full flex items-center justify-center">
-                        <Monitor className="w-8 h-8 text-[#a0a0a0]" />
-                      </div>
-                      <p className="text-[#a0a0a0]">スクリーンショットがありません</p>
-                    </div>
-                  </div>
                 )}
-                
-                {/* Description */}
-                <div className="mt-6">
-                  <h3 className="text-lg font-semibold text-[#e0e0e0] mb-3">説明</h3>
-                  <p className="text-[#a0a0a0] leading-relaxed whitespace-pre-wrap">
-                    {product.description}
-                  </p>
-                </div>
               </div>
-            </div>
 
-            {/* Info Sidebar */}
-            <div className="space-y-6">
-
-              {/* Tags */}
-              {product.tags && product.tags.length > 0 && (
-                <div className="bg-[#2a2a2a] rounded-lg p-6 border border-[#3a3a3a]">
-                  <h3 className="text-lg font-semibold text-[#e0e0e0] mb-4 flex items-center">
-                    <Tag className="w-5 h-5 mr-2" />
-                    タグ
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {product.tags.map((tag, index) => (
-                      <Badge 
-                        key={index} 
-                        variant="secondary" 
-                        className="bg-[#1a1a1a] text-[#a0a0a0] border border-[#3a3a3a]"
-                      >
-                        #{tag}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Project Info */}
+              {/* Description Section with Markdown Support */}
               <div className="bg-[#2a2a2a] rounded-lg p-6 border border-[#3a3a3a]">
-                <h3 className="text-lg font-semibold text-[#e0e0e0] mb-4">プロジェクト情報</h3>
-                <div className="space-y-3 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-[#a0a0a0]">作成日</span>
-                    <span className="text-[#e0e0e0]">{formatDate(product.created_at)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-[#a0a0a0]">更新日</span>
-                    <span className="text-[#e0e0e0]">{formatDate(product.updated_at)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-[#a0a0a0]">ステータス</span>
-                    <Badge 
-                      variant="default"
-                      className="bg-green-600 text-white"
-                    >
-                      承認済み
-                    </Badge>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-[#a0a0a0]">公開状態</span>
-                    <Badge 
-                      variant="default"
-                      className="bg-blue-600 text-white"
-                    >
-                      公開
-                    </Badge>
-                  </div>
-                  
-                  {/* Demo URL */}
-                  {product.demo_url && (
-                    <div className="pt-3 border-t border-[#3a3a3a]">
-                      <a
-                        href={product.demo_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-block w-full"
-                      >
-                        <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
-                          使ってみる
-                        </Button>
-                      </a>
-                    </div>
-                  )}
-                  
+                <h3 className="text-lg font-semibold text-[#e0e0e0] mb-4">プロダクト説明</h3>
+                <div className="prose prose-invert prose-sm max-w-none">
+                  <ReactMarkdown
+                    components={{
+                      code({ inline, className, children, ...props }: any) {
+                        const match = /language-(\w+)/.exec(className || '');
+                        return !inline && match ? (
+                          <SyntaxHighlighter
+                            style={vscDarkPlus as any}
+                            language={match[1]}
+                            PreTag="div"
+                            {...props}
+                          >
+                            {String(children).replace(/\n$/, '')}
+                          </SyntaxHighlighter>
+                        ) : (
+                          <code className={className} {...props}>
+                            {children}
+                          </code>
+                        );
+                      },
+                      h1: ({ children }) => (
+                        <h1 className="text-2xl font-bold text-[#e0e0e0] mt-6 mb-4">{children}</h1>
+                      ),
+                      h2: ({ children }) => (
+                        <h2 className="text-xl font-semibold text-[#e0e0e0] mt-5 mb-3">{children}</h2>
+                      ),
+                      h3: ({ children }) => (
+                        <h3 className="text-lg font-semibold text-[#e0e0e0] mt-4 mb-2">{children}</h3>
+                      ),
+                      p: ({ children }) => (
+                        <p className="text-[#c0c0c0] mb-4 leading-relaxed">{children}</p>
+                      ),
+                      ul: ({ children }) => (
+                        <ul className="list-disc list-inside space-y-2 text-[#c0c0c0] mb-4">{children}</ul>
+                      ),
+                      ol: ({ children }) => (
+                        <ol className="list-decimal list-inside space-y-2 text-[#c0c0c0] mb-4">{children}</ol>
+                      ),
+                      li: ({ children }) => (
+                        <li className="text-[#c0c0c0]">{children}</li>
+                      ),
+                      blockquote: ({ children }) => (
+                        <blockquote className="border-l-4 border-[#3a3a3a] pl-4 italic text-[#a0a0a0] my-4">
+                          {children}
+                        </blockquote>
+                      ),
+                      a: ({ children, href }) => (
+                        <a 
+                          href={href} 
+                          className="text-blue-400 hover:text-blue-300 underline"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {children}
+                        </a>
+                      ),
+                      img: ({ src, alt }) => (
+                        <img 
+                          src={src} 
+                          alt={alt} 
+                          className="rounded-lg max-w-full h-auto my-4 border border-[#3a3a3a]"
+                        />
+                      )
+                    }}
+                  >
+                    {product.description}
+                  </ReactMarkdown>
                 </div>
               </div>
 
@@ -507,9 +554,129 @@ export default function EmbldProductDetailPage() {
                 </div>
               </div>
             </div>
+
+            {/* Info Sidebar */}
+            <div className="space-y-6">
+
+              {/* Tags */}
+              {product.tags && product.tags.length > 0 && (
+                <div className="bg-[#2a2a2a] rounded-lg p-6 border border-[#3a3a3a]">
+                  <h3 className="text-lg font-semibold text-[#e0e0e0] mb-4 flex items-center">
+                    <Tag className="w-5 h-5 mr-2" />
+                    タグ
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {product.tags.map((tag, index) => (
+                      <Badge 
+                        key={index} 
+                        variant="secondary" 
+                        className="bg-[#1a1a1a] text-[#a0a0a0] border border-[#3a3a3a]"
+                      >
+                        #{tag}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Project Info */}
+              <div className="bg-[#2a2a2a] rounded-lg p-6 border border-[#3a3a3a]">
+                <h3 className="text-lg font-semibold text-[#e0e0e0] mb-4">プロジェクト情報</h3>
+                <div className="space-y-3 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-[#a0a0a0]">作成日</span>
+                    <span className="text-[#e0e0e0]">{formatDate(product.created_at)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-[#a0a0a0]">更新日</span>
+                    <span className="text-[#e0e0e0]">{formatDate(product.updated_at)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-[#a0a0a0]">ステータス</span>
+                    <Badge 
+                      variant="default"
+                      className="bg-green-600 text-white"
+                    >
+                      公開中
+                    </Badge>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-[#a0a0a0]">公開状態</span>
+                    <Badge 
+                      variant="default"
+                      className="bg-blue-600 text-white"
+                    >
+                      公開
+                    </Badge>
+                  </div>
+                  
+                  {/* Demo URL */}
+                  {product.demo_url && (
+                    <div className="pt-3 border-t border-[#3a3a3a]">
+                      <a
+                        href={product.demo_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-block w-full"
+                      >
+                        <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+                          使ってみる
+                        </Button>
+                      </a>
+                    </div>
+                  )}
+                  
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
+
+      {/* フルスクリーン動画モーダル */}
+      {isVideoModalOpen && product.video_url && (
+        <div 
+          className="fixed inset-0 bg-black/90 z-[100] flex items-center justify-center p-4"
+          onClick={() => setIsVideoModalOpen(false)}
+        >
+          <div 
+            className="relative max-w-6xl w-full aspect-video bg-black rounded-lg overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setIsVideoModalOpen(false)}
+              className="absolute top-4 right-4 z-10 w-8 h-8 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center text-white transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            
+            {product.video_url.includes('youtube.com') || product.video_url.includes('vimeo.com') ? (
+              <iframe
+                src={product.video_url}
+                title={`${product.title} - Demo Video`}
+                className="w-full h-full"
+                allowFullScreen
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              />
+            ) : (
+              <video
+                controls
+                autoPlay
+                className="w-full h-full"
+                onLoadStart={() => console.log('Video loading started')}
+                onCanPlay={() => console.log('Video can play')}
+              >
+                <source src={product.video_url} type="video/mp4" />
+                <source src={product.video_url} type="video/webm" />
+                <source src={product.video_url} type="video/quicktime" />
+                お使いのブラウザは動画再生に対応していません。
+              </video>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

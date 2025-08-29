@@ -13,8 +13,8 @@ import {
   Shield,
   FileText,
   MessageSquare,
-  PenTool,
-  BookOpen
+  BookOpen,
+  Monitor
 } from 'lucide-react'
 import { clsx } from 'clsx'
 
@@ -23,7 +23,7 @@ const navigation = [
   { name: 'ユーザー管理', href: '/admin/users', icon: Users },
   { name: 'アイデア管理', href: '/admin/ideas', icon: Lightbulb },
   { name: 'ブログ管理', href: '/admin/blogs', icon: BookOpen },
-  { name: 'ブログ執筆', href: '/admin/blogs/new', icon: PenTool },
+  { name: 'プロダクト管理', href: '/admin/products', icon: Monitor },
   { name: 'お問い合わせ管理', href: '/admin/contacts', icon: MessageSquare },
   { name: '統計・分析', href: '/admin/analytics', icon: BarChart3 },
   { name: '運営設定', href: '/admin/settings', icon: Settings },

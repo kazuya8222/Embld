@@ -14,7 +14,9 @@ interface EmbldProduct {
   id: string;
   title: string;
   description: string;
-  images: string[];
+  overview?: string;
+  icon_url?: string;
+  video_url?: string;
   like_count: number;
   category: string;
   user_id: string;
@@ -31,6 +33,8 @@ export default function EmbldProductsPage() {
   const [isSidebarLocked, setIsSidebarLocked] = useState(false);
   const [isSidebarHovered, setIsSidebarHovered] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
+  const [selectedVideoUrl, setSelectedVideoUrl] = useState<string>('');
 
   const handleMenuToggle = () => {
     setIsSidebarLocked(!isSidebarLocked);
@@ -167,16 +171,47 @@ export default function EmbldProductsPage() {
 
           {/* Products Grid */}
           <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-            {filteredProducts.map((product, index) => (
+            {filteredProducts.map((product) => (
               <div key={product.id}>
                 <Link href={`/embld-products/${product.id}`}>
                   <Card className="bg-[#2a2a2a] border-[#3a3a3a] hover:bg-[#3a3a3a] transition-colors group cursor-pointer overflow-hidden">
                     <div className="relative">
-                      {/* Project Image */}
+                      {/* Project Video/Image */}
                       <div className="bg-gradient-to-br from-[#3a3a3a] to-[#2a2a2a] relative overflow-hidden aspect-video">
-                        {product.images && product.images.length > 0 ? (
+                        {product.video_url ? (
+                          <div 
+                            className="relative w-full h-full cursor-pointer group"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setSelectedVideoUrl(product.video_url!);
+                              setIsVideoModalOpen(true);
+                            }}
+                          >
+                            <video 
+                              autoPlay 
+                              muted 
+                              loop 
+                              playsInline 
+                              preload="metadata" 
+                              className="w-full h-full object-cover"
+                            >
+                              <source src={product.video_url} type="video/mp4" />
+                              <source src={product.video_url} type="video/webm" />
+                              <source src={product.video_url} type="video/quicktime" />
+                              Your browser does not support the video tag.
+                            </video>
+                            <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                              <div className="w-12 h-12 bg-white/90 rounded-full flex items-center justify-center">
+                                <svg className="w-5 h-5 text-gray-900 ml-1" fill="currentColor" viewBox="0 0 24 24">
+                                  <path d="M8 5v14l11-7z"/>
+                                </svg>
+                              </div>
+                            </div>
+                          </div>
+                        ) : product.icon_url ? (
                           <img 
-                            src={product.images[0]} 
+                            src={product.icon_url} 
                             alt={product.title}
                             className="w-full h-full object-cover"
                           />
@@ -198,16 +233,18 @@ export default function EmbldProductsPage() {
                           </Badge>
                         )}
                         
-                        {/* View Details Button */}
-                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                          <Button 
-                            variant="secondary" 
-                            size="sm"
-                            className="bg-[#e0e0e0] text-black hover:bg-[#c0c0c0]"
-                          >
-                            詳細を見る
-                          </Button>
-                        </div>
+                        {/* View Details Button (only show for non-video content) */}
+                        {!product.video_url && (
+                          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                            <Button 
+                              variant="secondary" 
+                              size="sm"
+                              className="bg-[#e0e0e0] text-black hover:bg-[#c0c0c0]"
+                            >
+                              詳細を見る
+                            </Button>
+                          </div>
+                        )}
                       </div>
 
                       <CardContent className="p-4">
@@ -217,7 +254,7 @@ export default function EmbldProductsPage() {
                             {product.title}
                           </h3>
                           <p className="text-[#a0a0a0] text-sm line-clamp-2">
-                            {product.description}
+                            {product.overview}
                           </p>
                         </div>
 
@@ -249,6 +286,52 @@ export default function EmbldProductsPage() {
           )}
         </div>
       </div>
+
+      {/* Full-Screen Video Modal */}
+      {isVideoModalOpen && (
+        <div 
+          className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4"
+          onClick={() => setIsVideoModalOpen(false)}
+        >
+          <div className="relative max-w-6xl w-full aspect-video">
+            <button
+              onClick={() => setIsVideoModalOpen(false)}
+              className="absolute -top-12 right-0 text-white hover:text-gray-300 text-2xl font-bold z-10"
+            >
+              ×
+            </button>
+            
+            <div onClick={(e) => e.stopPropagation()}>
+              {selectedVideoUrl.includes('youtube.com') || selectedVideoUrl.includes('youtu.be') ? (
+                <iframe
+                  src={selectedVideoUrl.replace('watch?v=', 'embed/').replace('youtu.be/', 'youtube.com/embed/')}
+                  className="w-full h-full rounded-lg"
+                  allowFullScreen
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                />
+              ) : selectedVideoUrl.includes('vimeo.com') ? (
+                <iframe
+                  src={selectedVideoUrl.replace('vimeo.com/', 'player.vimeo.com/video/')}
+                  className="w-full h-full rounded-lg"
+                  allowFullScreen
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                />
+              ) : (
+                <video 
+                  controls 
+                  autoPlay 
+                  className="w-full h-full rounded-lg"
+                >
+                  <source src={selectedVideoUrl} type="video/mp4" />
+                  <source src={selectedVideoUrl} type="video/webm" />
+                  <source src={selectedVideoUrl} type="video/quicktime" />
+                  Your browser does not support the video tag.
+                </video>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
