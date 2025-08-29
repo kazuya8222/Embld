@@ -46,6 +46,7 @@ export function Footer({ onPricingClick }: FooterProps = {}) {
             <ul className="space-y-2 text-sm">
               <li><a href="/help" onClick={handleFaqClick} className="text-gray-400 hover:text-white transition-colors cursor-pointer">FAQ</a></li>
               <li><Link href="/contact" className="text-gray-400 hover:text-white transition-colors">お問い合わせ</Link></li>
+              <li><Link href="/about" className="text-gray-400 hover:text-white transition-colors">私たちについて</Link></li>
               <li><button onClick={onPricingClick} className="text-gray-400 hover:text-white transition-colors text-left">料金</button></li>
             </ul>
           </div>
