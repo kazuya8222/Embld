@@ -3,7 +3,11 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
-export function Footer() {
+interface FooterProps {
+  onPricingClick?: () => void;
+}
+
+export function Footer({ onPricingClick }: FooterProps = {}) {
   const router = useRouter()
 
   const handleFaqClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
@@ -42,6 +46,7 @@ export function Footer() {
             <ul className="space-y-2 text-sm">
               <li><a href="/help" onClick={handleFaqClick} className="text-gray-400 hover:text-white transition-colors cursor-pointer">FAQ</a></li>
               <li><Link href="/contact" className="text-gray-400 hover:text-white transition-colors">お問い合わせ</Link></li>
+              <li><button onClick={onPricingClick} className="text-gray-400 hover:text-white transition-colors text-left">料金</button></li>
             </ul>
           </div>
           

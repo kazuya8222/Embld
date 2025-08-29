@@ -71,7 +71,7 @@ export function PricingModal({ isOpen, onClose }: PricingModalProps) {
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [cancelReason, setCancelReason] = useState('');
   const [cancelDescription, setCancelDescription] = useState('');
-  const { subscriptionPlan } = useAuth();
+  const { subscriptionPlan, user } = useAuth();
 
   // プラン名のマッピング関数
   const getCurrentPlanId = () => {
@@ -100,6 +100,12 @@ export function PricingModal({ isOpen, onClose }: PricingModalProps) {
   };
 
   const handleUpgrade = async (priceId: string, planName: string) => {
+    // If user is not logged in, redirect to login page
+    if (!user) {
+      window.location.href = '/auth/login';
+      return;
+    }
+    
     if (!priceId) return;
     
     setLoading(priceId);
@@ -260,7 +266,15 @@ export function PricingModal({ isOpen, onClose }: PricingModalProps) {
 
                       {/* Action Button */}
                       <div className="mb-6">
-                        {isCurrentPlan(plan.id) ? (
+                        {!user ? (
+                          // If not logged in, show login button for all plans
+                          <Button
+                            onClick={() => window.location.href = '/auth/login'}
+                            className="w-full bg-[#e0e0e0] text-black hover:bg-[#c0c0c0]"
+                          >
+                            ログイン
+                          </Button>
+                        ) : isCurrentPlan(plan.id) ? (
                           <Button
                             disabled
                             className="w-full bg-[#5a5a5a] text-[#a0a0a0] cursor-not-allowed"
@@ -313,8 +327,8 @@ export function PricingModal({ isOpen, onClose }: PricingModalProps) {
                   ))}
                 </div>
 
-                {/* Cancel Subscription Section */}
-                {getCurrentPlanId() !== 'free' && (
+                {/* Cancel Subscription Section - Only show if user is logged in and has a paid plan */}
+                {user && getCurrentPlanId() !== 'free' && (
                   <div className="mt-12 pt-8 border-t border-[#3a3a3a] max-w-5xl mx-auto">
                     <div className="text-center">
                       <button

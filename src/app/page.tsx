@@ -24,12 +24,14 @@ import {
 import { ScrollFadeIn } from '@/components/ScrollFadeIn'
 import { Footer } from '@/components/common/Footer'
 import { ScrollHandler } from '@/components/ScrollHandler'
+import { PricingModal } from '@/components/pricing/PricingModal'
 
 export default function LandingPage() {
   const { user } = useAuth()
   const router = useRouter()
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [showPricingModal, setShowPricingModal] = useState(false)
 
   const handleSubmit = async () => {
     if (!input.trim()) return
@@ -111,7 +113,7 @@ export default function LandingPage() {
     <div className="min-h-screen bg-white">
       <ScrollHandler />
       {/* ヘッダー */}
-      <header className="fixed top-0 left-0 right-0 w-full bg-white z-50 shadow-sm">
+      <header className="fixed top-0 left-0 right-0 w-full bg-white z-40 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-3">
@@ -196,7 +198,7 @@ export default function LandingPage() {
           
           {/* サブヘッドライン */}
           <p className="text-xl md:text-2xl text-gray-700 mb-12 max-w-3xl mx-auto leading-relaxed">
-          EMBLDは、あなたのアイデアを収益性、実現可能性、法務リスクなどを考慮し収益の上がるアプリビジネスへ仕上げるAIエージェントです。
+          EMBLDは、あなたのアイデアを収益性、実現可能性、法務リスクなどを考慮し儲かるアプリビジネスへ仕上げるAIエージェントです。
           </p>
           
           {/* プロンプトバー */}
@@ -620,8 +622,14 @@ export default function LandingPage() {
       </section>
 
       {/* フッター */}
-      <Footer />
+      <Footer onPricingClick={() => setShowPricingModal(true)} />
       </div>
+      
+      {/* Pricing Modal - トップレベルに配置 */}
+      <PricingModal 
+        isOpen={showPricingModal} 
+        onClose={() => setShowPricingModal(false)} 
+      />
     </div>
   )
 }
