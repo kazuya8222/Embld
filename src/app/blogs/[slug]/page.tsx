@@ -67,7 +67,13 @@ export default function BlogPage() {
 
   useEffect(() => {
     const fetchBlog = async () => {
-      if (!slug) return;
+      if (!slug) {
+        console.error('No slug provided');
+        setLoading(false);
+        return;
+      }
+
+      console.log('Fetching blog with slug:', slug);
 
       try {
         const { data, error } = await supabase
@@ -77,18 +83,25 @@ export default function BlogPage() {
           .eq('status', 'published')
           .single();
 
-        if (error || !data) {
-          console.error('Error fetching blog:', error);
-          notFound();
+        console.log('Query result:', { data, error });
+
+        if (error) {
+          console.error('Supabase query error:', error);
+          setLoading(false);
           return;
         }
 
+        if (!data) {
+          console.error('No blog data returned for slug:', slug);
+          setLoading(false);
+          return;
+        }
+
+        console.log('Setting blog data:', data);
         setBlog(data);
-        
 
       } catch (error) {
         console.error('Failed to fetch blog:', error);
-        notFound();
       } finally {
         setLoading(false);
       }
@@ -120,8 +133,30 @@ export default function BlogPage() {
     );
   }
 
-  if (!blog) {
-    return notFound();
+  if (!loading && !blog) {
+    return (
+      <div className="min-h-screen bg-[#1a1a1a] relative">
+        <TopBar onMenuToggle={handleMenuToggle} onMenuHover={handleMenuHover} />
+        <div className="pt-16">
+          <div className="max-w-4xl mx-auto p-6">
+            <div className="text-center py-20">
+              <h1 className="text-2xl font-bold text-[#e0e0e0] mb-4">
+                ブログが見つかりません
+              </h1>
+              <p className="text-[#a0a0a0] mb-8">
+                指定されたブログは存在しないか、まだ公開されていません。
+              </p>
+              <Link href="/blogs">
+                <Button variant="ghost" className="text-[#0066cc] hover:bg-[#0066cc]/10">
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  ブログ一覧に戻る
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
