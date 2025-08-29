@@ -21,8 +21,9 @@ import { ja } from 'date-fns/locale';
 interface Product {
   id: string;
   title: string;
+  overview?: string;
   description: string;
-  images: string[];
+  icon_url?: string;
   video_url?: string;
   like_count: number;
   category: string;
