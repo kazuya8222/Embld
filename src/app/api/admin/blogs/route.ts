@@ -87,7 +87,6 @@ export async function POST(request: NextRequest) {
       content,
       featured_image: featured_image || null,
       author_id: user.id,
-      category: 'ブログ',
       tags: tags || [],
       status: status || 'draft',
       published_at: status === 'published' ? (published_at || new Date().toISOString()) : null,
@@ -215,7 +214,6 @@ export async function PUT(request: NextRequest) {
       excerpt,
       content,
       featured_image: featured_image || null,
-      category: 'ブログ',
       tags,
       status,
       updated_at: new Date().toISOString()

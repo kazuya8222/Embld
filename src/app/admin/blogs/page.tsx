@@ -23,7 +23,6 @@ interface Blog {
   title: string;
   slug: string;
   excerpt: string;
-  category: string;
   tags: string[];
   status: 'draft' | 'published' | 'archived';
   view_count: number;
