@@ -7,8 +7,9 @@ import { TopBar } from '@/components/common/TopBar';
 import { Sidebar } from '@/components/common/Sidebar';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { ArrowLeft, Edit, Save, X } from 'lucide-react';
+import { ArrowLeft, Edit, Save, X, Send } from 'lucide-react';
 import { AnimatePresence } from 'motion/react';
+import { useAuth } from '@/components/auth/AuthProvider';
 
 interface Proposal {
   id: string;
@@ -22,7 +23,7 @@ interface Proposal {
   }>;
   business_model: string;
   recruitment_message: string;
-  status: 'draft' | 'submitted' | 'approved' | 'rejected';
+  status: '未提出' | '審査中' | '承認済み' | '却下';
   submitted_at: string | null;
   reviewed_at: string | null;
   reviewer_notes: string | null;
@@ -44,8 +45,10 @@ export default function ProposalPage({ params }: ProposalPageProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editedProposal, setEditedProposal] = useState<Proposal | null>(null);
   const [saving, setSaving] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const router = useRouter();
+  const { user, userProfile } = useAuth();
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -143,6 +146,43 @@ export default function ProposalPage({ params }: ProposalPageProps) {
     });
   };
 
+  const handleRequestDevelopment = async () => {
+    if (!user || !proposal) return;
+    
+    const currentCredits = userProfile?.credits_balance || 0;
+    if (currentCredits < 100) {
+      alert('開発依頼には100クレジットが必要です。クレジットが不足しています。');
+      return;
+    }
+
+    if (!confirm('開発を依頼しますか？100クレジットが消費されます。')) {
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const response = await fetch('/api/proposals/request-development', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ proposalId: proposal.id })
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || '開発依頼に失敗しました');
+      }
+
+      // Update local state
+      setProposal(prev => prev ? { ...prev, status: '審査中' } : null);
+      alert('開発依頼を送信しました。審査結果をお待ちください。');
+    } catch (error) {
+      console.error('Development request error:', error);
+      alert('開発依頼に失敗しました。');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="h-screen bg-[#1a1a1a] flex items-center justify-center">
@@ -165,19 +205,19 @@ export default function ProposalPage({ params }: ProposalPageProps) {
   const getStatusBadge = () => {
     if (!proposal) return null;
     switch (proposal.status) {
-      case 'submitted':
+      case '審査中':
         return (
           <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-blue-500/20 text-blue-400 text-sm">
             審査中
           </span>
         );
-      case 'approved':
+      case '承認済み':
         return (
           <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-green-500/20 text-green-400 text-sm">
             承認済み
           </span>
         );
-      case 'rejected':
+      case '却下':
         return (
           <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-red-500/20 text-red-400 text-sm">
             却下
@@ -186,7 +226,7 @@ export default function ProposalPage({ params }: ProposalPageProps) {
       default:
         return (
           <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#5a5a5a]/20 text-[#808080] text-sm">
-            下書き
+            未提出
           </span>
         );
     }
@@ -417,8 +457,44 @@ export default function ProposalPage({ params }: ProposalPageProps) {
               </div>
             )}
           </div>
+
+          {/* Status Message */}
+          {proposal.status === '審査中' && (
+            <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4 mb-20">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                  <div className="w-4 h-4 bg-white rounded-full animate-pulse"></div>
+                </div>
+                <div>
+                  <h3 className="text-blue-400 font-medium">開発依頼を受け付けました</h3>
+                  <p className="text-[#a0a0a0] text-sm mt-1">
+                    審査が完了次第、結果をお知らせします。しばらくお待ちください。
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
+
+      {/* Fixed Development Request Button */}
+      {proposal.status === '未提出' && user && (
+        <div className="fixed bottom-0 left-0 right-0 bg-[#1a1a1a] border-t border-[#3a3a3a] p-4 z-40">
+          <div className="max-w-4xl mx-auto flex items-center justify-between">
+            <div className="text-[#a0a0a0] text-sm">
+              開発依頼には100クレジットが必要です (現在: {userProfile?.credits_balance || 0}クレジット)
+            </div>
+            <Button
+              onClick={handleRequestDevelopment}
+              disabled={isSubmitting || !user || (userProfile?.credits_balance || 0) < 100}
+              className="bg-[#0066cc] text-white hover:bg-[#0052a3] disabled:opacity-50"
+            >
+              <Send className="w-4 h-4 mr-2" />
+              {isSubmitting ? '送信中...' : '開発を依頼'}
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

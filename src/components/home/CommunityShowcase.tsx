@@ -5,27 +5,29 @@ import { motion } from 'motion/react';
 import { Button } from '../ui/button';
 import { Card, CardContent } from '../ui/card';
 import { Badge } from '../ui/badge';
-import { Eye, Heart, GitFork, ArrowUpRight } from 'lucide-react';
+import { Heart, ArrowUpRight } from 'lucide-react';
 import Link from 'next/link';
 
 interface OwnerPost {
   id: string;
   title: string;
   description: string;
-  images: string[];
-  view_count: number;
+  overview?: string;
+  icon_url?: string;
+  video_url?: string;
   like_count: number;
   category: string;
   user_id: string;
   demo_url?: string;
   github_url?: string;
   tags: string[];
-  tech_stack: string[];
 }
 
 export function CommunityShowcase() {
   const [posts, setPosts] = useState<OwnerPost[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
+  const [selectedVideoUrl, setSelectedVideoUrl] = useState<string>('');
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -38,11 +40,10 @@ export function CommunityShowcase() {
         if (response.ok) {
           const result = await response.json();
           const allPosts = result.data || [];
-          // Get first 6 posts sorted by like count and view count
+          // Get first 6 posts sorted by like count
           const sortedPosts = allPosts
             .sort((a: OwnerPost, b: OwnerPost) => 
-              (b.like_count || 0) - (a.like_count || 0) || 
-              (b.view_count || 0) - (a.view_count || 0)
+              (b.like_count || 0) - (a.like_count || 0)
             )
             .slice(0, 6);
           setPosts(sortedPosts);
@@ -100,13 +101,44 @@ export function CommunityShowcase() {
             <Link href={`/embld-products/${post.id}`}>
               <Card className="bg-[#2a2a2a] border-[#3a3a3a] hover:bg-[#3a3a3a] transition-all duration-300 group cursor-pointer overflow-hidden">
               <div className="relative">
-                {/* Project Image */}
+                {/* Project Video/Image */}
                 <div className="aspect-video bg-gradient-to-br from-[#3a3a3a] to-[#2a2a2a] relative overflow-hidden">
-                  {post.images && post.images.length > 0 ? (
+                  {post.video_url ? (
+                    <div 
+                      className="relative w-full h-full cursor-pointer group"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setSelectedVideoUrl(post.video_url!);
+                        setIsVideoModalOpen(true);
+                      }}
+                    >
+                      <video 
+                        autoPlay 
+                        muted 
+                        loop 
+                        playsInline 
+                        preload="metadata" 
+                        className="w-full h-full object-cover"
+                      >
+                        <source src={post.video_url} type="video/mp4" />
+                        <source src={post.video_url} type="video/webm" />
+                        <source src={post.video_url} type="video/quicktime" />
+                        Your browser does not support the video tag.
+                      </video>
+                      <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <div className="w-12 h-12 bg-white/90 rounded-full flex items-center justify-center">
+                          <svg className="w-5 h-5 text-gray-900 ml-1" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M8 5v14l11-7z"/>
+                          </svg>
+                        </div>
+                      </div>
+                    </div>
+                  ) : post.icon_url ? (
                     <img 
-                      src={post.images[0]} 
+                      src={post.icon_url} 
                       alt={post.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      className="w-full h-full object-cover"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
@@ -126,16 +158,18 @@ export function CommunityShowcase() {
                     </Badge>
                   )}
                   
-                  {/* View Details Button */}
-                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                    <Button 
-                      variant="secondary" 
-                      size="sm"
-                      className="bg-[#e0e0e0] text-black hover:bg-[#c0c0c0]"
-                    >
-                      詳細を見る
-                    </Button>
-                  </div>
+                  {/* View Details Button (only show for non-video content) */}
+                  {!post.video_url && (
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                      <Button 
+                        variant="secondary" 
+                        size="sm"
+                        className="bg-[#e0e0e0] text-black hover:bg-[#c0c0c0]"
+                      >
+                        詳細を見る
+                      </Button>
+                    </div>
+                  )}
                 </div>
 
                 <CardContent className="p-4">
@@ -145,42 +179,15 @@ export function CommunityShowcase() {
                       {post.title}
                     </h3>
                     <p className="text-[#a0a0a0] text-sm line-clamp-2">
-                      {post.description}
+                      {post.overview || post.description}
                     </p>
                   </div>
 
-                  {/* Tech Stack Tags */}
-                  {post.tech_stack && post.tech_stack.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mb-3">
-                      {post.tech_stack.slice(0, 3).map((tech, i) => (
-                        <Badge key={i} variant="outline" className="text-xs border-[#3a3a3a] text-[#a0a0a0]">
-                          {tech}
-                        </Badge>
-                      ))}
-                      {post.tech_stack.length > 3 && (
-                        <Badge variant="outline" className="text-xs border-[#3a3a3a] text-[#a0a0a0]">
-                          +{post.tech_stack.length - 3}
-                        </Badge>
-                      )}
-                    </div>
-                  )}
-
                   {/* Stats */}
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4 text-sm text-[#a0a0a0]">
-                      <div className="flex items-center gap-1">
-                        <GitFork className="w-4 h-4" />
-                        <span>{post.view_count || 0}</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Heart className="w-4 h-4" />
-                        <span>{post.like_count || 0}</span>
-                      </div>
-                    </div>
-                    
-                    {/* User Avatar */}
-                    <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-[#e0e0e0] text-xs font-medium">
-                      {post.user_id?.charAt(0).toUpperCase() || 'U'}
+                  <div className="flex items-center gap-4 text-sm text-[#a0a0a0]">
+                    <div className="flex items-center gap-1">
+                      <Heart className="w-4 h-4" />
+                      <span>{post.like_count || 0}</span>
                     </div>
                   </div>
                 </CardContent>
@@ -190,6 +197,52 @@ export function CommunityShowcase() {
           </motion.div>
         ))}
       </div>
+
+      {/* Full-Screen Video Modal */}
+      {isVideoModalOpen && (
+        <div 
+          className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4"
+          onClick={() => setIsVideoModalOpen(false)}
+        >
+          <div className="relative max-w-6xl w-full aspect-video">
+            <button
+              onClick={() => setIsVideoModalOpen(false)}
+              className="absolute -top-12 right-0 text-white hover:text-gray-300 text-2xl font-bold z-10"
+            >
+              ×
+            </button>
+            
+            <div onClick={(e) => e.stopPropagation()}>
+              {selectedVideoUrl.includes('youtube.com') || selectedVideoUrl.includes('youtu.be') ? (
+                <iframe
+                  src={selectedVideoUrl.replace('watch?v=', 'embed/').replace('youtu.be/', 'youtube.com/embed/')}
+                  className="w-full h-full rounded-lg"
+                  allowFullScreen
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                />
+              ) : selectedVideoUrl.includes('vimeo.com') ? (
+                <iframe
+                  src={selectedVideoUrl.replace('vimeo.com/', 'player.vimeo.com/video/')}
+                  className="w-full h-full rounded-lg"
+                  allowFullScreen
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                />
+              ) : (
+                <video 
+                  controls 
+                  autoPlay 
+                  className="w-full h-full rounded-lg"
+                >
+                  <source src={selectedVideoUrl} type="video/mp4" />
+                  <source src={selectedVideoUrl} type="video/webm" />
+                  <source src={selectedVideoUrl} type="video/quicktime" />
+                  Your browser does not support the video tag.
+                </video>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
