@@ -7,16 +7,23 @@ import { TopBar } from '@/components/common/TopBar';
 import { Sidebar } from '@/components/common/Sidebar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Textarea } from '@/components/ui/textarea';
 import { 
   ArrowLeft, 
   Eye, 
   Heart, 
   Calendar,
   Tag,
-  Code,
-  Monitor
+  Monitor,
+  MessageSquare,
+  Send,
+  User
 } from 'lucide-react';
 import Link from 'next/link';
+import { likeProduct, addComment, getComments, checkUserLike, deleteComment } from '@/app/actions/embldProducts';
+import { useAuth } from '@/components/auth/AuthProvider';
+import { formatDistanceToNow } from 'date-fns';
+import { ja } from 'date-fns/locale';
 
 interface Product {
   id: string;
@@ -30,12 +37,21 @@ interface Product {
   demo_url?: string;
   github_url?: string;
   tags: string[];
-  tech_stack: string[];
   is_public: boolean;
   approval_status: string;
-  featured: boolean;
   created_at: string;
   updated_at: string;
+}
+
+interface Comment {
+  id: string;
+  content: string;
+  created_at: string;
+  updated_at: string;
+  user_id: string;
+  users: {
+    email: string;
+  } | null;
 }
 
 export default function EmbldProductDetailPage() {
@@ -48,6 +64,12 @@ export default function EmbldProductDetailPage() {
   const [isSidebarLocked, setIsSidebarLocked] = useState(false);
   const [isSidebarHovered, setIsSidebarHovered] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [newComment, setNewComment] = useState('');
+  const [isLiked, setIsLiked] = useState(false);
+  const [currentLikeCount, setCurrentLikeCount] = useState(0);
+  const [isSubmittingComment, setIsSubmittingComment] = useState(false);
+  const { user } = useAuth();
 
   const handleMenuToggle = () => {
     setIsSidebarLocked(!isSidebarLocked);
@@ -63,6 +85,47 @@ export default function EmbldProductDetailPage() {
 
   const shouldShowSidebar = isSidebarLocked || isSidebarHovered;
 
+  const fetchComments = async () => {
+    const result = await getComments(productId);
+    if (result.success) {
+      setComments(result.data || []);
+    }
+  };
+
+  const fetchUserLike = async () => {
+    const result = await checkUserLike(productId);
+    if (result.success) {
+      setIsLiked(result.liked);
+    }
+  };
+
+  const handleLike = async () => {
+    const result = await likeProduct(productId);
+    if (result.success) {
+      setIsLiked(result.liked);
+      setCurrentLikeCount(prev => result.liked ? prev + 1 : prev - 1);
+    }
+  };
+
+  const handleAddComment = async () => {
+    if (!newComment.trim()) return;
+    
+    setIsSubmittingComment(true);
+    const result = await addComment(productId, newComment);
+    if (result.success) {
+      setNewComment('');
+      await fetchComments();
+    }
+    setIsSubmittingComment(false);
+  };
+
+  const handleDeleteComment = async (commentId: string) => {
+    const result = await deleteComment(commentId);
+    if (result.success) {
+      await fetchComments();
+    }
+  };
+
   useEffect(() => {
     const fetchProduct = async () => {
       if (!productId) return;
@@ -76,6 +139,7 @@ export default function EmbldProductDetailPage() {
         if (response.ok) {
           const result = await response.json();
           setProduct(result.data);
+          setCurrentLikeCount(result.data.like_count || 0);
           
           // Increment view count
           await fetch(`/api/products/${productId}`, {
@@ -94,6 +158,13 @@ export default function EmbldProductDetailPage() {
     };
 
     fetchProduct();
+  }, [productId]);
+
+  useEffect(() => {
+    if (productId) {
+      fetchComments();
+      fetchUserLike();
+    }
   }, [productId]);
 
   if (loading) {
@@ -198,18 +269,13 @@ export default function EmbldProductDetailPage() {
           <div className="mb-8">
             <div className="flex items-start justify-between mb-4">
               <div className="flex-1">
-                <div className="flex items-center gap-3 mb-3">
-                  {product.featured && (
-                    <Badge className="bg-gradient-to-r from-blue-600 to-purple-600 text-[#e0e0e0] border-0">
-                      FEATURED
-                    </Badge>
-                  )}
-                  {product.category && (
+                {product.category && (
+                  <div className="mb-3">
                     <Badge variant="outline" className="border-[#3a3a3a] text-[#a0a0a0]">
                       {product.category}
                     </Badge>
-                  )}
-                </div>
+                  </div>
+                )}
                 <h1 className="text-3xl font-bold text-[#e0e0e0] mb-4">
                   {product.title}
                 </h1>
@@ -222,10 +288,16 @@ export default function EmbldProductDetailPage() {
                     <Eye className="w-4 h-4" />
                     <span>{product.view_count.toLocaleString()} 回閲覧</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Heart className="w-4 h-4" />
-                    <span>{product.like_count.toLocaleString()} いいね</span>
-                  </div>
+                  <button 
+                    onClick={handleLike}
+                    className={`flex items-center gap-2 transition-colors ${
+                      isLiked ? 'text-red-400 hover:text-red-500' : 'text-[#a0a0a0] hover:text-red-400'
+                    }`}
+                    disabled={!user}
+                  >
+                    <Heart className={`w-4 h-4 ${isLiked ? 'fill-current' : ''}`} />
+                    <span>{currentLikeCount.toLocaleString()} いいね</span>
+                  </button>
                 </div>
               </div>
               
@@ -296,26 +368,6 @@ export default function EmbldProductDetailPage() {
 
             {/* Info Sidebar */}
             <div className="space-y-6">
-              {/* Tech Stack */}
-              {product.tech_stack && product.tech_stack.length > 0 && (
-                <div className="bg-[#2a2a2a] rounded-lg p-6 border border-[#3a3a3a]">
-                  <h3 className="text-lg font-semibold text-[#e0e0e0] mb-4 flex items-center">
-                    <Code className="w-5 h-5 mr-2" />
-                    技術スタック
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {product.tech_stack.map((tech, index) => (
-                      <Badge 
-                        key={index} 
-                        variant="outline" 
-                        className="border-[#3a3a3a] text-[#e0e0e0] bg-[#3a3a3a]"
-                      >
-                        {tech}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
 
               {/* Tags */}
               {product.tags && product.tags.length > 0 && (
@@ -368,6 +420,103 @@ export default function EmbldProductDetailPage() {
                       公開
                     </Badge>
                   </div>
+                  
+                  {/* Demo URL */}
+                  {product.demo_url && (
+                    <div className="pt-3 border-t border-[#3a3a3a]">
+                      <a
+                        href={product.demo_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-block w-full"
+                      >
+                        <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+                          使ってみる
+                        </Button>
+                      </a>
+                    </div>
+                  )}
+                  
+                </div>
+              </div>
+
+              {/* Comments Section */}
+              <div className="bg-[#2a2a2a] rounded-lg p-6 border border-[#3a3a3a]">
+                <h3 className="text-lg font-semibold text-[#e0e0e0] mb-4 flex items-center">
+                  <MessageSquare className="w-5 h-5 mr-2" />
+                  コメント ({comments.length})
+                </h3>
+                
+                {/* Add Comment Form */}
+                {user && (
+                  <div className="mb-6">
+                    <div className="flex gap-3">
+                      <div className="w-8 h-8 bg-[#3a3a3a] rounded-full flex items-center justify-center flex-shrink-0">
+                        <User className="w-4 h-4 text-[#a0a0a0]" />
+                      </div>
+                      <div className="flex-1">
+                        <Textarea
+                          value={newComment}
+                          onChange={(e) => setNewComment(e.target.value)}
+                          placeholder="コメントを書く..."
+                          className="bg-[#1a1a1a] border-[#3a3a3a] text-[#e0e0e0] resize-none"
+                          rows={3}
+                        />
+                        <div className="flex justify-end mt-2">
+                          <Button
+                            onClick={handleAddComment}
+                            disabled={!newComment.trim() || isSubmittingComment}
+                            size="sm"
+                            className="bg-blue-600 hover:bg-blue-700"
+                          >
+                            <Send className="w-4 h-4 mr-1" />
+                            {isSubmittingComment ? '送信中...' : '送信'}
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                {/* Comments List */}
+                <div className="space-y-4">
+                  {comments.map((comment) => (
+                    <div key={comment.id} className="flex gap-3">
+                      <div className="w-8 h-8 bg-[#3a3a3a] rounded-full flex items-center justify-center flex-shrink-0">
+                        <User className="w-4 h-4 text-[#a0a0a0]" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-sm font-medium text-[#e0e0e0]">
+                            {comment.users?.email?.split('@')[0] || '匿名ユーザー'}
+                          </span>
+                          <span className="text-xs text-[#a0a0a0]">
+                            {formatDistanceToNow(new Date(comment.created_at), {
+                              addSuffix: true,
+                              locale: ja
+                            })}
+                          </span>
+                          {user && user.id === comment.user_id && (
+                            <button
+                              onClick={() => handleDeleteComment(comment.id)}
+                              className="text-xs text-red-400 hover:text-red-300 ml-auto"
+                            >
+                              削除
+                            </button>
+                          )}
+                        </div>
+                        <p className="text-[#c0c0c0] text-sm whitespace-pre-wrap">
+                          {comment.content}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                  
+                  {comments.length === 0 && (
+                    <div className="text-center py-8 text-[#a0a0a0]">
+                      まだコメントがありません。最初のコメントを投稿してみましょう！
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

@@ -44,16 +44,6 @@ export async function POST(request: NextRequest) {
       const keywords = keywordsMatch ? keywordsMatch[1].split(',').map(k => k.trim()) : [];
       const ogImage = ogImageMatch ? ogImageMatch[1] : '';
 
-      // Try to detect technology stack from HTML
-      const techStack = [];
-      if (html.includes('React') || html.includes('react')) techStack.push('React');
-      if (html.includes('Vue') || html.includes('vue')) techStack.push('Vue.js');
-      if (html.includes('Angular') || html.includes('angular')) techStack.push('Angular');
-      if (html.includes('Next.js') || html.includes('next')) techStack.push('Next.js');
-      if (html.includes('Nuxt') || html.includes('nuxt')) techStack.push('Nuxt.js');
-      if (html.includes('TypeScript') || html.includes('typescript')) techStack.push('TypeScript');
-      if (html.includes('tailwind') || html.includes('Tailwind')) techStack.push('Tailwind CSS');
-      if (html.includes('bootstrap') || html.includes('Bootstrap')) techStack.push('Bootstrap');
 
       // Try to detect platform
       const platform = ['Web']; // Default to Web
@@ -102,7 +92,6 @@ export async function POST(request: NextRequest) {
         title: title.substring(0, 100), // Limit title length
         description: description.substring(0, 500), // Limit description length
         category,
-        tech_stack: techStack.slice(0, 10), // Limit to 10 technologies
         platform: platform,
         images: ogImage ? [ogImage] : [],
       });

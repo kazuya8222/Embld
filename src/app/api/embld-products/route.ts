@@ -19,13 +19,10 @@ export async function GET(request: NextRequest) {
         demo_url,
         github_url,
         tags,
-        tech_stack,
-        featured,
         created_at
       `)
       .eq('is_public', true)
       .eq('approval_status', 'approved')
-      .order('featured', { ascending: false })
       .order('like_count', { ascending: false })
       .order('view_count', { ascending: false })
       .order('created_at', { ascending: false });

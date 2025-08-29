@@ -27,10 +27,8 @@ export async function GET(
         demo_url,
         github_url,
         tags,
-        tech_stack,
         is_public,
         approval_status,
-        featured,
         created_at,
         updated_at
       `)

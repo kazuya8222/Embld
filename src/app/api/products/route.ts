@@ -24,7 +24,6 @@ export async function GET(request: NextRequest) {
         demo_url,
         github_url,
         tags,
-        tech_stack,
         created_at
       `)
       .eq('user_id', userId)

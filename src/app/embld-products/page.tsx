@@ -7,7 +7,7 @@ import { Sidebar } from '@/components/common/Sidebar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Eye, Heart, Grid, List } from 'lucide-react';
+import { Eye, Heart } from 'lucide-react';
 import Link from 'next/link';
 
 interface EmbldProduct {
@@ -22,8 +22,6 @@ interface EmbldProduct {
   demo_url?: string;
   github_url?: string;
   tags: string[];
-  tech_stack: string[];
-  featured: boolean;
   created_at: string;
 }
 
@@ -33,7 +31,6 @@ export default function EmbldProductsPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSidebarLocked, setIsSidebarLocked] = useState(false);
   const [isSidebarHovered, setIsSidebarHovered] = useState(false);
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
   const handleMenuToggle = () => {
@@ -144,32 +141,11 @@ export default function EmbldProductsPage() {
           <div className="flex items-center justify-between mb-8">
             <div>
               <h1 className="text-3xl font-bold text-[#e0e0e0] mb-2">
-                Embld プロダクト一覧
+                完成プロダクト一覧
               </h1>
               <p className="text-[#a0a0a0]">
                 Embldで開発された全てのプロダクトを探索しましょう
               </p>
-            </div>
-            <div className="flex items-center gap-3">
-              {/* View Mode Toggle */}
-              <div className="flex bg-[#2a2a2a] rounded-lg p-1">
-                <button
-                  onClick={() => setViewMode('grid')}
-                  className={`p-2 rounded transition-colors ${
-                    viewMode === 'grid' ? 'bg-[#3a3a3a] text-[#e0e0e0]' : 'text-[#a0a0a0] hover:text-[#e0e0e0]'
-                  }`}
-                >
-                  <Grid className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => setViewMode('list')}
-                  className={`p-2 rounded transition-colors ${
-                    viewMode === 'list' ? 'bg-[#3a3a3a] text-[#e0e0e0]' : 'text-[#a0a0a0] hover:text-[#e0e0e0]'
-                  }`}
-                >
-                  <List className="w-4 h-4" />
-                </button>
-              </div>
             </div>
           </div>
 
@@ -191,25 +167,14 @@ export default function EmbldProductsPage() {
           </div>
 
           {/* Products Grid */}
-          <div className={`grid gap-6 ${
-            viewMode === 'grid' 
-              ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' 
-              : 'grid-cols-1'
-          }`}>
+          <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
             {filteredProducts.map((product, index) => (
               <div key={product.id}>
                 <Link href={`/embld-products/${product.id}`}>
                   <Card className="bg-[#2a2a2a] border-[#3a3a3a] hover:bg-[#3a3a3a] transition-colors group cursor-pointer overflow-hidden">
-                    {product.featured && (
-                      <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-[#e0e0e0] text-xs font-semibold px-3 py-1">
-                        FEATURED
-                      </div>
-                    )}
                     <div className="relative">
                       {/* Project Image */}
-                      <div className={`bg-gradient-to-br from-[#3a3a3a] to-[#2a2a2a] relative overflow-hidden ${
-                        viewMode === 'grid' ? 'aspect-video' : 'aspect-[3/1]'
-                      }`}>
+                      <div className="bg-gradient-to-br from-[#3a3a3a] to-[#2a2a2a] relative overflow-hidden aspect-video">
                         {product.images && product.images.length > 0 ? (
                           <img 
                             src={product.images[0]} 
@@ -257,21 +222,6 @@ export default function EmbldProductsPage() {
                           </p>
                         </div>
 
-                        {/* Tech Stack Tags */}
-                        {product.tech_stack && product.tech_stack.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mb-3">
-                            {product.tech_stack.slice(0, viewMode === 'grid' ? 3 : 6).map((tech, i) => (
-                              <Badge key={i} variant="outline" className="text-xs border-[#3a3a3a] text-[#a0a0a0]">
-                                {tech}
-                              </Badge>
-                            ))}
-                            {product.tech_stack.length > (viewMode === 'grid' ? 3 : 6) && (
-                              <Badge variant="outline" className="text-xs border-[#3a3a3a] text-[#a0a0a0]">
-                                +{product.tech_stack.length - (viewMode === 'grid' ? 3 : 6)}
-                              </Badge>
-                            )}
-                          </div>
-                        )}
 
                         {/* Stats */}
                         <div className="flex items-center gap-4 text-sm text-[#a0a0a0]">

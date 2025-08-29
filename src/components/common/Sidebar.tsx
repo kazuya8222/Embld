@@ -34,7 +34,7 @@ const topMenuItems = [
 ];
 
 const bottomMenuItems = [
-  { icon: Grid3X3, label: 'プロダクト一覧', href: '/embld-products' },
+  { icon: Grid3X3, label: '完成プロダクト一覧', href: '/embld-products' },
   { icon: FileText, label: 'ブログ', href: '/blogs' },
 ];
 
