@@ -10,17 +10,13 @@ export async function middleware(request: NextRequest) {
       data: { user },
     } = await supabase.auth.getUser()
 
-    // Protected routes that require username to be set
-    const protectedRoutes = ['/ideas/new']
-    const isProtectedRoute = protectedRoutes.some(route => 
-      request.nextUrl.pathname.startsWith(route)
-    )
+    // Public routes that don't require authentication
+    const publicRoutes = ['/', '/help', '/contact', '/auth/login', '/auth/register']
+    const isPublicLegalRoute = request.nextUrl.pathname.startsWith('/legal/')
+    const isPublicRoute = publicRoutes.includes(request.nextUrl.pathname) || isPublicLegalRoute
 
-    // Profile pages require auth
-    const isProfilePage = request.nextUrl.pathname.startsWith('/profile')
-
-    // If accessing protected route or profile without auth, redirect to login
-    if ((isProtectedRoute || isProfilePage) && !user) {
+    // If accessing protected route without auth, redirect to login
+    if (!isPublicRoute && !user) {
       const redirectUrl = new URL('/auth/login', request.url)
       return NextResponse.redirect(redirectUrl)
     }
