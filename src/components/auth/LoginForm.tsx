@@ -3,13 +3,17 @@
 import { loginWithGoogle, loginWithApple, loginWithGitHub } from '@/app/auth/actions'
 import { cn } from '@/lib/utils/cn'
 import { useSearchParams } from 'next/navigation'
-import { useTransition } from 'react'
+import { useTransition, useState } from 'react'
 
 export function LoginForm() {
   const searchParams = useSearchParams()
   const error = searchParams.get('error')
   const message = searchParams.get('message')
   const [isPending, startTransition] = useTransition()
+  const [termsAccepted, setTermsAccepted] = useState(false)
+  const [privacyAccepted, setPrivacyAccepted] = useState(false)
+
+  const canLogin = termsAccepted && privacyAccepted
 
   return (
     <div className="w-full max-w-md mx-auto space-y-8 px-6">
@@ -38,6 +42,49 @@ export function LoginForm() {
         <p className="text-gray-400 text-sm">アイデアを共有し、今すぐ作成を始めましょう</p>
       </div>
 
+      {/* Terms and Privacy Checkboxes */}
+      <div className="space-y-3">
+        <label className="flex items-start space-x-3 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={termsAccepted}
+            onChange={(e) => setTermsAccepted(e.target.checked)}
+            className="mt-1 w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+          />
+          <span className="text-gray-400 text-sm">
+            <a 
+              href="/legal/terms" 
+              className="text-blue-400 hover:text-blue-300 underline"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              利用規約
+            </a>
+            に同意する
+          </span>
+        </label>
+
+        <label className="flex items-start space-x-3 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={privacyAccepted}
+            onChange={(e) => setPrivacyAccepted(e.target.checked)}
+            className="mt-1 w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+          />
+          <span className="text-gray-400 text-sm">
+            <a 
+              href="/legal/privacy" 
+              className="text-blue-400 hover:text-blue-300 underline"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              プライバシーポリシー
+            </a>
+            に同意する
+          </span>
+        </label>
+      </div>
+
       <div className="space-y-4">
         {/* Google Login */}
         <form 
@@ -49,10 +96,10 @@ export function LoginForm() {
         >
           <button
             type="submit"
-            disabled={isPending}
+            disabled={isPending || !canLogin}
             className={cn(
               "w-full flex items-center justify-center gap-3 px-6 py-4 bg-[#2a2a2a] hover:bg-[#3a3a3a] rounded-xl transition-all duration-200 text-white font-medium border border-[#3a3a3a] hover:border-[#4a4a4a]",
-              isPending && "opacity-50 cursor-not-allowed"
+              (isPending || !canLogin) && "opacity-50 cursor-not-allowed"
             )}
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -87,10 +134,10 @@ export function LoginForm() {
         >
           <button
             type="submit"
-            disabled={isPending}
+            disabled={isPending || !canLogin}
             className={cn(
               "w-full flex items-center justify-center gap-3 px-6 py-4 bg-[#2a2a2a] hover:bg-[#3a3a3a] rounded-xl transition-all duration-200 text-white font-medium border border-[#3a3a3a] hover:border-[#4a4a4a]",
-              isPending && "opacity-50 cursor-not-allowed"
+              (isPending || !canLogin) && "opacity-50 cursor-not-allowed"
             )}
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
@@ -110,10 +157,10 @@ export function LoginForm() {
         >
           <button
             type="submit"
-            disabled={isPending}
+            disabled={isPending || !canLogin}
             className={cn(
               "w-full flex items-center justify-center gap-3 px-6 py-4 bg-[#2a2a2a] hover:bg-[#3a3a3a] rounded-xl transition-all duration-200 text-white font-medium border border-[#3a3a3a] hover:border-[#4a4a4a]",
-              isPending && "opacity-50 cursor-not-allowed"
+              (isPending || !canLogin) && "opacity-50 cursor-not-allowed"
             )}
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
@@ -125,27 +172,6 @@ export function LoginForm() {
 
       </div>
 
-      {/* Footer Links */}
-      <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2">
-        <div className="flex items-center space-x-6 text-sm">
-          <a 
-            href="/legal/terms" 
-            className="text-gray-500 hover:text-white transition-colors"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            利用規約
-          </a>
-          <a 
-            href="/legal/privacy" 
-            className="text-gray-500 hover:text-white transition-colors"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            プライバシーポリシー
-          </a>
-        </div>
-      </div>
 
       {error && (
         <div className="p-3 rounded-md text-sm bg-red-900/20 border border-red-700 text-red-400">
