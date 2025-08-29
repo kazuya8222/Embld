@@ -38,14 +38,8 @@ export function AccountModal({ isOpen, onClose }: AccountModalProps) {
   const supabase = createClient();
 
   useEffect(() => {
-    if (isOpen && user) {
-      fetchUsageStats();
-      fetchCreditHistory();
-    }
-  }, [isOpen, user]);
-
-  const fetchUsageStats = async () => {
-    if (!user) return;
+    const fetchUsageStats = async () => {
+      if (!user) return;
     
     setLoading(true);
     try {
@@ -102,24 +96,31 @@ export function AccountModal({ isOpen, onClose }: AccountModalProps) {
     } finally {
       setLoading(false);
     }
-  };
+    };
 
-  const fetchCreditHistory = async () => {
-    if (!user) return;
-    
-    try {
-      const { data: transactions } = await supabase
-        .from('credit_transactions')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(10);
+    const fetchCreditHistory = async () => {
+      if (!user) return;
+      
+      try {
+        const { data: transactions } = await supabase
+          .from('credit_transactions')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(10);
 
-      setCreditHistory(transactions || []);
-    } catch (error) {
-      console.error('Failed to fetch credit history:', error);
+        setCreditHistory(transactions || []);
+      } catch (error) {
+        console.error('Failed to fetch credit history:', error);
+      }
+    };
+
+    if (isOpen && user) {
+      fetchUsageStats();
+      fetchCreditHistory();
     }
-  };
+  }, [isOpen, user, supabase]);
+
 
   const getTransactionTypeLabel = (transactionType: string): string => {
     switch (transactionType) {
@@ -158,15 +159,15 @@ export function AccountModal({ isOpen, onClose }: AccountModalProps) {
             exit={{ opacity: 0, scale: 0.95 }}
             className="fixed inset-0 z-50 flex items-center justify-center p-4"
           >
-            <div className="bg-[#1a1a1a] dark:bg-[#1a1a1a] bg-white rounded-2xl shadow-2xl w-full max-w-6xl h-[80vh] flex flex-col overflow-hidden">
+            <div className="bg-[#1a1a1a] rounded-2xl shadow-2xl w-full max-w-6xl h-[80vh] flex flex-col overflow-hidden">
               {/* Header */}
-              <div className="flex items-center justify-between p-6 border-b border-[#3a3a3a] dark:border-[#3a3a3a] border-gray-200">
-                <h2 className="text-xl font-semibold text-[#e0e0e0] dark:text-[#e0e0e0] text-gray-900">アカウント</h2>
+              <div className="flex items-center justify-between p-6 border-b border-[#3a3a3a]">
+                <h2 className="text-xl font-semibold text-[#e0e0e0]">アカウント</h2>
                 <button
                   onClick={onClose}
-                  className="p-2 hover:bg-[#3a3a3a] dark:hover:bg-[#3a3a3a] hover:bg-gray-100 rounded-lg transition-colors"
+                  className="p-2 hover:bg-[#3a3a3a] rounded-lg transition-colors"
                 >
-                  <X className="w-5 h-5 text-[#a0a0a0] dark:text-[#a0a0a0] text-gray-600" />
+                  <X className="w-5 h-5 text-[#a0a0a0]" />
                 </button>
               </div>
 
@@ -190,10 +191,10 @@ export function AccountModal({ isOpen, onClose }: AccountModalProps) {
                       </div>
                     )}
                     <div className="flex-1">
-                      <h3 className="text-xl font-semibold text-[#e0e0e0] dark:text-[#e0e0e0] text-gray-900">
+                      <h3 className="text-xl font-semibold text-[#e0e0e0]">
                         {user?.user_metadata?.full_name || user?.user_metadata?.name || 'ユーザー'}
                       </h3>
-                      <p className="text-[#a0a0a0] dark:text-[#a0a0a0] text-gray-600">{user?.email}</p>
+                      <p className="text-[#a0a0a0]">{user?.email}</p>
                     </div>
                     <button 
                       onClick={async () => {
@@ -204,7 +205,7 @@ export function AccountModal({ isOpen, onClose }: AccountModalProps) {
                           console.error('Logout error:', error);
                         }
                       }}
-                      className="flex items-center space-x-3 px-3 py-2.5 text-red-400 hover:bg-[#3a3a3a] dark:hover:bg-[#3a3a3a] hover:bg-red-50 hover:text-red-300 dark:hover:text-red-300 hover:text-red-500 transition-colors text-sm rounded-lg"
+                      className="flex items-center space-x-3 px-3 py-2.5 text-red-400 hover:bg-[#3a3a3a] hover:text-red-300 transition-colors text-sm rounded-lg"
                     >
                       <LogOut className="w-4 h-4" />
                       <span>ログアウト</span>
@@ -212,9 +213,9 @@ export function AccountModal({ isOpen, onClose }: AccountModalProps) {
                   </div>
 
                   {/* Plan Section */}
-                  <div className="bg-[#2a2a2a] dark:bg-[#2a2a2a] bg-gray-50 border border-[#3a3a3a] dark:border-[#3a3a3a] border-gray-200 rounded-lg p-6">
+                  <div className="bg-[#2a2a2a] border border-[#3a3a3a] rounded-lg p-6">
                     <div className="flex items-center justify-between mb-4">
-                      <h4 className="text-lg font-semibold text-[#e0e0e0] dark:text-[#e0e0e0] text-gray-900">
+                      <h4 className="text-lg font-semibold text-[#e0e0e0]">
                         {subscriptionPlan}
                       </h4>
                       <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
@@ -227,57 +228,57 @@ export function AccountModal({ isOpen, onClose }: AccountModalProps) {
                       <div className="flex items-center space-x-3">
                         <Zap className="w-5 h-5 text-yellow-500" />
                         <div>
-                          <p className="text-[#e0e0e0] dark:text-[#e0e0e0] text-gray-900 font-medium">クレジット</p>
+                          <p className="text-[#e0e0e0] font-medium">クレジット</p>
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="text-[#e0e0e0] dark:text-[#e0e0e0] text-gray-900 font-medium">{credits.toLocaleString()}</p>
+                        <p className="text-[#e0e0e0] font-medium">{credits.toLocaleString()}</p>
                       </div>
                     </div>
                   </div>
 
                   {/* Usage Statistics Section */}
                   <div className="space-y-6">
-                    <h3 className="text-xl font-semibold text-[#e0e0e0] dark:text-[#e0e0e0] text-gray-900">使用状況</h3>
+                    <h3 className="text-xl font-semibold text-[#e0e0e0]">使用状況</h3>
                     
                     {/* Usage Stats */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="bg-[#2a2a2a] dark:bg-[#2a2a2a] bg-gray-50 border border-[#3a3a3a] dark:border-[#3a3a3a] border-gray-200 rounded-lg p-6">
-                        <h4 className="text-lg font-semibold text-[#e0e0e0] dark:text-[#e0e0e0] text-gray-900 mb-2">今月の使用量</h4>
+                      <div className="bg-[#2a2a2a] border border-[#3a3a3a] rounded-lg p-6">
+                        <h4 className="text-lg font-semibold text-[#e0e0e0] mb-2">今月の使用量</h4>
                         <div className="space-y-3">
                           <div className="flex justify-between">
-                            <span className="text-[#a0a0a0] dark:text-[#a0a0a0] text-gray-600">チャット回数</span>
-                            <span className="text-[#e0e0e0] dark:text-[#e0e0e0] text-gray-900 font-medium">
+                            <span className="text-[#a0a0a0]">チャット回数</span>
+                            <span className="text-[#e0e0e0] font-medium">
                               {loading ? '...' : `${usageStats.monthlyChats}回`}
                             </span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-[#a0a0a0] dark:text-[#a0a0a0] text-gray-600">使用クレジット</span>
-                            <span className="text-[#e0e0e0] dark:text-[#e0e0e0] text-gray-900 font-medium">
+                            <span className="text-[#a0a0a0]">使用クレジット</span>
+                            <span className="text-[#e0e0e0] font-medium">
                               {loading ? '...' : usageStats.monthlyCreditsUsed}
                             </span>
                           </div>
                         </div>
                       </div>
 
-                      <div className="bg-[#2a2a2a] dark:bg-[#2a2a2a] bg-gray-50 border border-[#3a3a3a] dark:border-[#3a3a3a] border-gray-200 rounded-lg p-6">
-                        <h4 className="text-lg font-semibold text-[#e0e0e0] dark:text-[#e0e0e0] text-gray-900 mb-2">全期間</h4>
+                      <div className="bg-[#2a2a2a] border border-[#3a3a3a] rounded-lg p-6">
+                        <h4 className="text-lg font-semibold text-[#e0e0e0] mb-2">全期間</h4>
                         <div className="space-y-3">
                           <div className="flex justify-between">
-                            <span className="text-[#a0a0a0] dark:text-[#a0a0a0] text-gray-600">総チャット数</span>
-                            <span className="text-[#e0e0e0] dark:text-[#e0e0e0] text-gray-900 font-medium">
+                            <span className="text-[#a0a0a0]">総チャット数</span>
+                            <span className="text-[#e0e0e0] font-medium">
                               {loading ? '...' : `${usageStats.totalChats}回`}
                             </span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-[#a0a0a0] dark:text-[#a0a0a0] text-gray-600">作成した企画書数</span>
-                            <span className="text-[#e0e0e0] dark:text-[#e0e0e0] text-gray-900 font-medium">
+                            <span className="text-[#a0a0a0]">作成した企画書数</span>
+                            <span className="text-[#e0e0e0] font-medium">
                               {loading ? '...' : `${usageStats.totalProposals}個`}
                             </span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-[#a0a0a0] dark:text-[#a0a0a0] text-gray-600">作成したプロダクト数</span>
-                            <span className="text-[#e0e0e0] dark:text-[#e0e0e0] text-gray-900 font-medium">
+                            <span className="text-[#a0a0a0]">作成したプロダクト数</span>
+                            <span className="text-[#e0e0e0] font-medium">
                               {loading ? '...' : `${usageStats.totalProducts}個`}
                             </span>
                           </div>
@@ -285,21 +286,21 @@ export function AccountModal({ isOpen, onClose }: AccountModalProps) {
                       </div>
                     </div>
 
-                    <div className="bg-[#2a2a2a] dark:bg-[#2a2a2a] bg-gray-50 border border-[#3a3a3a] dark:border-[#3a3a3a] border-gray-200 rounded-lg p-6">
-                      <h4 className="text-lg font-semibold text-[#e0e0e0] dark:text-[#e0e0e0] text-gray-900 mb-4">クレジット履歴</h4>
+                    <div className="bg-[#2a2a2a] border border-[#3a3a3a] rounded-lg p-6">
+                      <h4 className="text-lg font-semibold text-[#e0e0e0] mb-4">クレジット履歴</h4>
                       {loading ? (
-                        <p className="text-[#a0a0a0] dark:text-[#a0a0a0] text-gray-600">Loading...</p>
+                        <p className="text-[#a0a0a0]">Loading...</p>
                       ) : creditHistory.length === 0 ? (
-                        <p className="text-[#a0a0a0] dark:text-[#a0a0a0] text-gray-600">クレジットの使用履歴がありません。</p>
+                        <p className="text-[#a0a0a0]">クレジットの使用履歴がありません。</p>
                       ) : (
                         <div className="space-y-3 max-h-48 overflow-y-auto">
                           {creditHistory.map((transaction) => (
                             <div key={transaction.id} className="flex items-center justify-between py-2 border-b border-[#3a3a3a] last:border-0">
                               <div className="flex-1">
-                                <p className="text-[#e0e0e0] dark:text-[#e0e0e0] text-gray-900 text-sm font-medium">
+                                <p className="text-[#e0e0e0] text-sm font-medium">
                                   {transaction.description || getTransactionTypeLabel(transaction.transaction_type)}
                                 </p>
-                                <p className="text-[#a0a0a0] dark:text-[#a0a0a0] text-gray-600 text-xs">
+                                <p className="text-[#a0a0a0] text-xs">
                                   {new Date(transaction.created_at).toLocaleDateString('ja-JP', {
                                     year: 'numeric',
                                     month: 'short',

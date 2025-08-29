@@ -21,6 +21,7 @@ import {
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import BlogImage from '@/components/blog/BlogImage';
+import MarkdownPreview from '@/components/MarkdownPreview';
 
 interface BlogFormData {
   title: string;
@@ -40,6 +41,7 @@ export default function NewBlogPage() {
   const [isUploadingFeatured, setIsUploadingFeatured] = useState(false);
   const [isUploadingContent, setIsUploadingContent] = useState(false);
   const [dragOver, setDragOver] = useState<'featured' | 'content' | null>(null);
+  const [viewMode, setViewMode] = useState<'edit' | 'preview'>('edit');
   
   const [formData, setFormData] = useState<BlogFormData>({
     title: '',
@@ -307,42 +309,84 @@ export default function NewBlogPage() {
           {/* コンテンツエディター */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                本文 *
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => document.getElementById('content-image-input')?.click()}
-                  disabled={isUploadingContent}
-                >
-                  <ImagePlus className="w-4 h-4 mr-2" />
-                  {isUploadingContent ? 'アップロード中...' : '画像挿入'}
-                </Button>
-              </CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle>
+                  本文 *
+                </CardTitle>
+                <div className="flex bg-gray-200 rounded-lg p-1">
+                  <button
+                    onClick={() => setViewMode('edit')}
+                    className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                      viewMode === 'edit' 
+                        ? 'bg-white text-gray-900 shadow-sm' 
+                        : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                  >
+                    編集
+                  </button>
+                  <button
+                    onClick={() => setViewMode('preview')}
+                    className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                      viewMode === 'preview' 
+                        ? 'bg-white text-gray-900 shadow-sm' 
+                        : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                  >
+                    プレビュー
+                  </button>
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
-              <div
-                className={`relative ${
-                  dragOver === 'content' ? 'ring-2 ring-blue-400 ring-opacity-50' : ''
-                }`}
-                onDrop={(e) => handleDrop(e, 'content')}
-                onDragOver={handleDragOver}
-                onDragEnter={(e) => handleDragEnter(e, 'content')}
-                onDragLeave={handleDragLeave}
-              >
-                <Textarea
-                  value={formData.content}
-                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleInputChange('content', e.target.value)}
-                  placeholder="ブログの本文を入力してください...\n\n画像を挿入するには、ファイルをここにドラッグ&ドロップするか、上の「画像挿入」ボタンを使用してください。"
-                  className="min-h-[400px] font-mono text-sm resize-none"
-                  rows={20}
-                />
-                {dragOver === 'content' && (
-                  <div className="absolute inset-0 bg-blue-50 bg-opacity-75 flex items-center justify-center rounded-md pointer-events-none">
-                    <div className="text-center">
-                      <Upload className="w-12 h-12 text-blue-400 mx-auto mb-2" />
-                      <p className="text-blue-600 font-medium">画像をドロップして挿入</p>
+              <div className="h-[500px]">
+                {viewMode === 'edit' ? (
+                  /* エディターモード */
+                  <div 
+                    className={`relative border rounded-lg h-full ${
+                      dragOver === 'content' ? 'ring-2 ring-blue-400 ring-opacity-50' : ''
+                    }`}
+                    onDrop={(e) => handleDrop(e, 'content')}
+                    onDragOver={handleDragOver}
+                    onDragEnter={(e) => handleDragEnter(e, 'content')}
+                    onDragLeave={handleDragLeave}
+                  >
+                    <Textarea
+                      value={formData.content}
+                      onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleInputChange('content', e.target.value)}
+                      placeholder="# 見出し1
+
+## 見出し2
+
+**太字** *斜体* `コード`
+
+- リスト項目1
+- リスト項目2
+
+```javascript
+const code = 'Hello World';
+```
+
+> 引用文
+
+[リンクテキスト](https://example.com)
+
+画像を挿入するにはファイルをドラッグ&ドロップしてください。"
+                      className="h-full font-mono text-sm resize-none w-full border-0 focus:ring-0 focus:outline-none p-4 rounded-lg bg-white text-gray-900"
+                    />
+                    {dragOver === 'content' && (
+                      <div className="absolute inset-0 bg-blue-50 bg-opacity-75 flex items-center justify-center rounded-lg pointer-events-none">
+                        <div className="text-center">
+                          <Upload className="w-12 h-12 text-blue-400 mx-auto mb-2" />
+                          <p className="text-blue-600 font-medium">画像をドロップして挿入</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  /* プレビューモード */
+                  <div className="border rounded-lg bg-white h-full">
+                    <div className="h-full overflow-auto p-4">
+                      <MarkdownPreview content={formData.content} />
                     </div>
                   </div>
                 )}
@@ -359,7 +403,7 @@ export default function NewBlogPage() {
                 disabled={isUploadingContent}
               />
               <p className="text-sm text-gray-500 mt-2">
-                Markdownフォーマットに対応しています。画像は自動的にMarkdown記法で挿入されます。
+                Markdownフォーマットに対応しています。プレビューボタンでレンダリング結果を確認できます。
               </p>
             </CardContent>
           </Card>
@@ -373,16 +417,6 @@ export default function NewBlogPage() {
               <CardTitle>アイキャッチ画像</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="featured_image">画像URL</Label>
-                <Input
-                  id="featured_image"
-                  value={formData.featured_image}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange('featured_image', e.target.value)}
-                  placeholder="画像URLを入力またはファイルをドラッグ＆ドロップ"
-                />
-              </div>
-
               {/* ドラッグ&ドロップエリア */}
               <div
                 className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
