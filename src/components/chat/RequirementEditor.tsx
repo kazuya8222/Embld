@@ -264,7 +264,7 @@ export function RequirementEditor({ chatId, agentState, initialActiveTab, onTabC
     return sections;
   };
 
-  const submitProposal = async () => {
+  const saveProposal = async () => {
     if (!user) {
       alert('ログインが必要です。');
       return;
@@ -274,28 +274,6 @@ export function RequirementEditor({ chatId, agentState, initialActiveTab, onTabC
       alert('企画書が生成されていません。先に企画書を生成してください。');
       return;
     }
-    
-    // Check credit balance
-    const PROPOSAL_SUBMIT_COST = 100;
-    console.log('Checking credit balance...');
-    
-    const creditsResponse = await fetch('/api/credits?action=balance');
-    if (!creditsResponse.ok) {
-      console.error('Failed to fetch credits:', creditsResponse.status);
-      alert('クレジット残高の取得に失敗しました。');
-      return;
-    }
-    
-    const creditsData = await creditsResponse.json();
-    const currentCredits = creditsData.credits;
-    console.log('Current credits:', currentCredits);
-    
-    if (currentCredits < PROPOSAL_SUBMIT_COST) {
-      alert(`クレジットが不足しています。\n必要クレジット: ${PROPOSAL_SUBMIT_COST}\n現在のクレジット: ${currentCredits}`);
-      return;
-    }
-    
-    // Skip confirmation dialog - proceed directly with submission
     
     setIsSubmitting(true);
     try {
@@ -307,7 +285,7 @@ export function RequirementEditor({ chatId, agentState, initialActiveTab, onTabC
         .from('proposals')
         .select('id')
         .eq('chat_session_id', chatId)
-        .maybeSingle();  // Use maybeSingle instead of single to avoid error when no data
+        .maybeSingle();
 
       if (fetchError && fetchError.code !== 'PGRST116') {
         throw fetchError;
@@ -323,8 +301,7 @@ export function RequirementEditor({ chatId, agentState, initialActiveTab, onTabC
         main_features: pitchData.main_features || [],
         business_model: pitchData.business_model || '',
         recruitment_message: pitchData.recruitment_message || '',
-        status: 'submitted' as const,
-        submitted_at: new Date().toISOString(),
+        status: '未提出' as const,
         updated_at: new Date().toISOString()
       };
 
@@ -357,51 +334,13 @@ export function RequirementEditor({ chatId, agentState, initialActiveTab, onTabC
         proposalId = insertData.id;
       }
       
-      // Deduct credits for proposal submission
-      console.log('Deducting credits for proposal submission...');
-      
-      const deductResponse = await fetch('/api/credits', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'deduct',
-          amount: PROPOSAL_SUBMIT_COST,
-          transactionType: 'proposal_submission',
-          description: '企画書提出',
-          metadata: {
-            proposal_id: proposalId,
-            chat_session_id: chatId,
-            service_name: pitchData.service_name
-          }
-        })
-      });
-      
-      console.log('Credit deduction response:', deductResponse.status);
-      
-      if (!deductResponse.ok) {
-        const errorData = await deductResponse.json();
-        console.error('Credit deduction failed:', errorData);
-        
-        // If credit deduction fails, rollback the proposal status
-        await supabase
-          .from('proposals')
-          .update({ status: 'draft' as const })
-          .eq('id', proposalId);
-        
-        throw new Error(`クレジット処理に失敗しました: ${errorData.error}`);
-      }
-      
-      const deductResult = await deductResponse.json();
-      console.log('Credits deducted successfully:', deductResult);
-      
-      setSubmissionStatus('submitted');
-      setSubmittedAt(new Date());
+      setSubmissionStatus('draft');
       
       // Navigate to the proposal page
       window.location.href = `/proposals/${proposalId}`;
       
     } catch (error: any) {
-      let errorMessage = '企画書の提出に失敗しました。';
+      let errorMessage = '企画書の保存に失敗しました。';
       if (error?.message) {
         errorMessage += `\n詳細: ${error.message}`;
       }
@@ -629,7 +568,7 @@ ${legal ? `**結果:** ${legal.is_compliant ? '✅ 法的リスクは低い' : '
               <>
                 <CheckCircle className="w-5 h-5 text-green-500" />
                 <span className="text-sm font-medium text-gray-700">
-                  企画書の作成が完了しました。提出の準備が整いました。
+                  企画書の作成が完了しました。保存の準備が整いました。
                 </span>
               </>
             )}
@@ -657,19 +596,19 @@ ${legal ? `**結果:** ${legal.is_compliant ? '✅ 法的リスクは低い' : '
           
           {submissionStatus === 'draft' && (
             <Button
-              onClick={submitProposal}
+              onClick={saveProposal}
               disabled={isSubmitting || !isProposalComplete()}
               className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 flex items-center gap-2"
             >
               {isSubmitting ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  提出中...
+                  保存中...
                 </>
               ) : (
                 <>
-                  <Send className="w-4 h-4" />
-                  企画書を提出
+                  <Save className="w-4 h-4" />
+                  企画書を保存
                 </>
               )}
             </Button>

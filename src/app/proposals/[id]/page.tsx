@@ -46,6 +46,7 @@ export default function ProposalPage({ params }: ProposalPageProps) {
   const [editedProposal, setEditedProposal] = useState<Proposal | null>(null);
   const [saving, setSaving] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   
   const router = useRouter();
   const { user, userProfile } = useAuth();
@@ -151,13 +152,9 @@ export default function ProposalPage({ params }: ProposalPageProps) {
     
     const currentCredits = userProfile?.credits_balance || 0;
     if (currentCredits < 100) {
-      alert('開発依頼には100クレジットが必要です。クレジットが不足しています。');
       return;
     }
 
-    if (!confirm('開発を依頼しますか？100クレジットが消費されます。')) {
-      return;
-    }
 
     setIsSubmitting(true);
     try {
@@ -174,10 +171,9 @@ export default function ProposalPage({ params }: ProposalPageProps) {
 
       // Update local state
       setProposal(prev => prev ? { ...prev, status: '審査中' } : null);
-      alert('開発依頼を送信しました。審査結果をお待ちください。');
+      setShowSuccessModal(true);
     } catch (error) {
       console.error('Development request error:', error);
-      alert('開発依頼に失敗しました。');
     } finally {
       setIsSubmitting(false);
     }
@@ -249,7 +245,7 @@ export default function ProposalPage({ params }: ProposalPageProps) {
       <TopBar onMenuToggle={handleMenuToggle} onMenuHover={handleMenuHover} />
 
       {/* Main Content */}
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1 overflow-auto pb-24">
         <div className="max-w-4xl mx-auto p-6">
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
@@ -427,7 +423,7 @@ export default function ProposalPage({ params }: ProposalPageProps) {
             </div>
 
             {/* Recruitment Message */}
-            <div className="bg-gradient-to-br from-purple-900/20 to-pink-900/20 rounded-lg p-6 border border-purple-500/30">
+            <div className="bg-gradient-to-br from-purple-900/20 to-pink-900/20 rounded-lg p-6 border border-purple-500/30 mb-20">
               <h2 className="text-lg font-semibold text-[#b37feb] mb-3">
                 🤝 一緒に作りませんか？
               </h2>
@@ -458,40 +454,66 @@ export default function ProposalPage({ params }: ProposalPageProps) {
             )}
           </div>
 
-          {/* Status Message */}
-          {proposal.status === '審査中' && (
-            <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4 mb-20">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                  <div className="w-4 h-4 bg-white rounded-full animate-pulse"></div>
-                </div>
-                <div>
-                  <h3 className="text-blue-400 font-medium">開発依頼を受け付けました</h3>
-                  <p className="text-[#a0a0a0] text-sm mt-1">
-                    審査が完了次第、結果をお知らせします。しばらくお待ちください。
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       </div>
 
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-[#2a2a2a] rounded-lg p-6 max-w-md mx-4 border border-[#3a3a3a]">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Send className="w-8 h-8 text-white" />
+              </div>
+              <h3 className="text-xl font-semibold text-[#e0e0e0] mb-2">
+                開発依頼を送信しました
+              </h3>
+              <p className="text-[#a0a0a0] mb-6">
+                審査結果をお待ちください。
+              </p>
+              <Button
+                onClick={() => setShowSuccessModal(false)}
+                className="bg-[#0066cc] text-white hover:bg-[#0052a3]"
+              >
+                確認
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Fixed Development Request Button */}
-      {proposal.status === '未提出' && user && (
+      {user && (
         <div className="fixed bottom-0 left-0 right-0 bg-[#1a1a1a] border-t border-[#3a3a3a] p-4 z-40">
           <div className="max-w-4xl mx-auto flex items-center justify-between">
-            <div className="text-[#a0a0a0] text-sm">
-              開発依頼には100クレジットが必要です (現在: {userProfile?.credits_balance || 0}クレジット)
-            </div>
-            <Button
-              onClick={handleRequestDevelopment}
-              disabled={isSubmitting || !user || (userProfile?.credits_balance || 0) < 100}
-              className="bg-[#0066cc] text-white hover:bg-[#0052a3] disabled:opacity-50"
-            >
-              <Send className="w-4 h-4 mr-2" />
-              {isSubmitting ? '送信中...' : '開発を依頼'}
-            </Button>
+            {proposal.status === '未提出' ? (
+              <>
+                <div className="text-[#a0a0a0] text-sm">
+                  開発依頼には100クレジットが必要です (現在: {userProfile?.credits_balance || 0}クレジット)
+                </div>
+                <Button
+                  onClick={handleRequestDevelopment}
+                  disabled={isSubmitting || !user || (userProfile?.credits_balance || 0) < 100}
+                  className="bg-[#0066cc] text-white hover:bg-[#0052a3] disabled:opacity-50"
+                >
+                  <Send className="w-4 h-4 mr-2" />
+                  {isSubmitting ? '送信中...' : '開発を依頼'}
+                </Button>
+              </>
+            ) : (
+              <>
+                <div className="text-[#a0a0a0] text-sm">
+                  開発依頼済みです
+                </div>
+                <Button
+                  disabled={true}
+                  className="bg-[#5a5a5a] text-[#a0a0a0] cursor-not-allowed opacity-50"
+                >
+                  <Send className="w-4 h-4 mr-2" />
+                  開発依頼済み
+                </Button>
+              </>
+            )}
           </div>
         </div>
       )}
