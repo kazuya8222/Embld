@@ -88,7 +88,7 @@ export default function EmbldProductDetailPage() {
   const fetchComments = async () => {
     const result = await getComments(productId);
     if (result.success) {
-      setComments(result.data || []);
+      setComments((result.data || []) as Comment[]);
     }
   };
 
