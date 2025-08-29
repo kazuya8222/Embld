@@ -12,7 +12,6 @@ export async function GET(request: NextRequest) {
         title,
         description,
         images,
-        view_count,
         like_count,
         category,
         user_id,
@@ -24,7 +23,6 @@ export async function GET(request: NextRequest) {
       .eq('is_public', true)
       .eq('approval_status', 'approved')
       .order('like_count', { ascending: false })
-      .order('view_count', { ascending: false })
       .order('created_at', { ascending: false });
 
     if (error) {

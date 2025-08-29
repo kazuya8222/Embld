@@ -20,7 +20,6 @@ export async function GET(
         title,
         description,
         images,
-        view_count,
         like_count,
         category,
         user_id,

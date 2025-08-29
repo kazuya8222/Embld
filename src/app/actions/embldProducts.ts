@@ -184,3 +184,4 @@ export async function checkUserLike(productId: string) {
 
   return { success: true, liked: !!data };
 }
+

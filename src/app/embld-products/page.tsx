@@ -7,7 +7,7 @@ import { Sidebar } from '@/components/common/Sidebar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Eye, Heart } from 'lucide-react';
+import { Heart } from 'lucide-react';
 import Link from 'next/link';
 
 interface EmbldProduct {
@@ -15,7 +15,6 @@ interface EmbldProduct {
   title: string;
   description: string;
   images: string[];
-  view_count: number;
   like_count: number;
   category: string;
   user_id: string;
@@ -225,10 +224,6 @@ export default function EmbldProductsPage() {
 
                         {/* Stats */}
                         <div className="flex items-center gap-4 text-sm text-[#a0a0a0]">
-                          <div className="flex items-center gap-1">
-                            <Eye className="w-4 h-4" />
-                            <span>{product.view_count || 0}</span>
-                          </div>
                           <div className="flex items-center gap-1">
                             <Heart className="w-4 h-4" />
                             <span>{product.like_count || 0}</span>

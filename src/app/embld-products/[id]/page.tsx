@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
 import { TopBar } from '@/components/common/TopBar';
@@ -10,7 +10,6 @@ import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { 
   ArrowLeft, 
-  Eye, 
   Heart, 
   Calendar,
   Tag,
@@ -30,7 +29,6 @@ interface Product {
   title: string;
   description: string;
   images: string[];
-  view_count: number;
   like_count: number;
   category: string;
   user_id: string;
@@ -141,12 +139,6 @@ export default function EmbldProductDetailPage() {
           setProduct(result.data);
           setCurrentLikeCount(result.data.like_count || 0);
           
-          // Increment view count
-          await fetch(`/api/products/${productId}`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ incrementViewCount: true })
-          });
         } else {
           console.error('Failed to fetch product');
         }
@@ -284,10 +276,6 @@ export default function EmbldProductDetailPage() {
                     <Calendar className="w-4 h-4" />
                     <span>{formatDate(product.created_at)}</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Eye className="w-4 h-4" />
-                    <span>{product.view_count.toLocaleString()} 回閲覧</span>
-                  </div>
                   <button 
                     onClick={handleLike}
                     className={`flex items-center gap-2 transition-colors ${
@@ -309,7 +297,6 @@ export default function EmbldProductDetailPage() {
             {/* Images Section */}
             <div className="lg:col-span-2">
               <div className="bg-[#2a2a2a] rounded-lg p-6 border border-[#3a3a3a]">
-                <h2 className="text-xl font-semibold text-[#e0e0e0] mb-4">スクリーンショット</h2>
                 
                 {product.images && product.images.length > 0 ? (
                   <div className="space-y-4">

@@ -20,7 +20,6 @@ export async function GET(
         title,
         description,
         images,
-        view_count,
         like_count,
         category,
         user_id,
@@ -51,36 +50,3 @@ export async function GET(
   }
 }
 
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  try {
-    const supabase = createClient();
-    const { id } = params;
-    const body = await request.json();
-
-    if (!id) {
-      return NextResponse.json({ error: 'Product ID is required' }, { status: 400 });
-    }
-
-    // For view count increment
-    if (body.incrementViewCount) {
-      const { error } = await supabase.rpc('increment_view_count', {
-        product_id: id
-      });
-
-      if (error) {
-        console.error('Error incrementing view count:', error);
-        return NextResponse.json({ error: error.message }, { status: 500 });
-      }
-
-      return NextResponse.json({ success: true });
-    }
-
-    return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
-  } catch (error) {
-    console.error('API error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
-  }
-}
