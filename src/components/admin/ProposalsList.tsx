@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Eye, Calendar, User, Filter, FileText, ChevronLeft, ChevronRight, Edit2 } from 'lucide-react'
+import { Eye, Calendar, User, Filter, FileText, ChevronLeft, ChevronRight, Edit2, X } from 'lucide-react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 
@@ -46,6 +46,8 @@ export function ProposalsList({
   const urlSearchParams = useSearchParams()
   const [editingStatus, setEditingStatus] = useState<string | null>(null)
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null)
+  const [selectedProposal, setSelectedProposal] = useState<Proposal | null>(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
   const supabase = createClient()
   
   const selectedStatus = searchParams.status || 'all'
@@ -252,12 +254,16 @@ export function ProposalsList({
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <Link href={`/proposals/${proposal.id}`}>
-                          <Button variant="outline" size="sm">
-                            <Eye className="w-4 h-4 mr-1" />
-                            詳細
-                          </Button>
-                        </Link>
+                        <button
+                          className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                          onClick={() => {
+                            setSelectedProposal(proposal)
+                            setIsModalOpen(true)
+                          }}
+                        >
+                          <Eye className="w-4 h-4 mr-1" />
+                          詳細
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -354,6 +360,134 @@ export function ProposalsList({
           </>
         )}
       </div>
+
+      {/* 詳細モーダル */}
+      {isModalOpen && selectedProposal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            {/* モーダルヘッダー */}
+            <div className="sticky top-0 bg-white border-b border-gray-200 p-6 flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">
+                  {selectedProposal.service_name || '無題の企画書'}
+                </h2>
+                <div className="flex items-center gap-4 mt-2">
+                  {getStatusBadge(selectedProposal.status)}
+                  <span className="text-sm text-gray-500">
+                    作成日: {new Date(selectedProposal.created_at).toLocaleDateString('ja-JP')}
+                  </span>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  setIsModalOpen(false)
+                  setSelectedProposal(null)
+                }}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+
+            {/* モーダルコンテンツ */}
+            <div className="p-6 space-y-6">
+              {/* 問題提起 */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">解決したい課題</h3>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <p className="text-gray-700 whitespace-pre-wrap">
+                    {selectedProposal.problem_statement || '記載なし'}
+                  </p>
+                </div>
+              </div>
+
+              {/* ソリューション */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">解決策</h3>
+                <div className="bg-blue-50 p-4 rounded-lg">
+                  <p className="text-gray-700 whitespace-pre-wrap">
+                    {selectedProposal.solution_description || '記載なし'}
+                  </p>
+                </div>
+              </div>
+
+              {/* ターゲットユーザー */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">ターゲットユーザー</h3>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <p className="text-gray-700 whitespace-pre-wrap">
+                    {selectedProposal.target_users || '記載なし'}
+                  </p>
+                </div>
+              </div>
+
+              {/* 主要機能 */}
+              {selectedProposal.main_features && selectedProposal.main_features.length > 0 && (
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">主要機能</h3>
+                  <div className="space-y-3">
+                    {selectedProposal.main_features.map((feature, index) => (
+                      <div key={index} className="bg-gray-50 p-4 rounded-lg">
+                        <h4 className="font-medium text-gray-900 mb-1">{feature.name}</h4>
+                        <p className="text-gray-600 text-sm">{feature.description}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* ビジネスモデル */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">ビジネスモデル</h3>
+                <div className="bg-green-50 p-4 rounded-lg">
+                  <p className="text-gray-700 whitespace-pre-wrap">
+                    {selectedProposal.business_model || '記載なし'}
+                  </p>
+                </div>
+              </div>
+
+              {/* 募集メッセージ */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">募集メッセージ</h3>
+                <div className="bg-purple-50 p-4 rounded-lg">
+                  <p className="text-gray-700 whitespace-pre-wrap">
+                    {selectedProposal.recruitment_message || '記載なし'}
+                  </p>
+                </div>
+              </div>
+
+              {/* レビューノート */}
+              {selectedProposal.reviewer_notes && (
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">レビューノート</h3>
+                  <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg">
+                    <p className="text-gray-700 whitespace-pre-wrap">
+                      {selectedProposal.reviewer_notes}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* アクションボタン */}
+              <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+                <Link href={`/proposals/${selectedProposal.id}`} target="_blank">
+                  <Button variant="outline">
+                    ユーザービューで開く
+                  </Button>
+                </Link>
+                <Button
+                  onClick={() => {
+                    setIsModalOpen(false)
+                    setSelectedProposal(null)
+                  }}
+                >
+                  閉じる
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

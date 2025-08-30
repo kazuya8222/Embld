@@ -15,7 +15,7 @@ interface Proposal {
   service_name: string;
   problem_statement: string;
   solution_description: string;
-  status: 'draft' | 'submitted' | 'approved' | 'rejected';
+  status: '未提出' | '審査中' | '承認済み' | '却下';
   submitted_at: string | null;
   created_at: string;
 }
@@ -168,14 +168,12 @@ export default function ProposalsPage() {
                           </div>
                           {proposal.status && (
                             <span className={`text-xs px-2 py-1 rounded-full ${
-                              proposal.status === 'submitted' ? 'bg-blue-500/20 text-blue-400' :
-                              proposal.status === 'approved' ? 'bg-green-500/20 text-green-400' :
-                              proposal.status === 'rejected' ? 'bg-red-500/20 text-red-400' :
+                              proposal.status === '審査中' ? 'bg-blue-500/20 text-blue-400' :
+                              proposal.status === '承認済み' ? 'bg-green-500/20 text-green-400' :
+                              proposal.status === '却下' ? 'bg-red-500/20 text-red-400' :
                               'bg-gray-500/20 text-gray-400'
                             }`}>
-                              {proposal.status === 'submitted' ? '審査中' :
-                               proposal.status === 'approved' ? '承認済み' :
-                               proposal.status === 'rejected' ? '却下' : '下書き'}
+                              {proposal.status}
                             </span>
                           )}
                         </div>
