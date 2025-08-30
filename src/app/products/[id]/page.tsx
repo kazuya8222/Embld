@@ -53,6 +53,7 @@ export default function ProductPage() {
   const [developmentRequests, setDevelopmentRequests] = useState<any[]>([])
   const [isSubmittingRequest, setIsSubmittingRequest] = useState(false)
   const [expandedReleaseId, setExpandedReleaseId] = useState<string | null>(null)
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
 
   const supabase = createClient()
 
@@ -174,9 +175,9 @@ export default function ProductPage() {
       }
 
       // Success
-      alert(`追加開発依頼を送信しました。${data.creditsDeducted}クレジットを消費しました。残りクレジット: ${data.remainingCredits}`)
       setNewRequestMessage('')
       await fetchDevelopmentRequests()
+      setShowSuccessModal(true)
     } catch (error) {
       console.error('Error submitting request:', error)
     } finally {
@@ -220,10 +221,7 @@ export default function ProductPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#1a1a1a] relative">
-      {/* TopBar */}
-      <TopBar onMenuToggle={handleMenuToggle} onMenuHover={handleMenuHover} />
-      
+    <div className="h-screen flex flex-col bg-[#1a1a1a] relative overflow-hidden">
       {/* Sidebar Overlay */}
       <AnimatePresence>
         {shouldShowSidebar && (
@@ -241,11 +239,12 @@ export default function ProductPage() {
         )}
       </AnimatePresence>
 
+      {/* TopBar */}
+      <TopBar onMenuToggle={handleMenuToggle} onMenuHover={handleMenuHover} />
+
       {/* Main Content */}
-      <div className="min-h-screen pt-0 relative">
-        <div className="relative z-10">
-          <div className="pt-20 pb-8">
-            <div className="max-w-6xl mx-auto p-6 space-y-8 text-[#e0e0e0]">
+      <div className="flex-1 overflow-auto">
+        <div className="max-w-6xl mx-auto p-6 space-y-4 text-[#e0e0e0]">
         {/* ヘッダー部分 */}
         <div className="flex items-start justify-between">
           <div className="flex-1">
@@ -308,7 +307,7 @@ export default function ProductPage() {
         </div>
 
         {/* タブコンテンツ */}
-        <Tabs defaultValue="overview" className="w-full mt-4">
+        <Tabs defaultValue="overview" className="w-full">
           <TabsList className="grid w-full grid-cols-6 bg-[#2a2a2a] border-[#3a3a3a]">
             <TabsTrigger value="overview" className="data-[state=active]:bg-[#3a3a3a]">
               概要
@@ -1165,10 +1164,33 @@ export default function ProductPage() {
 
 
         </Tabs>
+        </div>
+      </div>
+
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-[#2a2a2a] rounded-lg p-6 max-w-md mx-4 border border-[#3a3a3a]">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Send className="w-8 h-8 text-white" />
+              </div>
+              <h3 className="text-xl font-semibold text-[#e0e0e0] mb-2">
+                追加開発依頼を送信しました
+              </h3>
+              <p className="text-[#a0a0a0] mb-6">
+                開発チームが内容を確認します。
+              </p>
+              <Button
+                onClick={() => setShowSuccessModal(false)}
+                className="bg-[#0066cc] text-white hover:bg-[#0052a3]"
+              >
+                確認
+              </Button>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* フルスクリーン動画モーダル */}
       {isVideoModalOpen && product.video_url && (
