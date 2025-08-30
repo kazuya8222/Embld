@@ -21,7 +21,7 @@ import { clsx } from 'clsx'
 const navigation = [
   { name: 'ダッシュボード', href: '/admin', icon: Home },
   { name: 'ユーザー管理', href: '/admin/users', icon: Users },
-  { name: 'アイデア管理', href: '/admin/ideas', icon: Lightbulb },
+  { name: '企画書管理', href: '/admin/proposals', icon: FileText },
   { name: 'ブログ管理', href: '/admin/blogs', icon: BookOpen },
   { name: 'プロダクト管理', href: '/admin/products', icon: Monitor },
   { name: 'お問い合わせ管理', href: '/admin/contacts', icon: MessageSquare },

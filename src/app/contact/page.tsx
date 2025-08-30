@@ -267,12 +267,12 @@ export default function ContactPage() {
                 </div>
 
                 {/* Privacy Policy Notice */}
-                <div className="text-sm text-[#a0a0a0]">
+                <div className="text-sm text-[#a0a0a0] text-center">
                   送信いただいた内容は、<Link href="/legal/privacy" className="text-blue-400 hover:text-blue-300 underline">プライバシーポリシー</Link>に基づいて適切に管理いたします。
                 </div>
 
                 {/* Submit Button */}
-                <div className="flex justify-end">
+                <div className="flex justify-center">
                   <button
                     type="submit"
                     disabled={isSubmitting}
