@@ -296,9 +296,9 @@ export function DevelopedProductsList({
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <Link href={`/admin/products/${product.id}/edit`}>
+                        <Link href={`/admin/products/${product.id}`}>
                           <button className="inline-flex items-center px-3 py-1.5 border border-blue-300 text-sm font-medium rounded-md text-blue-700 bg-blue-50 hover:bg-blue-100">
-                            編集
+                            管理
                           </button>
                         </Link>
                       </td>

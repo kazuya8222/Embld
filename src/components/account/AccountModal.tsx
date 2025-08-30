@@ -129,6 +129,10 @@ export function AccountModal({ isOpen, onClose }: AccountModalProps) {
     switch (transactionType) {
       case 'chat_usage':
         return 'チャット使用';
+      case 'agent_chat_start':
+        return 'AIエージェントチャット開始';
+      case 'development_request':
+        return '追加開発依頼';
       case 'proposal_creation':
         return '企画書作成';
       case 'subscription_bonus':
