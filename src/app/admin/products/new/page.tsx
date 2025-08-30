@@ -398,11 +398,9 @@ export default function NewDevelopedProductPage() {
                     id="icon-upload"
                   />
                   <label htmlFor="icon-upload">
-                    <Button type="button" variant="outline" className="cursor-pointer" asChild>
-                      <span>
-                        <Upload className="w-4 h-4 mr-2" />
-                        ファイル選択
-                      </span>
+                    <Button type="button" variant="outline" className="cursor-pointer">
+                      <Upload className="w-4 h-4 mr-2" />
+                      ファイル選択
                     </Button>
                   </label>
                 </div>
@@ -468,11 +466,9 @@ export default function NewDevelopedProductPage() {
                     id="video-upload"
                   />
                   <label htmlFor="video-upload">
-                    <Button type="button" variant="outline" className="cursor-pointer" asChild>
-                      <span>
-                        <Upload className="w-4 h-4 mr-2" />
-                        動画選択
-                      </span>
+                    <Button type="button" variant="outline" className="cursor-pointer">
+                      <Upload className="w-4 h-4 mr-2" />
+                      動画選択
                     </Button>
                   </label>
                 </div>
