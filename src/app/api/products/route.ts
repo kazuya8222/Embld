@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
         status: p.status,
         app_store_url: p.app_store_url,
         google_play_url: p.google_play_url,
-        proposal_user_id: p.proposals?.user_id
+        proposal_user_id: (p.proposals as any)?.user_id
       }));
 
       return NextResponse.json({ data: formattedProducts });
@@ -102,7 +102,7 @@ export async function GET(request: NextRequest) {
         status: p.status,
         app_store_url: p.app_store_url,
         google_play_url: p.google_play_url,
-        proposal_user_id: p.proposals?.user_id
+        proposal_user_id: (p.proposals as any)?.user_id
       }));
 
       return NextResponse.json({ data: formattedProducts });
