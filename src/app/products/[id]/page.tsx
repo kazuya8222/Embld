@@ -1,154 +1,112 @@
 'use client'
 
-import React, { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { TopBar } from '@/components/common/TopBar';
-import { Sidebar } from '@/components/common/Sidebar';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { useState, useEffect } from 'react'
+import { useParams, notFound } from 'next/navigation'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { 
-  ArrowLeft, 
-  Eye, 
-  Heart, 
-  Calendar,
-  Tag,
-  Code,
-  Monitor
-} from 'lucide-react';
-import Link from 'next/link';
+  ExternalLink, 
+  Calendar, 
+  TrendingUp, 
+  Users, 
+  Star,
+  MessageSquare,
+  FileText,
+  Milestone
+} from 'lucide-react'
+import Link from 'next/link'
+import ReactMarkdown from 'react-markdown'
+import { motion, AnimatePresence } from 'motion/react'
+import { TopBar } from '@/components/common/TopBar'
+import { Sidebar } from '@/components/common/Sidebar'
+import { useAuth } from '@/components/auth/AuthProvider'
+import { createClient } from '@/lib/supabase/client'
 
-interface Product {
-  id: string;
-  title: string;
-  description: string;
-  images: string[];
-  view_count: number;
-  like_count: number;
-  category: string;
-  user_id: string;
-  demo_url?: string;
-  github_url?: string;
-  tags: string[];
-  tech_stack: string[];
-  is_public: boolean;
-  approval_status: string;
-  featured: boolean;
-  created_at: string;
-  updated_at: string;
-}
+export default function ProductPage() {
+  const params = useParams()
+  const { user, loading } = useAuth()
+  const [product, setProduct] = useState<any>(null)
+  const [revenueData, setRevenueData] = useState<any[]>([])
+  const [loadingProduct, setLoadingProduct] = useState(true)
+  const [isSidebarLocked, setIsSidebarLocked] = useState(false)
+  const [isSidebarHovered, setIsSidebarHovered] = useState(false)
 
-export default function ProductDetailPage() {
-  const params = useParams();
-  const router = useRouter();
-  const productId = params?.id as string;
-  const [product, setProduct] = useState<Product | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isSidebarLocked, setIsSidebarLocked] = useState(false);
-  const [isSidebarHovered, setIsSidebarHovered] = useState(false);
-  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-
-  const handleMenuToggle = () => {
-    setIsSidebarLocked(!isSidebarLocked);
-    setIsSidebarOpen(!isSidebarOpen);
-  };
-
-  const handleMenuHover = (isHovering: boolean) => {
-    setIsSidebarHovered(isHovering);
-    if (!isSidebarLocked) {
-      setIsSidebarOpen(isHovering);
-    }
-  };
-
-  const shouldShowSidebar = isSidebarLocked || isSidebarHovered;
+  const supabase = createClient()
 
   useEffect(() => {
-    const fetchProduct = async () => {
-      if (!productId) return;
+    if (params?.id) {
+      fetchProduct()
+    }
+  }, [params?.id])
 
-      try {
-        const response = await fetch(`/api/products/${productId}`, {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
-        });
-        
-        if (response.ok) {
-          const result = await response.json();
-          setProduct(result.data);
-          
-          // Increment view count
-          await fetch(`/api/products/${productId}`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ incrementViewCount: true })
-          });
-        } else {
-          console.error('Failed to fetch product');
-        }
-      } catch (error) {
-        console.error('Failed to fetch product:', error);
-      } finally {
-        setLoading(false);
+  const fetchProduct = async () => {
+    try {
+      // productsテーブルから検索
+      const { data: product, error } = await supabase
+        .from('products')
+        .select(`
+          *,
+          proposals (
+            service_name,
+            user_id
+          )
+        `)
+        .eq('id', params.id)
+        .eq('is_public', true)
+        .single()
+
+      if (error || !product) {
+        notFound()
+        return
       }
-    };
 
-    fetchProduct();
-  }, [productId]);
+      // 収益データを取得
+      const { data: revenueData } = await supabase
+        .from('product_revenue')
+        .select('*')
+        .eq('product_id', params.id)
+        .order('date', { ascending: true })
 
-  if (loading) {
+      setProduct(product)
+      setRevenueData(revenueData || [])
+    } catch (error) {
+      console.error('Error fetching product:', error)
+    } finally {
+      setLoadingProduct(false)
+    }
+  }
+
+  if (loading || loadingProduct) {
     return (
-      <div className="min-h-screen bg-[#1a1a1a] relative">
-        <TopBar onMenuToggle={handleMenuToggle} onMenuHover={handleMenuHover} />
-        {shouldShowSidebar && (
-          <div
-            className="fixed left-0 top-0 z-50"
-            onMouseEnter={() => handleMenuHover(true)}
-            onMouseLeave={() => handleMenuHover(false)}
-          >
-            <Sidebar onLockToggle={handleMenuToggle} />
-          </div>
-        )}
-        <div className="pt-16">
-          <div className="max-w-6xl mx-auto p-6">
-            <div className="animate-pulse">
-              <div className="h-6 bg-[#2a2a2a] rounded w-32 mb-6"></div>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div className="bg-[#2a2a2a] rounded-lg aspect-video"></div>
-                <div className="space-y-4">
-                  <div className="h-8 bg-[#2a2a2a] rounded w-3/4"></div>
-                  <div className="h-4 bg-[#2a2a2a] rounded w-1/2"></div>
-                  <div className="h-20 bg-[#2a2a2a] rounded"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+      <div className="min-h-screen bg-[#1a1a1a] flex items-center justify-center">
+        <div className="text-[#e0e0e0]">Loading...</div>
       </div>
-    );
+    )
   }
 
   if (!product) {
-    return (
-      <div className="min-h-screen bg-[#1a1a1a] relative">
-        <TopBar onMenuToggle={handleMenuToggle} onMenuHover={handleMenuHover} />
-        <div className="pt-16">
-          <div className="max-w-6xl mx-auto p-6 text-center">
-            <h1 className="text-2xl font-bold text-[#e0e0e0] mb-4">プロダクトが見つかりません</h1>
-            <p className="text-[#a0a0a0] mb-6">指定されたプロダクトは存在しないか、公開されていません。</p>
-            <Button onClick={() => router.back()}>戻る</Button>
-          </div>
-        </div>
-      </div>
-    );
+    return notFound()
   }
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('ja-JP', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  };
+  // 統計情報を計算
+  const totalRevenue = revenueData?.reduce((sum, item) => sum + item.revenue, 0) || 0
+  const userShare = totalRevenue * 0.3 // 30%のユーザーシェア
+  const totalCustomers = revenueData?.reduce((sum, item) => sum + (item.customer_count || 0), 0) || 0
+  const averageRating = product.product_reviews?.length > 0 
+    ? product.product_reviews.reduce((sum: number, review: any) => sum + review.rating, 0) / product.product_reviews.length 
+    : 0
+
+  const handleMenuToggle = () => {
+    setIsSidebarLocked(!isSidebarLocked)
+  }
+
+  const handleMenuHover = (isHovering: boolean) => {
+    setIsSidebarHovered(isHovering)
+  }
+
+  const shouldShowSidebar = isSidebarLocked || isSidebarHovered
 
   return (
     <div className="min-h-screen bg-[#1a1a1a] relative">
@@ -156,219 +114,339 @@ export default function ProductDetailPage() {
       <TopBar onMenuToggle={handleMenuToggle} onMenuHover={handleMenuHover} />
       
       {/* Sidebar Overlay */}
-      {shouldShowSidebar && (
-        <div
-          className="fixed left-0 top-0 z-50"
-          onMouseEnter={() => handleMenuHover(true)}
-          onMouseLeave={() => handleMenuHover(false)}
-        >
-          <Sidebar onLockToggle={handleMenuToggle} />
-        </div>
-      )}
+      <AnimatePresence>
+        {shouldShowSidebar && (
+          <motion.div
+            initial={{ x: -264, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: -264, opacity: 0 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className="fixed left-0 top-0 z-50"
+            onMouseEnter={() => handleMenuHover(true)}
+            onMouseLeave={() => handleMenuHover(false)}
+          >
+            <Sidebar onLockToggle={handleMenuToggle} />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Main Content */}
-      <div className="pt-16">
-        <div className="max-w-6xl mx-auto p-6">
-          {/* Back Button */}
-          <div className="mb-6">
-            <Button 
-              variant="ghost" 
-              onClick={() => router.back()}
-              className="text-[#a0a0a0] hover:text-[#e0e0e0] hover:bg-[#3a3a3a] p-2"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              戻る
-            </Button>
-          </div>
-
-          {/* Header Section */}
-          <div className="mb-8">
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-3">
-                  {product.featured && (
-                    <Badge className="bg-gradient-to-r from-blue-600 to-purple-600 text-[#e0e0e0] border-0">
-                      FEATURED
-                    </Badge>
-                  )}
-                  {product.category && (
-                    <Badge variant="outline" className="border-[#3a3a3a] text-[#a0a0a0]">
-                      {product.category}
-                    </Badge>
-                  )}
-                </div>
-                <h1 className="text-3xl font-bold text-[#e0e0e0] mb-4">
-                  {product.title}
-                </h1>
-                <div className="flex items-center gap-6 text-sm text-[#a0a0a0] mb-4">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4" />
-                    <span>{formatDate(product.created_at)}</span>
+      <div className="min-h-screen pt-0 relative">
+        <div className="relative z-10">
+          <div className="pt-20 pb-8">
+            <div className="max-w-6xl mx-auto p-6 space-y-8 text-[#e0e0e0]">
+        {/* ヘッダー部分 */}
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <div className="flex items-center gap-3 mb-4">
+              <h1 className="text-3xl font-bold text-[#e0e0e0]">{product.title}</h1>
+              <Badge variant="secondary" className="bg-green-500/20 text-green-400">
+                {product.status}
+              </Badge>
+            </div>
+            <p className="text-[#a0a0a0] text-lg mb-6">{product.overview}</p>
+            
+            {/* 統計情報 */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+              <Card className="bg-[#2a2a2a] border-[#3a3a3a]">
+                <CardContent className="p-4 text-center">
+                  <TrendingUp className="w-6 h-6 text-green-400 mx-auto mb-2" />
+                  <div className="text-xl font-bold text-green-400">
+                    ¥{totalRevenue.toLocaleString()}
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Eye className="w-4 h-4" />
-                    <span>{product.view_count.toLocaleString()} 回閲覧</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Heart className="w-4 h-4" />
-                    <span>{product.like_count.toLocaleString()} いいね</span>
-                  </div>
-                </div>
-              </div>
+                  <div className="text-xs text-[#808080]">総収益</div>
+                </CardContent>
+              </Card>
               
+              <Card className="bg-[#2a2a2a] border-[#3a3a3a]">
+                <CardContent className="p-4 text-center">
+                  <TrendingUp className="w-6 h-6 text-blue-400 mx-auto mb-2" />
+                  <div className="text-xl font-bold text-blue-400">
+                    ¥{userShare.toLocaleString()}
+                  </div>
+                  <div className="text-xs text-[#808080]">あなたのシェア</div>
+                </CardContent>
+              </Card>
+              
+              <Card className="bg-[#2a2a2a] border-[#3a3a3a]">
+                <CardContent className="p-4 text-center">
+                  <Users className="w-6 h-6 text-purple-400 mx-auto mb-2" />
+                  <div className="text-xl font-bold text-[#e0e0e0]">{totalCustomers}</div>
+                  <div className="text-xs text-[#808080]">顧客数</div>
+                </CardContent>
+              </Card>
+              
+              <Card className="bg-[#2a2a2a] border-[#3a3a3a]">
+                <CardContent className="p-4 text-center">
+                  <Star className="w-6 h-6 text-yellow-400 mx-auto mb-2" />
+                  <div className="text-xl font-bold text-[#e0e0e0]">{averageRating.toFixed(1)}</div>
+                  <div className="text-xs text-[#808080]">平均評価</div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* プロダクトリンク */}
+            <div className="flex gap-3">
+              {product.demo_url && (
+                <Link href={product.demo_url} target="_blank">
+                  <Button className="bg-blue-600 hover:bg-blue-700">
+                    <ExternalLink className="w-4 h-4 mr-2" />
+                    デモを見る
+                  </Button>
+                </Link>
+              )}
+              {product.app_store_url && (
+                <Link href={product.app_store_url} target="_blank">
+                  <Button variant="outline" className="border-[#3a3a3a] text-[#e0e0e0]">
+                    App Store
+                  </Button>
+                </Link>
+              )}
+              {product.google_play_url && (
+                <Link href={product.google_play_url} target="_blank">
+                  <Button variant="outline" className="border-[#3a3a3a] text-[#e0e0e0]">
+                    Google Play
+                  </Button>
+                </Link>
+              )}
             </div>
           </div>
 
-          {/* Main Content Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Images Section */}
-            <div className="lg:col-span-2">
-              <div className="bg-[#2a2a2a] rounded-lg p-6 border border-[#3a3a3a]">
-                <h2 className="text-xl font-semibold text-[#e0e0e0] mb-4">スクリーンショット</h2>
+          {/* プロダクトアイコン */}
+          {product.icon_url && (
+            <div className="ml-8 flex-shrink-0">
+              <img 
+                src={product.icon_url} 
+                alt={product.title}
+                className="w-32 h-32 rounded-2xl object-cover"
+              />
+            </div>
+          )}
+        </div>
+
+        {/* タブコンテンツ */}
+        <Tabs defaultValue="overview" className="w-full">
+          <TabsList className="grid w-full grid-cols-5 bg-[#2a2a2a] border-[#3a3a3a]">
+            <TabsTrigger value="overview" className="data-[state=active]:bg-[#3a3a3a]">
+              概要
+            </TabsTrigger>
+            <TabsTrigger value="reviews" className="data-[state=active]:bg-[#3a3a3a]">
+              <MessageSquare className="w-4 h-4 mr-1" />
+              口コミ ({product.product_reviews?.length || 0})
+            </TabsTrigger>
+            <TabsTrigger value="releases" className="data-[state=active]:bg-[#3a3a3a]">
+              <FileText className="w-4 h-4 mr-1" />
+              リリース
+            </TabsTrigger>
+            <TabsTrigger value="faq" className="data-[state=active]:bg-[#3a3a3a]">
+              FAQ
+            </TabsTrigger>
+            <TabsTrigger value="milestones" className="data-[state=active]:bg-[#3a3a3a]">
+              <Milestone className="w-4 h-4 mr-1" />
+              マイルストーン
+            </TabsTrigger>
+          </TabsList>
+
+          {/* 概要タブ */}
+          <TabsContent value="overview" className="space-y-6">
+            <Card className="bg-[#2a2a2a] border-[#3a3a3a]">
+              <CardHeader>
+                <CardTitle className="text-[#e0e0e0]">プロダクト詳細</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="prose prose-invert max-w-none">
+                  <ReactMarkdown>{product.description || '詳細な説明がありません。'}</ReactMarkdown>
+                </div>
                 
-                {product.images && product.images.length > 0 ? (
-                  <div className="space-y-4">
-                    {/* Main Image */}
-                    <div className="aspect-video bg-gradient-to-br from-[#3a3a3a] to-[#2a2a2a] rounded-lg overflow-hidden">
-                      <img
-                        src={product.images[selectedImageIndex]}
-                        alt={`${product.title} - Screenshot ${selectedImageIndex + 1}`}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    
-                    {/* Thumbnail Navigation */}
-                    {product.images.length > 1 && (
-                      <div className="flex gap-2 overflow-x-auto">
-                        {product.images.map((image, index) => (
-                          <button
-                            key={index}
-                            onClick={() => setSelectedImageIndex(index)}
-                            className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-colors ${
-                              selectedImageIndex === index 
-                                ? 'border-blue-600' 
-                                : 'border-[#3a3a3a] hover:border-[#5a5a5a]'
-                            }`}
-                          >
-                            <img
-                              src={image}
-                              alt={`Thumbnail ${index + 1}`}
-                              className="w-full h-full object-cover"
-                            />
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <div className="aspect-video bg-gradient-to-br from-[#3a3a3a] to-[#2a2a2a] rounded-lg flex items-center justify-center">
-                    <div className="text-center">
-                      <div className="w-16 h-16 mx-auto mb-4 bg-[#4a4a4a] rounded-full flex items-center justify-center">
-                        <Monitor className="w-8 h-8 text-[#a0a0a0]" />
-                      </div>
-                      <p className="text-[#a0a0a0]">スクリーンショットがありません</p>
+                {product.tech_stack && product.tech_stack.length > 0 && (
+                  <div className="mt-6">
+                    <h4 className="font-semibold mb-3 text-[#e0e0e0]">使用技術</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {product.tech_stack.map((tech: string) => (
+                        <Badge key={tech} variant="secondary" className="bg-[#3a3a3a] text-[#e0e0e0]">
+                          {tech}
+                        </Badge>
+                      ))}
                     </div>
                   </div>
                 )}
-                
-                {/* Description */}
-                <div className="mt-6">
-                  <h3 className="text-lg font-semibold text-[#e0e0e0] mb-3">説明</h3>
-                  <p className="text-[#a0a0a0] leading-relaxed whitespace-pre-wrap">
-                    {product.description}
+
+                {product.tags && product.tags.length > 0 && (
+                  <div className="mt-4">
+                    <h4 className="font-semibold mb-3 text-[#e0e0e0]">タグ</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {product.tags.map((tag: string) => (
+                        <Badge key={tag} variant="outline" className="border-[#4a4a4a] text-[#a0a0a0]">
+                          #{tag}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* 元企画書情報 */}
+            {product.proposals && (
+              <Card className="bg-[#2a2a2a] border-[#3a3a3a]">
+                <CardHeader>
+                  <CardTitle className="text-[#e0e0e0]">元企画書情報</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-[#a0a0a0]">
+                    この製品は「{product.proposals.service_name}」という企画書から開発されました。
                   </p>
-                </div>
-              </div>
-            </div>
+                  {product.proposals.users && (
+                    <p className="text-sm text-[#808080] mt-2">
+                      企画者: {product.proposals.users.name}
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
 
-            {/* Info Sidebar */}
-            <div className="space-y-6">
-              {/* Tech Stack */}
-              {product.tech_stack && product.tech_stack.length > 0 && (
-                <div className="bg-[#2a2a2a] rounded-lg p-6 border border-[#3a3a3a]">
-                  <h3 className="text-lg font-semibold text-[#e0e0e0] mb-4 flex items-center">
-                    <Code className="w-5 h-5 mr-2" />
-                    技術スタック
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {product.tech_stack.map((tech, index) => (
-                      <Badge 
-                        key={index} 
-                        variant="outline" 
-                        className="border-[#3a3a3a] text-[#e0e0e0] bg-[#3a3a3a]"
-                      >
-                        {tech}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
+          {/* 口コミタブ */}
+          <TabsContent value="reviews" className="space-y-4">
+            {product.product_reviews && product.product_reviews.length > 0 ? (
+              product.product_reviews.map((review: any) => (
+                <Card key={review.id} className="bg-[#2a2a2a] border-[#3a3a3a]">
+                  <CardContent className="p-4">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-[#e0e0e0]">{review.user_name}</span>
+                        <div className="flex items-center">
+                          {[...Array(5)].map((_, i) => (
+                            <Star 
+                              key={i}
+                              className={`w-4 h-4 ${i < review.rating ? 'text-yellow-400 fill-current' : 'text-[#4a4a4a]'}`}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                      <span className="text-xs text-[#808080]">
+                        {new Date(review.created_at).toLocaleDateString('ja-JP')}
+                      </span>
+                    </div>
+                    <p className="text-[#a0a0a0]">{review.comment}</p>
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              <Card className="bg-[#2a2a2a] border-[#3a3a3a]">
+                <CardContent className="p-8 text-center">
+                  <MessageSquare className="w-12 h-12 text-[#4a4a4a] mx-auto mb-4" />
+                  <p className="text-[#808080]">まだ口コミがありません。</p>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
 
-              {/* Tags */}
-              {product.tags && product.tags.length > 0 && (
-                <div className="bg-[#2a2a2a] rounded-lg p-6 border border-[#3a3a3a]">
-                  <h3 className="text-lg font-semibold text-[#e0e0e0] mb-4 flex items-center">
-                    <Tag className="w-5 h-5 mr-2" />
-                    タグ
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {product.tags.map((tag, index) => (
-                      <Badge 
-                        key={index} 
-                        variant="secondary" 
-                        className="bg-[#1a1a1a] text-[#a0a0a0] border border-[#3a3a3a]"
-                      >
-                        #{tag}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
+          {/* リリースタブ */}
+          <TabsContent value="releases" className="space-y-4">
+            {product.product_releases && product.product_releases.length > 0 ? (
+              product.product_releases
+                .sort((a: any, b: any) => new Date(b.released_at).getTime() - new Date(a.released_at).getTime())
+                .map((release: any) => (
+                  <Card key={release.id} className="bg-[#2a2a2a] border-[#3a3a3a]">
+                    <CardHeader>
+                      <div className="flex items-center justify-between">
+                        <CardTitle className="text-lg text-[#e0e0e0]">
+                          {release.title} ({release.version})
+                        </CardTitle>
+                        <div className="flex items-center text-sm text-[#808080]">
+                          <Calendar className="w-4 h-4 mr-1" />
+                          {new Date(release.released_at).toLocaleDateString('ja-JP')}
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="prose prose-invert prose-sm max-w-none">
+                        <ReactMarkdown>{release.description}</ReactMarkdown>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+            ) : (
+              <Card className="bg-[#2a2a2a] border-[#3a3a3a]">
+                <CardContent className="p-8 text-center">
+                  <FileText className="w-12 h-12 text-[#4a4a4a] mx-auto mb-4" />
+                  <p className="text-[#808080]">リリース情報がありません。</p>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
 
-              {/* Project Info */}
-              <div className="bg-[#2a2a2a] rounded-lg p-6 border border-[#3a3a3a]">
-                <h3 className="text-lg font-semibold text-[#e0e0e0] mb-4">プロジェクト情報</h3>
-                <div className="space-y-3 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-[#a0a0a0]">作成日</span>
-                    <span className="text-[#e0e0e0]">{formatDate(product.created_at)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-[#a0a0a0]">更新日</span>
-                    <span className="text-[#e0e0e0]">{formatDate(product.updated_at)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-[#a0a0a0]">ステータス</span>
-                    <Badge 
-                      variant={product.approval_status === 'approved' ? 'default' : 'secondary'}
-                      className={
-                        product.approval_status === 'approved' 
-                          ? 'bg-green-600 text-white' 
-                          : 'bg-[#3a3a3a] text-[#a0a0a0]'
-                      }
-                    >
-                      {product.approval_status === 'approved' ? '承認済み' : product.approval_status}
-                    </Badge>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-[#a0a0a0]">公開状態</span>
-                    <Badge 
-                      variant={product.is_public ? 'default' : 'secondary'}
-                      className={
-                        product.is_public 
-                          ? 'bg-blue-600 text-white' 
-                          : 'bg-[#3a3a3a] text-[#a0a0a0]'
-                      }
-                    >
-                      {product.is_public ? '公開' : '非公開'}
-                    </Badge>
-                  </div>
-                </div>
-              </div>
+          {/* FAQタブ */}
+          <TabsContent value="faq" className="space-y-4">
+            {product.product_faqs && product.product_faqs.length > 0 ? (
+              product.product_faqs.map((faq: any) => (
+                <Card key={faq.id} className="bg-[#2a2a2a] border-[#3a3a3a]">
+                  <CardHeader>
+                    <CardTitle className="text-lg text-[#e0e0e0]">{faq.question}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="prose prose-invert prose-sm max-w-none">
+                      <ReactMarkdown>{faq.answer}</ReactMarkdown>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              <Card className="bg-[#2a2a2a] border-[#3a3a3a]">
+                <CardContent className="p-8 text-center">
+                  <MessageSquare className="w-12 h-12 text-[#4a4a4a] mx-auto mb-4" />
+                  <p className="text-[#808080]">FAQがありません。</p>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+
+          {/* マイルストーンタブ */}
+          <TabsContent value="milestones" className="space-y-4">
+            {product.product_milestones && product.product_milestones.length > 0 ? (
+              product.product_milestones
+                .sort((a: any, b: any) => {
+                  // 完了したものを下に、未完了を上に
+                  if (a.status === 'completed' && b.status !== 'completed') return 1
+                  if (a.status !== 'completed' && b.status === 'completed') return -1
+                  return new Date(b.completed_at || '').getTime() - new Date(a.completed_at || '').getTime()
+                })
+                .map((milestone: any) => (
+                  <Card key={milestone.id} className="bg-[#2a2a2a] border-[#3a3a3a]">
+                    <CardContent className="p-4">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-3 h-3 rounded-full ${
+                            milestone.status === 'completed' ? 'bg-green-400' : 
+                            milestone.status === 'in_progress' ? 'bg-yellow-400' : 'bg-[#4a4a4a]'
+                          }`} />
+                          <h3 className="font-semibold text-[#e0e0e0]">{milestone.title}</h3>
+                        </div>
+                        {milestone.completed_at && (
+                          <span className="text-xs text-[#808080]">
+                            {new Date(milestone.completed_at).toLocaleDateString('ja-JP')}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[#a0a0a0] ml-6">{milestone.description}</p>
+                    </CardContent>
+                  </Card>
+                ))
+            ) : (
+              <Card className="bg-[#2a2a2a] border-[#3a3a3a]">
+                <CardContent className="p-8 text-center">
+                  <Milestone className="w-12 h-12 text-[#4a4a4a] mx-auto mb-4" />
+                  <p className="text-[#808080]">マイルストーンがありません。</p>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+        </Tabs>
             </div>
           </div>
         </div>
       </div>
     </div>
-  );
+  )
 }

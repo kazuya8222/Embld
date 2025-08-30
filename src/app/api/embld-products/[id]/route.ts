@@ -14,7 +14,7 @@ export async function GET(
     }
 
     const { data, error } = await supabase
-      .from('embld_products')
+      .from('products')
       .select(`
         id,
         title,
@@ -25,7 +25,7 @@ export async function GET(
         like_count,
         category,
         user_id,
-        demo_url,
+        video_url,
         github_url,
         tags,
         is_public,

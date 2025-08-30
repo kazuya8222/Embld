@@ -6,7 +6,7 @@ export async function GET(request: NextRequest) {
     const supabase = createClient();
 
     const { data, error } = await supabase
-      .from('embld_products')
+      .from('products')
       .select(`
         id,
         title,
@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
         like_count,
         category,
         user_id,
-        demo_url,
+        video_url,
         github_url,
         tags,
         created_at

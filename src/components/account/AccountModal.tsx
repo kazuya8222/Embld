@@ -8,7 +8,10 @@ import { createClient } from '@/lib/supabase/client';
 import { 
   X, 
   LogOut,
-  Zap
+  Zap,
+  BarChart3,
+  DollarSign,
+  Settings
 } from 'lucide-react';
 
 interface AccountModalProps {
@@ -212,6 +215,7 @@ export function AccountModal({ isOpen, onClose }: AccountModalProps) {
                     </button>
                   </div>
 
+
                   {/* Plan Section */}
                   <div className="bg-[#2a2a2a] border border-[#3a3a3a] rounded-lg p-6">
                     <div className="flex items-center justify-between mb-4">
@@ -321,6 +325,70 @@ export function AccountModal({ isOpen, onClose }: AccountModalProps) {
                           ))}
                         </div>
                       )}
+                    </div>
+
+                    {/* Dashboard Section */}
+                    <div className="bg-[#2a2a2a] border border-[#3a3a3a] rounded-lg p-6">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center space-x-3">
+                          <BarChart3 className="w-6 h-6 text-[#a0a0a0]" />
+                          <div>
+                            <h4 className="text-lg font-semibold text-[#e0e0e0]">収益ダッシュボード</h4>
+                            <p className="text-sm text-[#a0a0a0]">プロダクトの売上と収益分配を管理</p>
+                          </div>
+                        </div>
+                        <Button 
+                          size="sm" 
+                          className="bg-[#e0e0e0] hover:bg-[#d0d0d0] text-[#1a1a1a]"
+                          onClick={() => {
+                            onClose();
+                            window.location.href = '/dashboard/revenue';
+                          }}
+                        >
+                          ダッシュボードへ
+                        </Button>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4 mb-4">
+                        <div className="flex items-center space-x-2">
+                          <DollarSign className="w-4 h-4 text-[#a0a0a0]" />
+                          <span className="text-sm text-[#e0e0e0]">収益分析</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Settings className="w-4 h-4 text-[#a0a0a0]" />
+                          <span className="text-sm text-[#e0e0e0]">Stripe設定</span>
+                        </div>
+                      </div>
+                      <div className="pt-4 border-t border-[#3a3a3a]">
+                        <div className="flex gap-2 mb-3">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="text-xs border-[#4a4a4a] text-[#a0a0a0] hover:bg-[#3a3a3a] hover:text-[#e0e0e0]"
+                            onClick={() => {
+                              onClose();
+                              window.location.href = '/dashboard/settings/stripe';
+                            }}
+                          >
+                            <Settings className="w-3 h-3 mr-1" />
+                            Stripe設定
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="text-xs border-[#4a4a4a] text-[#a0a0a0] hover:bg-[#3a3a3a] hover:text-[#e0e0e0]"
+                            onClick={() => {
+                              onClose();
+                              window.location.href = '/dashboard/revenue';
+                            }}
+                          >
+                            <BarChart3 className="w-3 h-3 mr-1" />
+                            収益分析
+                          </Button>
+                        </div>
+                        <p className="text-xs text-[#808080]">
+                          💡 プロダクトが売れると30%の収益を自動で受け取れます。まずはStripe設定で銀行口座を登録しましょう。
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>

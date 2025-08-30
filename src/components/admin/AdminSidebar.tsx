@@ -14,7 +14,8 @@ import {
   FileText,
   MessageSquare,
   BookOpen,
-  Monitor
+  Monitor,
+  Package
 } from 'lucide-react'
 import { clsx } from 'clsx'
 

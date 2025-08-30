@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -10,19 +10,32 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ArrowLeft, Save, Plus, X, Upload, ImagePlus, Video } from 'lucide-react'
 import Link from 'next/link'
 
-interface Proposal {
+interface Product {
   id: string
-  service_name: string
-  user_id: string
+  proposal_id: string
+  title: string
+  overview: string
+  description: string
+  featured_image: string | null
+  video_url: string | null
+  web_url: string | null
+  app_store_url: string | null
+  google_play_url: string | null
   status: string
+  is_public: boolean
+  tech_stack: string[]
+  proposals?: {
+    service_name: string
+  }
 }
 
-export default function NewDevelopedProductPage() {
+export default function EditDevelopedProductPage() {
   const router = useRouter()
+  const params = useParams()
+  const productId = params?.id as string
   const [loading, setLoading] = useState(false)
-  const [proposals, setProposals] = useState<Proposal[]>([])
+  const [product, setProduct] = useState<Product | null>(null)
   const [formData, setFormData] = useState({
-    proposal_id: '',
     title: '',
     overview: '',
     description: '',
@@ -43,22 +56,82 @@ export default function NewDevelopedProductPage() {
   const [dragOver, setDragOver] = useState<'icon' | 'video' | null>(null)
 
   useEffect(() => {
-    fetchApprovedProposals()
-  }, [])
+    if (productId) {
+      fetchProduct()
+    }
+  }, [productId])
 
-  const fetchApprovedProposals = async () => {
+  const fetchProduct = async () => {
     const supabase = createClient()
-    // 承認済みの企画書のみを取得
     const { data, error } = await supabase
-      .from('proposals')
-      .select('id, service_name, user_id, status')
-      .eq('status', '承認済み')
-      .order('created_at', { ascending: false })
+      .from('products')
+      .select(`
+        *,
+        proposals (
+          service_name
+        )
+      `)
+      .eq('id', productId)
+      .single()
 
     if (!error && data) {
-      setProposals(data)
+      setProduct(data)
+      setFormData({
+        title: data.title || '',
+        overview: data.overview || '',
+        description: data.description || '',
+        icon_url: data.featured_image || '',
+        demo_url: data.video_url || '',
+        web_url: data.web_url || '',
+        app_store_url: data.app_store_url || '',
+        google_play_url: data.google_play_url || '',
+        status: data.status || 'development',
+        is_public: data.is_public || false,
+        tech_stack: data.tech_stack || [],
+        tags: [] // tagsフィールドは存在しない
+      })
     } else {
-      console.error('Error fetching proposals:', error)
+      console.error('Error fetching product:', error)
+      router.push('/admin/products')
+    }
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+
+    try {
+      const supabase = createClient()
+      
+      const { error } = await supabase
+        .from('products')
+        .update({
+          title: formData.title,
+          overview: formData.overview,
+          description: formData.description,
+          featured_image: formData.icon_url || null,
+          video_url: formData.demo_url || null,
+          web_url: formData.web_url || null,
+          app_store_url: formData.app_store_url || null,
+          google_play_url: formData.google_play_url || null,
+          status: formData.status,
+          is_public: formData.is_public,
+          tech_stack: formData.tech_stack,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', productId)
+
+      if (error) {
+        console.error('Error updating product:', error)
+        alert('プロダクトの更新に失敗しました')
+      } else {
+        router.push('/admin/products')
+      }
+    } catch (error) {
+      console.error('Error:', error)
+      alert('エラーが発生しました')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -154,53 +227,6 @@ export default function NewDevelopedProductPage() {
     setDragOver(null)
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-
-    try {
-      const supabase = createClient()
-      
-      // 選択された企画書の情報を取得
-      const selectedProposal = proposals.find(p => p.id === formData.proposal_id)
-      if (!selectedProposal) {
-        alert('企画書を選択してください')
-        setLoading(false)
-        return
-      }
-
-      const { error } = await supabase
-        .from('products')
-        .insert({
-          proposal_id: formData.proposal_id,
-          title: formData.title || selectedProposal.service_name,
-          overview: formData.overview,
-          description: formData.description,
-          featured_image: formData.icon_url || null,
-          video_url: formData.demo_url || null,
-          web_url: formData.web_url || null,
-          app_store_url: formData.app_store_url || null,
-          google_play_url: formData.google_play_url || null,
-          status: formData.status,
-          is_public: formData.is_public,
-          tech_stack: formData.tech_stack,
-          revenue_share_percentage: 30 // デフォルト30%
-        })
-
-      if (error) {
-        console.error('Error creating product:', error)
-        alert('プロダクトの作成に失敗しました')
-      } else {
-        router.push('/admin/products')
-      }
-    } catch (error) {
-      console.error('Error:', error)
-      alert('エラーが発生しました')
-    } finally {
-      setLoading(false)
-    }
-  }
-
   const addTech = () => {
     if (newTech.trim() && !formData.tech_stack.includes(newTech.trim())) {
       setFormData(prev => ({
@@ -235,12 +261,22 @@ export default function NewDevelopedProductPage() {
     }))
   }
 
+  if (!product) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-gray-500">読み込み中...</div>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">新規プロダクト作成</h1>
-          <p className="text-gray-600 mt-2">承認済み企画書からプロダクトを作成します</p>
+          <h1 className="text-3xl font-bold text-gray-900">プロダクト編集</h1>
+          <p className="text-gray-600 mt-2">
+            元企画書: {product.proposals?.service_name}
+          </p>
         </div>
         <Link href="/admin/products">
           <Button variant="outline">
@@ -256,48 +292,6 @@ export default function NewDevelopedProductPage() {
             <CardTitle>基本情報</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* 企画書選択 */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                元となる企画書 <span className="text-red-500">*</span>
-              </label>
-              <select
-                value={formData.proposal_id}
-                onChange={(e) => {
-                  const proposal = proposals.find(p => p.id === e.target.value)
-                  setFormData(prev => ({
-                    ...prev,
-                    proposal_id: e.target.value,
-                    title: proposal?.service_name || prev.title
-                  }))
-                }}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-700"
-                required
-                disabled={proposals.length === 0}
-              >
-                <option value="">
-                  {proposals.length === 0 
-                    ? '承認済みの企画書がありません' 
-                    : '企画書を選択してください'}
-                </option>
-                {proposals.map(proposal => (
-                  <option key={proposal.id} value={proposal.id}>
-                    {proposal.service_name}
-                  </option>
-                ))}
-              </select>
-              {proposals.length === 0 && (
-                <div className="mt-2">
-                  <p className="text-sm text-amber-600">
-                    注意: プロダクトを作成するには、承認済みの企画書が必要です。
-                  </p>
-                  <Link href="/admin/proposals" className="text-sm text-blue-600 hover:underline">
-                    → 企画書管理ページで企画書を承認する
-                  </Link>
-                </div>
-              )}
-            </div>
-
             {/* タイトル */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -652,7 +646,7 @@ export default function NewDevelopedProductPage() {
           </Link>
           <Button type="submit" disabled={loading}>
             <Save className="w-4 h-4 mr-2" />
-            {loading ? '作成中...' : 'プロダクトを作成'}
+            {loading ? '更新中...' : '変更を保存'}
           </Button>
         </div>
       </form>

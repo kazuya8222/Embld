@@ -15,7 +15,8 @@ import {
   PanelLeftClose,
   Rocket,
   Archive,
-  HelpCircle
+  HelpCircle,
+  DollarSign
 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { cn } from '@/lib/utils/cn';
@@ -145,6 +146,18 @@ export function Sidebar({ className, onLockToggle, isLocked = false }: SidebarPr
                   <User className="w-4 h-4 mr-3" />
                   アカウント
                 </button>
+                <Link
+                  href="/dashboard/revenue"
+                  className={cn(
+                    "flex items-center w-full px-3 py-2 text-sm font-medium rounded-lg transition-colors",
+                    pathname === "/dashboard/revenue"
+                      ? "bg-[#3a3a3a] text-[#e0e0e0]"
+                      : "text-[#a0a0a0] hover:text-[#e0e0e0] hover:bg-[#3a3a3a]"
+                  )}
+                >
+                  <DollarSign className="w-4 h-4 mr-3" />
+                  収益管理
+                </Link>
                 <Link
                   href="/help"
                   className="flex items-center w-full px-3 py-2 text-sm font-medium text-[#a0a0a0] rounded-lg hover:text-[#e0e0e0] hover:bg-[#3a3a3a] transition-colors"
