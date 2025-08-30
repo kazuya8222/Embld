@@ -141,16 +141,6 @@ export default function ProductsPage() {
               <h3 className="text-xl font-semibold text-[#a0a0a0] mb-2">
                 プロダクトがありません
               </h3>
-              <p className="text-[#808080] mb-6">
-                まずは企画書を作成してみましょう
-              </p>
-              <Button
-                onClick={() => router.push('/home')}
-                className="bg-[#0066cc] text-[#e0e0e0] hover:bg-[#0052a3]"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                まずは企画書を作成
-              </Button>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

@@ -223,7 +223,7 @@ export function ProposalsList({
                               value={proposal.status}
                               onChange={(e) => updateProposalStatus(proposal.id, e.target.value)}
                               disabled={updatingStatus === proposal.id}
-                              className="text-sm border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              className="text-sm border border-gray-300 rounded px-2 py-1 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
                             >
                               {editableStatusOptions.map((option) => (
                                 <option key={option.value} value={option.value}>
