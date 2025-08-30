@@ -150,8 +150,8 @@ export function RevenueDashboard({ productId }: { productId?: string }) {
                 size="sm"
                 onClick={() => setPeriod(p)}
                 className={period === p ? 
-                  'bg-[#e0e0e0] text-[#1a1a1a] hover:bg-[#d0d0d0]' : 
-                  'border-[#4a4a4a] text-[#a0a0a0] hover:bg-[#3a3a3a] hover:text-[#e0e0e0]'
+                  'bg-[#0066cc] text-[#e0e0e0] hover:bg-[#0052a3]' : 
+                  'bg-[#2a2a2a] border-[#4a4a4a] text-[#a0a0a0] hover:bg-[#0066cc] hover:text-[#e0e0e0]'
                 }
               >
                 {p === 'day' ? '日別' : 
@@ -164,7 +164,7 @@ export function RevenueDashboard({ productId }: { productId?: string }) {
             variant="outline" 
             size="sm" 
             onClick={exportCSV}
-            className="border-[#4a4a4a] text-[#a0a0a0] hover:bg-[#3a3a3a] hover:text-[#e0e0e0]"
+            className="bg-[#2a2a2a] border-[#4a4a4a] text-[#a0a0a0] hover:bg-[#0066cc] hover:text-[#e0e0e0]"
           >
             <Download className="w-4 h-4 mr-2" />
             CSV出力

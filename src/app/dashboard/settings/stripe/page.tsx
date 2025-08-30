@@ -140,7 +140,7 @@ export default function StripeConnectSettingsPage() {
                 <p className="text-[#a0a0a0] mb-4">
                   Stripe Connectを設定するにはログインしてください。
                 </p>
-                <Button onClick={() => router.push('/auth/login')} className="bg-[#e0e0e0] hover:bg-[#d0d0d0] text-[#1a1a1a]">
+                <Button onClick={() => router.push('/auth/login')} className="bg-[#0066cc] text-[#e0e0e0] hover:bg-[#0052a3]">
                   ログインページへ
                 </Button>
               </CardContent>
@@ -275,7 +275,7 @@ export default function StripeConnectSettingsPage() {
                     すべての設定が完了しました。プロダクトの売上から自動的に収益が振り込まれます。
                   </p>
                   <div className="flex gap-3">
-                    <Button variant="outline" size="sm" onClick={checkAccountStatus} className="border-[#4a4a4a] text-[#a0a0a0] hover:bg-[#3a3a3a] hover:text-[#e0e0e0]">
+                    <Button size="sm" onClick={checkAccountStatus} className="bg-[#0066cc] text-[#e0e0e0] hover:bg-[#0052a3]">
                       <RefreshCw className="w-4 h-4 mr-2" />
                       ステータスを更新
                     </Button>
@@ -284,7 +284,7 @@ export default function StripeConnectSettingsPage() {
                       target="_blank" 
                       rel="noopener noreferrer"
                     >
-                      <Button variant="outline" size="sm" className="border-[#4a4a4a] text-[#a0a0a0] hover:bg-[#3a3a3a] hover:text-[#e0e0e0]">
+                      <Button size="sm" className="bg-[#0066cc] text-[#e0e0e0] hover:bg-[#0052a3]">
                         <ExternalLink className="w-4 h-4 mr-2" />
                         Stripeダッシュボード
                       </Button>
@@ -302,7 +302,7 @@ export default function StripeConnectSettingsPage() {
                       </p>
                     </div>
                   </div>
-                  <Button onClick={handleConnect} disabled={loading} className="bg-[#e0e0e0] hover:bg-[#d0d0d0] text-[#1a1a1a]">
+                  <Button onClick={handleConnect} disabled={loading} className="bg-[#0066cc] text-[#e0e0e0] hover:bg-[#0052a3]">
                     {loading ? (
                       <>
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -326,7 +326,7 @@ export default function StripeConnectSettingsPage() {
                 収益を受け取るには、Stripe Connectで銀行口座を設定する必要があります。
                 設定は数分で完了します。
               </p>
-              <Button onClick={handleConnect} disabled={loading} size="lg" className="bg-[#e0e0e0] hover:bg-[#d0d0d0] text-[#1a1a1a]">
+              <Button onClick={handleConnect} disabled={loading} size="lg" className="bg-[#0066cc] text-[#e0e0e0] hover:bg-[#0052a3]">
                 {loading ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />

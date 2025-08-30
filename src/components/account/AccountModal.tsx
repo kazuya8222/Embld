@@ -222,7 +222,7 @@ export function AccountModal({ isOpen, onClose }: AccountModalProps) {
                       <h4 className="text-lg font-semibold text-[#e0e0e0]">
                         {subscriptionPlan}
                       </h4>
-                      <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
+                      <Button size="sm" className="bg-[#0066cc] text-[#e0e0e0] hover:bg-[#0052a3]">
                         プランを管理
                       </Button>
                     </div>
@@ -339,7 +339,7 @@ export function AccountModal({ isOpen, onClose }: AccountModalProps) {
                         </div>
                         <Button 
                           size="sm" 
-                          className="bg-[#e0e0e0] hover:bg-[#d0d0d0] text-[#1a1a1a]"
+                          className="bg-[#0066cc] text-[#e0e0e0] hover:bg-[#0052a3]"
                           onClick={() => {
                             onClose();
                             window.location.href = '/dashboard/revenue';
@@ -362,8 +362,7 @@ export function AccountModal({ isOpen, onClose }: AccountModalProps) {
                         <div className="flex gap-2 mb-3">
                           <Button
                             size="sm"
-                            variant="outline"
-                            className="text-xs border-[#4a4a4a] text-[#a0a0a0] hover:bg-[#3a3a3a] hover:text-[#e0e0e0]"
+                            className="text-xs bg-[#0066cc] text-[#e0e0e0] hover:bg-[#0052a3]"
                             onClick={() => {
                               onClose();
                               window.location.href = '/dashboard/settings/stripe';
@@ -374,8 +373,7 @@ export function AccountModal({ isOpen, onClose }: AccountModalProps) {
                           </Button>
                           <Button
                             size="sm"
-                            variant="outline"
-                            className="text-xs border-[#4a4a4a] text-[#a0a0a0] hover:bg-[#3a3a3a] hover:text-[#e0e0e0]"
+                            className="text-xs bg-[#0066cc] text-[#e0e0e0] hover:bg-[#0052a3]"
                             onClick={() => {
                               onClose();
                               window.location.href = '/dashboard/revenue';

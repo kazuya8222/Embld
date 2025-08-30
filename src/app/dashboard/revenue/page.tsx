@@ -186,8 +186,7 @@ export default function RevenuePage() {
         </div>
         <Link href="/dashboard/settings/stripe">
           <Button 
-            variant="outline" 
-            className="border-[#4a4a4a] text-[#a0a0a0] hover:bg-[#3a3a3a] hover:text-[#e0e0e0]"
+            className="bg-[#0066cc] text-[#e0e0e0] hover:bg-[#0052a3]"
           >
             <Settings className="w-4 h-4 mr-2" />
             Stripe設定
@@ -209,7 +208,7 @@ export default function RevenuePage() {
                   収益を受け取るには銀行口座の登録が必要です。設定を完了してください。
                 </p>
                 <Link href="/dashboard/settings/stripe" className="mt-2 inline-block">
-                  <Button size="sm" className="bg-[#e0e0e0] hover:bg-[#d0d0d0] text-[#1a1a1a]">
+                  <Button size="sm" className="bg-[#0066cc] text-[#e0e0e0] hover:bg-[#0052a3]">
                     設定を完了する
                   </Button>
                 </Link>
