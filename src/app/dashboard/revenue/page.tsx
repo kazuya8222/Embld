@@ -196,15 +196,15 @@ export default function RevenuePage() {
 
       {/* Stripe Connection Warning */}
       {!stripeConnected && (
-        <Card className="border-amber-200 bg-amber-50">
+        <Card className="border-red-300 bg-red-100">
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+              <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
               <div className="flex-1">
-                <p className="text-amber-900 font-medium">
+                <p className="text-red-900 font-medium">
                   Stripe Connectの設定が未完了です
                 </p>
-                <p className="text-amber-700 text-sm mt-1">
+                <p className="text-red-700 text-sm mt-1">
                   収益を受け取るには銀行口座の登録が必要です。設定を完了してください。
                 </p>
                 <Link href="/dashboard/settings/stripe" className="mt-2 inline-block">

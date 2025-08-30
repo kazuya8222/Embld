@@ -10,7 +10,8 @@ import {
   ExternalLink,
   Sparkles,
   Bell,
-  HelpCircle
+  HelpCircle,
+  DollarSign
 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { AccountModal } from '../account/AccountModal';
@@ -194,6 +195,18 @@ export function UserProfileDropdown() {
                 >
                   <User className="w-4 h-4" />
                   <span>アカウント</span>
+                </button>
+
+                {/* Revenue Management */}
+                <button 
+                  onClick={() => {
+                    setIsOpen(false);
+                    window.location.href = '/dashboard/revenue';
+                  }}
+                  className="w-full flex items-center space-x-3 px-3 py-2.5 text-[#a0a0a0] hover:bg-[#3a3a3a] hover:text-[#e0e0e0] transition-colors text-sm"
+                >
+                  <DollarSign className="w-4 h-4" />
+                  <span>収益を管理</span>
                 </button>
 
                 <div className="border-t border-[#3a3a3a] my-1"></div>
