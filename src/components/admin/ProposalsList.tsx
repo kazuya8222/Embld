@@ -49,6 +49,7 @@ export function ProposalsList({
   const supabase = createClient()
   
   const selectedStatus = searchParams.status || 'all'
+  const limit = 20 // ページあたりの表示件数
 
   const updateFilter = (key: string, value: string) => {
     const params = new URLSearchParams(urlSearchParams.toString())
