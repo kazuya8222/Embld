@@ -192,7 +192,7 @@ export default function ProposalPage({ params }: ProposalPageProps) {
       <div className="h-screen bg-[#1a1a1a] flex items-center justify-center">
         <div className="text-center">
           <div className="text-red-400 mb-4">{error || '企画書が見つかりませんでした'}</div>
-          <Button onClick={() => router.push('/home')} className="bg-[#0066cc] text-[#e0e0e0] hover:bg-[#0052a3]">ホームに戻る</Button>
+          <Button onClick={() => router.push('/proposals')} className="bg-[#0066cc] text-[#e0e0e0] hover:bg-[#0052a3]">企画書一覧に戻る</Button>
         </div>
       </div>
     );
@@ -251,7 +251,7 @@ export default function ProposalPage({ params }: ProposalPageProps) {
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-4">
               <Button
-                onClick={() => router.push('/home')}
+                onClick={() => router.push('/proposals')}
                 variant="ghost"
                 size="sm"
                 className="text-[#808080] hover:text-[#e0e0e0] hover:bg-[#2a2a2a]"
@@ -310,7 +310,7 @@ export default function ProposalPage({ params }: ProposalPageProps) {
                   onClick={handleEdit}
                   variant="outline"
                   size="sm"
-                  className="text-[#a0a0a0] border-[#5a5a5a] hover:bg-[#2a2a2a]"
+                  className="text-white border-[#0066cc] bg-[#0066cc] hover:bg-[#0052a3]"
                 >
                   <Edit className="w-4 h-4 mr-2" />
                   編集
