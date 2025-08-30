@@ -25,11 +25,9 @@ export default async function UsersPage({
       id,
       email,
       account_status,
-      terms_agreed_at,
       last_login_at,
       created_at,
       is_admin,
-      is_developer,
       subscription_plan,
       subscription_status,
       credits_balance

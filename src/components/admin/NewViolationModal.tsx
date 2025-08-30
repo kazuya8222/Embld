@@ -128,7 +128,7 @@ export function NewViolationModal({ onClose, onSuccess }: NewViolationModalProps
                   value={searchEmail}
                   onChange={(e) => setSearchEmail(e.target.value)}
                   placeholder="ユーザーのメールアドレスを入力"
-                  className="flex-1 border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-gray-900 bg-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
                 <button
                   type="button"
@@ -172,7 +172,7 @@ export function NewViolationModal({ onClose, onSuccess }: NewViolationModalProps
                 <select
                   value={formData.violation_type}
                   onChange={(e) => setFormData({ ...formData, violation_type: e.target.value })}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   <option value="spam">スパム</option>
                   <option value="inappropriate_content">不適切なコンテンツ</option>
@@ -189,7 +189,7 @@ export function NewViolationModal({ onClose, onSuccess }: NewViolationModalProps
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   rows={4}
                   required
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-900 bg-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="違反の詳細を記述してください"
                 />
               </div>
@@ -200,7 +200,7 @@ export function NewViolationModal({ onClose, onSuccess }: NewViolationModalProps
                   <select
                     value={formData.related_content_type}
                     onChange={(e) => setFormData({ ...formData, related_content_type: e.target.value })}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
                     <option value="">選択してください</option>
                     <option value="idea">アイデア</option>
@@ -214,7 +214,7 @@ export function NewViolationModal({ onClose, onSuccess }: NewViolationModalProps
                     type="text"
                     value={formData.related_content_id}
                     onChange={(e) => setFormData({ ...formData, related_content_id: e.target.value })}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-900 bg-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="UUID"
                   />
                 </div>
@@ -231,7 +231,7 @@ export function NewViolationModal({ onClose, onSuccess }: NewViolationModalProps
                 <select
                   value={formData.action_taken}
                   onChange={(e) => setFormData({ ...formData, action_taken: e.target.value })}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   <option value="warning">警告</option>
                   <option value="content_removal">コンテンツ削除</option>
@@ -246,7 +246,7 @@ export function NewViolationModal({ onClose, onSuccess }: NewViolationModalProps
                   value={formData.admin_notes}
                   onChange={(e) => setFormData({ ...formData, admin_notes: e.target.value })}
                   rows={3}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-900 bg-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="内部用のメモを記載してください"
                 />
               </div>

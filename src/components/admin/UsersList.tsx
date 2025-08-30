@@ -2,19 +2,17 @@
 
 import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Search, Filter, Eye, Edit, Shield, Ban } from 'lucide-react'
+import { Search, Filter, Edit2 } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
 import { UserStatusBadge } from './UserStatusBadge'
-import { UserActionModal } from './UserActionModal'
 
 interface User {
   id: string
   email: string
   account_status: string
-  terms_agreed_at: string | null
   last_login_at: string | null
   created_at: string
   is_admin: boolean
-  is_developer: boolean
   subscription_plan: string
   subscription_status: string
   credits_balance: number
@@ -30,10 +28,13 @@ interface UsersListProps {
 export function UsersList({ users, currentPage, totalPages, searchParams }: UsersListProps) {
   const router = useRouter()
   const urlSearchParams = useSearchParams()
+  const supabase = createClient()
   const [searchTerm, setSearchTerm] = useState(searchParams.search || '')
   const [statusFilter, setStatusFilter] = useState(searchParams.status || '')
-  const [selectedUser, setSelectedUser] = useState<User | null>(null)
-  const [modalType, setModalType] = useState<'view' | 'edit' | 'status' | null>(null)
+  const [editingUser, setEditingUser] = useState<string | null>(null)
+  const [editingPermission, setEditingPermission] = useState<string | null>(null)
+  const [updatingStatus, setUpdatingStatus] = useState<string | null>(null)
+  const [updatingPermission, setUpdatingPermission] = useState<string | null>(null)
 
   const handleSearch = () => {
     const params = new URLSearchParams(urlSearchParams.toString())
@@ -69,14 +70,50 @@ export function UsersList({ users, currentPage, totalPages, searchParams }: User
     return new Date(dateString).toLocaleDateString('ja-JP')
   }
 
-  const openModal = (user: User, type: 'view' | 'edit' | 'status') => {
-    setSelectedUser(user)
-    setModalType(type)
+  const updateUserStatus = async (userId: string, newStatus: string) => {
+    setUpdatingStatus(userId)
+    try {
+      const { error } = await supabase
+        .from('users')
+        .update({ account_status: newStatus })
+        .eq('id', userId)
+
+      if (!error) {
+        router.refresh()
+      } else {
+        console.error('Error updating user status:', error)
+        alert('ステータスの更新に失敗しました')
+      }
+    } catch (error) {
+      console.error('Error:', error)
+      alert('エラーが発生しました')
+    } finally {
+      setUpdatingStatus(null)
+      setEditingUser(null)
+    }
   }
 
-  const closeModal = () => {
-    setSelectedUser(null)
-    setModalType(null)
+  const updateUserPermission = async (userId: string, isAdmin: boolean) => {
+    setUpdatingPermission(userId)
+    try {
+      const { error } = await supabase
+        .from('users')
+        .update({ is_admin: isAdmin })
+        .eq('id', userId)
+
+      if (!error) {
+        router.refresh()
+      } else {
+        console.error('Error updating user permission:', error)
+        alert('権限の更新に失敗しました')
+      }
+    } catch (error) {
+      console.error('Error:', error)
+      alert('エラーが発生しました')
+    } finally {
+      setUpdatingPermission(null)
+      setEditingPermission(null)
+    }
   }
 
   return (
@@ -145,9 +182,6 @@ export function UsersList({ users, currentPage, totalPages, searchParams }: User
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   登録日
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  アクション
-                </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -160,25 +194,61 @@ export function UsersList({ users, currentPage, totalPages, searchParams }: User
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <UserStatusBadge status={user.account_status} />
-                    <div className="text-xs text-gray-500 mt-1">
-                      規約同意: {user.terms_agreed_at ? '済' : '未'}
+                    <div className="flex items-center gap-2">
+                      {editingUser === user.id ? (
+                        <select
+                          value={user.account_status}
+                          onChange={(e) => updateUserStatus(user.id, e.target.value)}
+                          disabled={updatingStatus === user.id}
+                          className="text-sm border border-gray-300 rounded px-2 py-1 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                          <option value="active">有効</option>
+                          <option value="inactive">無効</option>
+                          <option value="suspended">凍結</option>
+                        </select>
+                      ) : (
+                        <>
+                          <UserStatusBadge status={user.account_status} />
+                          <button
+                            onClick={() => setEditingUser(user.id)}
+                            className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
+                            title="ステータスを編集"
+                          >
+                            <Edit2 className="w-3 h-3" />
+                          </button>
+                        </>
+                      )}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    <div className="space-y-1">
-                      {user.is_admin && (
-                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                          管理者
-                        </span>
-                      )}
-                      {user.is_developer && (
-                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                          開発者
-                        </span>
-                      )}
-                      {!user.is_admin && !user.is_developer && (
-                        <span className="text-gray-500">一般ユーザー</span>
+                    <div className="flex items-center gap-2">
+                      {editingPermission === user.id ? (
+                        <select
+                          value={user.is_admin ? 'admin' : 'user'}
+                          onChange={(e) => updateUserPermission(user.id, e.target.value === 'admin')}
+                          disabled={updatingPermission === user.id}
+                          className="text-sm border border-gray-300 rounded px-2 py-1 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                          <option value="user">一般ユーザー</option>
+                          <option value="admin">管理者</option>
+                        </select>
+                      ) : (
+                        <>
+                          {user.is_admin ? (
+                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                              管理者
+                            </span>
+                          ) : (
+                            <span className="text-gray-500">一般ユーザー</span>
+                          )}
+                          <button
+                            onClick={() => setEditingPermission(user.id)}
+                            className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
+                            title="権限を編集"
+                          >
+                            <Edit2 className="w-3 h-3" />
+                          </button>
+                        </>
                       )}
                     </div>
                   </td>
@@ -191,31 +261,6 @@ export function UsersList({ users, currentPage, totalPages, searchParams }: User
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {formatDate(user.created_at)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex space-x-2">
-                      <button
-                        onClick={() => openModal(user, 'view')}
-                        className="text-blue-600 hover:text-blue-900"
-                        title="詳細表示"
-                      >
-                        <Eye className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => openModal(user, 'edit')}
-                        className="text-green-600 hover:text-green-900"
-                        title="編集"
-                      >
-                        <Edit className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => openModal(user, 'status')}
-                        className="text-orange-600 hover:text-orange-900"
-                        title="ステータス変更"
-                      >
-                        <Shield className="w-4 h-4" />
-                      </button>
-                    </div>
                   </td>
                 </tr>
               ))}
@@ -252,19 +297,6 @@ export function UsersList({ users, currentPage, totalPages, searchParams }: User
           </div>
         )}
       </div>
-
-      {/* モーダル */}
-      {selectedUser && modalType && (
-        <UserActionModal
-          user={selectedUser}
-          type={modalType}
-          onClose={closeModal}
-          onSuccess={() => {
-            closeModal()
-            router.refresh()
-          }}
-        />
-      )}
     </div>
   )
 }

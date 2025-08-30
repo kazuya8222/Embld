@@ -134,7 +134,7 @@ export default function ContactsClient({ contacts: initialContacts }: ContactsCl
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="all">すべて</option>
                   <option value="unread">未読</option>
@@ -147,7 +147,7 @@ export default function ContactsClient({ contacts: initialContacts }: ContactsCl
                 <select
                   value={categoryFilter}
                   onChange={(e) => setCategoryFilter(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="all">すべて</option>
                   <option value="general">一般的なお問い合わせ</option>
@@ -167,7 +167,7 @@ export default function ContactsClient({ contacts: initialContacts }: ContactsCl
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     placeholder="名前、メール、内容で検索..."
-                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md text-sm"
+                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md text-sm text-gray-900 bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
               </div>
@@ -338,16 +338,6 @@ export default function ContactsClient({ contacts: initialContacts }: ContactsCl
                     </div>
                   </div>
 
-                  {/* Actions */}
-                  <div className="pt-4 border-t border-gray-200">
-                    <a
-                      href={`mailto:${selectedContact.email}?subject=Re: お問い合わせについて&body=お世話になっております。%0A%0AEmBldサポートチームです。%0A%0Aお問い合わせいただき、ありがとうございます。%0A%0A`}
-                      className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors"
-                    >
-                      <Mail className="w-4 h-4" />
-                      メールで返信
-                    </a>
-                  </div>
                 </div>
               </div>
             </div>

@@ -125,7 +125,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const { data: profile, error } = await supabase
         .from('users')
-        .select('google_avatar_url, email, created_at, is_admin, is_developer, credits_balance')
+        .select('google_avatar_url, email, created_at, is_admin, credits_balance')
         .eq('id', user.id)
         .single()
       
@@ -246,7 +246,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       const { data: profile, error } = await supabase
         .from('users')
-        .select('google_avatar_url, email, created_at, is_admin, is_developer, credits_balance')
+        .select('google_avatar_url, email, created_at, is_admin, credits_balance')
         .eq('id', user.id)
         .single()
       
@@ -256,8 +256,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           google_avatar_url: null,
           email: user.email,
           created_at: new Date().toISOString(),
-          is_admin: false,
-          is_developer: false
+          is_admin: false
         })
       } else {
         console.log('AuthProvider: Profile loaded successfully:', profile.email)
