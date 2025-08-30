@@ -9,7 +9,7 @@ import { Sidebar } from '@/components/common/Sidebar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Eye, Heart, Rocket, ChevronRight, Calendar, Plus, DollarSign } from 'lucide-react';
+import { Heart, Rocket, ChevronRight, Calendar } from 'lucide-react';
 import Link from 'next/link';
 
 interface UserProduct {
@@ -205,56 +205,6 @@ export default function ProductsPage() {
                 ))}
               </div>
 
-              {/* Revenue Overview Section */}
-              <div className="space-y-6">
-                <h2 className="text-2xl font-bold text-[#e0e0e0]">収益概要</h2>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <Card className="bg-[#2a2a2a] border-[#3a3a3a]">
-                    <CardHeader>
-                      <CardTitle className="text-[#e0e0e0] flex items-center">
-                        <DollarSign className="w-5 h-5 mr-2 text-green-400" />
-                        総収益
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-3xl font-bold text-green-400">¥0</div>
-                      <p className="text-[#a0a0a0] text-sm mt-2">過去30日間</p>
-                    </CardContent>
-                  </Card>
-                  
-                  <Card className="bg-[#2a2a2a] border-[#3a3a3a]">
-                    <CardHeader>
-                      <CardTitle className="text-[#e0e0e0] flex items-center">
-                        <Heart className="w-5 h-5 mr-2 text-red-400" />
-                        プロダクト統計
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-3xl font-bold text-[#e0e0e0]">{products.length}</div>
-                      <p className="text-[#a0a0a0] text-sm mt-2">開発済みプロダクト</p>
-                    </CardContent>
-                  </Card>
-                </div>
-                
-                {/* Quick Actions */}
-                <Card className="bg-[#2a2a2a] border-[#3a3a3a]">
-                  <CardHeader>
-                    <CardTitle className="text-[#e0e0e0]">クイックアクション</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <Link href="/dashboard/revenue">
-                      <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
-                        詳細な収益分析を見る
-                      </Button>
-                    </Link>
-                    <Link href="/dashboard/settings/stripe">
-                      <Button variant="outline" className="w-full border-[#4a4a4a] text-[#a0a0a0] hover:bg-[#3a3a3a] hover:text-[#e0e0e0]">
-                        Stripe設定を確認
-                      </Button>
-                    </Link>
-                  </CardContent>
-                </Card>
-              </div>
             </div>
           )}
             </div>
