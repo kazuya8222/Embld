@@ -7,15 +7,17 @@ export default async function AdminDashboard() {
   // 基本統計データを取得
   const [
     { count: totalUsers },
-    { count: totalIdeas },
-    { count: pendingIdeas },
+    { count: totalProposals },
+    { count: pendingProposals },
+    { count: totalProducts },
     { count: activeUsers },
     { count: totalContacts },
     { count: unreadContacts }
   ] = await Promise.all([
     supabase.from('users').select('*', { count: 'exact', head: true }),
-    supabase.from('ideas').select('*', { count: 'exact', head: true }),
-    supabase.from('ideas').select('*', { count: 'exact', head: true }).eq('approval_status', 'pending'),
+    supabase.from('proposals').select('*', { count: 'exact', head: true }),
+    supabase.from('proposals').select('*', { count: 'exact', head: true }).eq('status', '審査中'),
+    supabase.from('products').select('*', { count: 'exact', head: true }),
     supabase.from('users').select('*', { count: 'exact', head: true }).eq('account_status', 'active'),
     supabase.from('contacts').select('*', { count: 'exact', head: true }),
     supabase.from('contacts').select('*', { count: 'exact', head: true }).eq('status', 'unread')
@@ -23,8 +25,9 @@ export default async function AdminDashboard() {
 
   const stats = {
     totalUsers: totalUsers || 0,
-    totalIdeas: totalIdeas || 0,
-    pendingIdeas: pendingIdeas || 0,
+    totalProposals: totalProposals || 0,
+    totalProducts: totalProducts || 0,
+    pendingProposals: pendingProposals || 0,
     activeUsers: activeUsers || 0,
     totalContacts: totalContacts || 0,
     unreadContacts: unreadContacts || 0
@@ -48,12 +51,12 @@ export default async function AdminDashboard() {
               <span className="text-sm font-medium">5件 (今日)</span>
             </div>
             <div className="flex items-center justify-between py-2 border-b">
-              <span className="text-sm text-gray-600">新規アイデア投稿</span>
-              <span className="text-sm font-medium">12件 (今日)</span>
+              <span className="text-sm text-gray-600">新規企画書投稿</span>
+              <span className="text-sm font-medium">{stats.totalProposals}件 (総数)</span>
             </div>
             <div className="flex items-center justify-between py-2 border-b">
-              <span className="text-sm text-gray-600">承認待ちアイデア</span>
-              <span className="text-sm font-medium text-orange-600">{stats.pendingIdeas}件</span>
+              <span className="text-sm text-gray-600">審査中企画書</span>
+              <span className="text-sm font-medium text-orange-600">{stats.pendingProposals}件</span>
             </div>
             <div className="flex items-center justify-between py-2">
               <span className="text-sm text-gray-600">未読お問い合わせ</span>
@@ -73,11 +76,11 @@ export default async function AdminDashboard() {
               <div className="text-sm text-blue-600">ユーザー一覧・権限管理</div>
             </a>
             <a 
-              href="/admin/ideas" 
+              href="/admin/proposals" 
               className="block p-3 rounded-lg bg-green-50 hover:bg-green-100 transition-colors"
             >
-              <div className="font-medium text-green-900">アイデア管理</div>
-              <div className="text-sm text-green-600">投稿の承認・編集</div>
+              <div className="font-medium text-green-900">企画書管理</div>
+              <div className="text-sm text-green-600">企画書の承認・編集</div>
             </a>
             <a 
               href="/admin/contacts" 
@@ -85,13 +88,6 @@ export default async function AdminDashboard() {
             >
               <div className="font-medium text-orange-900">お問い合わせ管理</div>
               <div className="text-sm text-orange-600">顧客サポート・問い合わせ対応</div>
-            </a>
-            <a 
-              href="/admin/settings" 
-              className="block p-3 rounded-lg bg-purple-50 hover:bg-purple-100 transition-colors"
-            >
-              <div className="font-medium text-purple-900">運営設定</div>
-              <div className="text-sm text-purple-600">カテゴリ・タグ管理</div>
             </a>
           </div>
         </div>

@@ -9,13 +9,15 @@ import { UserActionModal } from './UserActionModal'
 interface User {
   id: string
   email: string
-  username: string | null
   account_status: string
   terms_agreed_at: string | null
   last_login_at: string | null
   created_at: string
   is_admin: boolean
   is_developer: boolean
+  subscription_plan: string
+  subscription_status: string
+  credits_balance: number
 }
 
 interface UsersListProps {
@@ -87,7 +89,7 @@ export function UsersList({ users, currentPage, totalPages, searchParams }: User
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input
                 type="text"
-                placeholder="メールアドレスまたはユーザー名で検索"
+                placeholder="メールアドレスで検索"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
@@ -135,10 +137,13 @@ export function UsersList({ users, currentPage, totalPages, searchParams }: User
                   権限
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  登録日
+                  サブスクリプション
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  最終ログイン
+                  クレジット
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  登録日
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   アクション
@@ -150,10 +155,7 @@ export function UsersList({ users, currentPage, totalPages, searchParams }: User
                 <tr key={user.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div>
-                      <div className="text-sm font-medium text-gray-900">
-                        {user.username || '未設定'}
-                      </div>
-                      <div className="text-sm text-gray-500">{user.email}</div>
+                      <div className="text-sm font-medium text-gray-900">{user.email}</div>
                       <div className="text-xs text-gray-400">ID: {user.id.slice(0, 8)}...</div>
                     </div>
                   </td>
@@ -181,10 +183,14 @@ export function UsersList({ users, currentPage, totalPages, searchParams }: User
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {formatDate(user.created_at)}
+                    <div className="text-sm font-medium">{user.subscription_plan}</div>
+                    <div className="text-xs text-gray-500">{user.subscription_status}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {formatDate(user.last_login_at)}
+                    {user.credits_balance}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {formatDate(user.created_at)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex space-x-2">

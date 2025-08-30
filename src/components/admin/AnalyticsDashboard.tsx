@@ -1,28 +1,42 @@
 'use client'
 
-import { TrendingUp, Users, Lightbulb, CheckCircle, Clock } from 'lucide-react'
+import { TrendingUp, Users, FileText, Package, CheckCircle, DollarSign } from 'lucide-react'
 
 interface AnalyticsData {
   userStats: {
     total: number
     active: number
     newThisMonth: number
-    activeThisMonth: number
+    premiumUsers: number
   }
-  ideaStats: {
+  proposalStats: {
     total: number
-    open: number
-    inDevelopment: number
-    completed: number
+    pending: number
+    approved: number
+    rejected: number
   }
-  categoryStats: Record<string, number>
-  monthlyUsers: Array<{ month: string; count: number }>
-  monthlyIdeas: Array<{ month: string; count: number }>
-  recentActivities: Array<{
+  productStats: {
+    total: number
+    development: number
+    testing: number
+    launched: number
+  }
+  revenueStats: {
+    totalRevenue: number
+    totalTransactions: number
+  }
+  recentProposals: Array<{
     id: string
     title: string
     created_at: string
-    users: { username: string | null; email: string }
+    status: string
+    user_email: string
+  }>
+  recentProducts: Array<{
+    id: string
+    title: string
+    created_at: string
+    status: string
   }>
 }
 
@@ -40,24 +54,24 @@ export function AnalyticsDashboard({ data }: AnalyticsDashboardProps) {
       color: 'bg-blue-500'
     },
     {
-      name: 'アクティブユーザー',
-      value: data.userStats.active.toLocaleString(),
-      change: `${data.userStats.activeThisMonth} 今月活動`,
-      icon: TrendingUp,
-      color: 'bg-green-500'
-    },
-    {
-      name: '総アイデア数',
-      value: data.ideaStats.total.toLocaleString(),
-      change: `${data.ideaStats.open} 公開中`,
-      icon: Lightbulb,
+      name: '企画書数',
+      value: data.proposalStats.total.toLocaleString(),
+      change: `${data.proposalStats.pending} 審査中`,
+      icon: FileText,
       color: 'bg-yellow-500'
     },
     {
-      name: '開発・完了済み',
-      value: (data.ideaStats.inDevelopment + data.ideaStats.completed).toLocaleString(),
-      change: `${data.ideaStats.completed} 完了`,
-      icon: CheckCircle,
+      name: 'プロダクト数',
+      value: data.productStats.total.toLocaleString(),
+      change: `${data.productStats.launched} ローンチ済み`,
+      icon: Package,
+      color: 'bg-green-500'
+    },
+    {
+      name: '総収益',
+      value: `¥${data.revenueStats.totalRevenue.toLocaleString()}`,
+      change: `${data.revenueStats.totalTransactions} 取引`,
+      icon: DollarSign,
       color: 'bg-purple-500'
     }
   ]
@@ -90,81 +104,59 @@ export function AnalyticsDashboard({ data }: AnalyticsDashboardProps) {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* カテゴリ別統計 */}
+        {/* 最近の企画書 */}
         <div className="bg-white rounded-lg border p-6">
-          <h3 className="text-lg font-semibold mb-4">カテゴリ別アイデア数</h3>
+          <h3 className="text-lg font-semibold mb-4">最近の企画書</h3>
           <div className="space-y-3">
-            {Object.entries(data.categoryStats)
-              .sort(([,a], [,b]) => b - a)
-              .slice(0, 10)
-              .map(([category, count]) => {
-                const percentage = (count / data.ideaStats.total) * 100
-                return (
-                  <div key={category} className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-sm font-medium text-gray-900 truncate">
-                          {category}
-                        </span>
-                        <span className="text-sm text-gray-500">{count}件</span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div 
-                          className="bg-blue-600 h-2 rounded-full" 
-                          style={{ width: `${percentage}%` }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )
-              })}
-          </div>
-        </div>
-
-        {/* 最近のアクティビティ */}
-        <div className="bg-white rounded-lg border p-6">
-          <h3 className="text-lg font-semibold mb-4">最近のアイデア投稿</h3>
-          <div className="space-y-3">
-            {data.recentActivities.map((activity) => (
-              <div key={activity.id} className="flex items-start space-x-3 py-2">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <Lightbulb className="w-4 h-4 text-blue-600" />
+            {data.recentProposals.map((proposal) => (
+              <div key={proposal.id} className="flex items-start space-x-3 py-2">
+                <div className="p-2 bg-yellow-100 rounded-lg">
+                  <FileText className="w-4 h-4 text-yellow-600" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-gray-900 truncate">
-                    {activity.title}
+                    {proposal.title}
                   </p>
                   <p className="text-sm text-gray-500">
-                    {activity.users.username || '未設定'} • {formatDate(activity.created_at)}
+                    {proposal.user_email} • {formatDate(proposal.created_at)}
                   </p>
+                  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                    proposal.status === '承認済み' ? 'bg-green-100 text-green-800' :
+                    proposal.status === '審査中' ? 'bg-yellow-100 text-yellow-800' :
+                    'bg-red-100 text-red-800'
+                  }`}>
+                    {proposal.status}
+                  </span>
                 </div>
               </div>
             ))}
           </div>
         </div>
-      </div>
 
-      {/* 月別トレンド */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* 最近のプロダクト */}
         <div className="bg-white rounded-lg border p-6">
-          <h3 className="text-lg font-semibold mb-4">月別ユーザー登録数</h3>
-          <div className="space-y-2">
-            {data.monthlyUsers.slice(-6).map((item) => (
-              <div key={item.month} className="flex items-center justify-between py-2">
-                <span className="text-sm text-gray-600">{item.month}</span>
-                <span className="text-sm font-medium text-gray-900">{item.count}人</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg border p-6">
-          <h3 className="text-lg font-semibold mb-4">月別アイデア投稿数</h3>
-          <div className="space-y-2">
-            {data.monthlyIdeas.slice(-6).map((item) => (
-              <div key={item.month} className="flex items-center justify-between py-2">
-                <span className="text-sm text-gray-600">{item.month}</span>
-                <span className="text-sm font-medium text-gray-900">{item.count}件</span>
+          <h3 className="text-lg font-semibold mb-4">最近のプロダクト</h3>
+          <div className="space-y-3">
+            {data.recentProducts.map((product) => (
+              <div key={product.id} className="flex items-start space-x-3 py-2">
+                <div className="p-2 bg-green-100 rounded-lg">
+                  <Package className="w-4 h-4 text-green-600" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-900 truncate">
+                    {product.title}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    {formatDate(product.created_at)}
+                  </p>
+                  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                    product.status === 'launched' ? 'bg-green-100 text-green-800' :
+                    product.status === 'testing' ? 'bg-blue-100 text-blue-800' :
+                    'bg-yellow-100 text-yellow-800'
+                  }`}>
+                    {product.status}
+                  </span>
+                </div>
               </div>
             ))}
           </div>
@@ -172,26 +164,52 @@ export function AnalyticsDashboard({ data }: AnalyticsDashboardProps) {
       </div>
 
       {/* ステータス別内訳 */}
-      <div className="bg-white rounded-lg border p-6">
-        <h3 className="text-lg font-semibold mb-4">アイデアステータス別内訳</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="text-center p-4 bg-gray-50 rounded-lg">
-            <div className="text-2xl font-bold text-gray-900">{data.ideaStats.open}</div>
-            <div className="text-sm text-gray-600">公開中</div>
-          </div>
-          <div className="text-center p-4 bg-blue-50 rounded-lg">
-            <div className="text-2xl font-bold text-blue-900">{data.ideaStats.inDevelopment}</div>
-            <div className="text-sm text-blue-600">開発中</div>
-          </div>
-          <div className="text-center p-4 bg-green-50 rounded-lg">
-            <div className="text-2xl font-bold text-green-900">{data.ideaStats.completed}</div>
-            <div className="text-sm text-green-600">完了</div>
-          </div>
-          <div className="text-center p-4 bg-yellow-50 rounded-lg">
-            <div className="text-2xl font-bold text-yellow-900">
-              {Math.round((data.ideaStats.completed / data.ideaStats.total) * 100) || 0}%
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="bg-white rounded-lg border p-6">
+          <h3 className="text-lg font-semibold mb-4">企画書ステータス別内訳</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="text-center p-4 bg-yellow-50 rounded-lg">
+              <div className="text-2xl font-bold text-yellow-900">{data.proposalStats.pending}</div>
+              <div className="text-sm text-yellow-600">審査中</div>
             </div>
-            <div className="text-sm text-yellow-600">完了率</div>
+            <div className="text-center p-4 bg-green-50 rounded-lg">
+              <div className="text-2xl font-bold text-green-900">{data.proposalStats.approved}</div>
+              <div className="text-sm text-green-600">承認済み</div>
+            </div>
+            <div className="text-center p-4 bg-red-50 rounded-lg">
+              <div className="text-2xl font-bold text-red-900">{data.proposalStats.rejected}</div>
+              <div className="text-sm text-red-600">却下</div>
+            </div>
+            <div className="text-center p-4 bg-blue-50 rounded-lg">
+              <div className="text-2xl font-bold text-blue-900">
+                {Math.round((data.proposalStats.approved / data.proposalStats.total) * 100) || 0}%
+              </div>
+              <div className="text-sm text-blue-600">承認率</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg border p-6">
+          <h3 className="text-lg font-semibold mb-4">プロダクトステータス別内訳</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="text-center p-4 bg-yellow-50 rounded-lg">
+              <div className="text-2xl font-bold text-yellow-900">{data.productStats.development}</div>
+              <div className="text-sm text-yellow-600">開発中</div>
+            </div>
+            <div className="text-center p-4 bg-blue-50 rounded-lg">
+              <div className="text-2xl font-bold text-blue-900">{data.productStats.testing}</div>
+              <div className="text-sm text-blue-600">テスト中</div>
+            </div>
+            <div className="text-center p-4 bg-green-50 rounded-lg">
+              <div className="text-2xl font-bold text-green-900">{data.productStats.launched}</div>
+              <div className="text-sm text-green-600">ローンチ済み</div>
+            </div>
+            <div className="text-center p-4 bg-purple-50 rounded-lg">
+              <div className="text-2xl font-bold text-purple-900">
+                {Math.round((data.productStats.launched / data.productStats.total) * 100) || 0}%
+              </div>
+              <div className="text-sm text-purple-600">ローンチ率</div>
+            </div>
           </div>
         </div>
       </div>

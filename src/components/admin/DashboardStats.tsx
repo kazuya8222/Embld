@@ -1,12 +1,13 @@
 'use client'
 
-import { Users, Lightbulb, Clock, CheckCircle } from 'lucide-react'
+import { Users, Lightbulb, Clock, CheckCircle, Package } from 'lucide-react'
 
 interface StatsProps {
   stats: {
     totalUsers: number
-    totalIdeas: number
-    pendingIdeas: number
+    totalProposals: number
+    totalProducts: number
+    pendingProposals: number
     activeUsers: number
   }
 }
@@ -26,16 +27,16 @@ export function DashboardStats({ stats }: StatsProps) {
       color: 'bg-green-500'
     },
     {
-      name: '総アイデア数',
-      value: stats.totalIdeas.toLocaleString(),
+      name: '企画書数',
+      value: stats.totalProposals.toLocaleString(),
       icon: Lightbulb,
       color: 'bg-yellow-500'
     },
     {
-      name: '承認待ち',
-      value: stats.pendingIdeas.toLocaleString(),
-      icon: Clock,
-      color: 'bg-orange-500'
+      name: 'プロダクト数',
+      value: stats.totalProducts.toLocaleString(),
+      icon: Package,
+      color: 'bg-purple-500'
     }
   ]
 

@@ -7,13 +7,15 @@ import { createClient } from '@/lib/supabase/client'
 interface User {
   id: string
   email: string
-  username: string | null
   account_status: string
   terms_agreed_at: string | null
   last_login_at: string | null
   created_at: string
   is_admin: boolean
   is_developer: boolean
+  subscription_plan: string
+  subscription_status: string
+  credits_balance: number
 }
 
 interface UserActionModalProps {
@@ -26,7 +28,6 @@ interface UserActionModalProps {
 export function UserActionModal({ user, type, onClose, onSuccess }: UserActionModalProps) {
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
-    username: user.username || '',
     account_status: user.account_status,
     is_admin: user.is_admin,
     is_developer: user.is_developer
@@ -42,7 +43,6 @@ export function UserActionModal({ user, type, onClose, onSuccess }: UserActionMo
       const { error } = await supabase
         .from('users')
         .update({
-          username: formData.username || null,
           account_status: formData.account_status,
           is_admin: formData.is_admin,
           is_developer: formData.is_developer,
@@ -64,7 +64,6 @@ export function UserActionModal({ user, type, onClose, onSuccess }: UserActionMo
         details: {
           changes: formData,
           original: {
-            username: user.username,
             account_status: user.account_status,
             is_admin: user.is_admin,
             is_developer: user.is_developer
@@ -121,8 +120,8 @@ export function UserActionModal({ user, type, onClose, onSuccess }: UserActionMo
                   <p className="mt-1 text-sm text-gray-900">{user.email}</p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">ユーザー名</label>
-                  <p className="mt-1 text-sm text-gray-900">{user.username || '未設定'}</p>
+                  <label className="block text-sm font-medium text-gray-700">サブスクリプション</label>
+                  <p className="mt-1 text-sm text-gray-900">{user.subscription_plan} ({user.subscription_status})</p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">アカウント状態</label>
@@ -139,6 +138,10 @@ export function UserActionModal({ user, type, onClose, onSuccess }: UserActionMo
                 <div>
                   <label className="block text-sm font-medium text-gray-700">利用規約同意</label>
                   <p className="mt-1 text-sm text-gray-900">{formatDate(user.terms_agreed_at)}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">クレジット残高</label>
+                  <p className="mt-1 text-sm text-gray-900">{user.credits_balance}</p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">権限</label>
@@ -162,16 +165,6 @@ export function UserActionModal({ user, type, onClose, onSuccess }: UserActionMo
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700">ユーザー名</label>
-                <input
-                  type="text"
-                  value={formData.username}
-                  onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700">アカウントステータス</label>
                 <select

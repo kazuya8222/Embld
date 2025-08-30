@@ -24,20 +24,22 @@ export default async function UsersPage({
     .select(`
       id,
       email,
-      username,
       account_status,
       terms_agreed_at,
       last_login_at,
       created_at,
       is_admin,
-      is_developer
+      is_developer,
+      subscription_plan,
+      subscription_status,
+      credits_balance
     `)
     .order('created_at', { ascending: false })
     .range(offset, offset + limit - 1)
 
   // 検索フィルター
   if (searchParams.search) {
-    query = query.or(`email.ilike.%${searchParams.search}%,username.ilike.%${searchParams.search}%`)
+    query = query.ilike('email', `%${searchParams.search}%`)
   }
 
   // ステータスフィルター

@@ -8,7 +8,6 @@ import {
   Users, 
   Lightbulb, 
   BarChart3, 
-  Settings, 
   Home,
   Shield,
   FileText,
@@ -27,9 +26,7 @@ const navigation = [
   { name: 'プロダクト管理', href: '/admin/products', icon: Monitor },
   { name: 'お問い合わせ管理', href: '/admin/contacts', icon: MessageSquare },
   { name: '統計・分析', href: '/admin/analytics', icon: BarChart3 },
-  { name: '運営設定', href: '/admin/settings', icon: Settings },
   { name: '違反管理', href: '/admin/violations', icon: Shield },
-  { name: '操作ログ', href: '/admin/logs', icon: FileText },
 ]
 
 export function AdminSidebar() {

@@ -7,63 +7,81 @@ export default async function AnalyticsPage() {
   // 各種統計データを取得
   const [
     { data: userStats },
-    { data: ideaStats },
-    { data: monthlyUsers },
-    { data: monthlyIdeas },
-    { data: categoryStats },
-    { data: recentActivities }
+    { data: proposalStats },
+    { data: productStats },
+    { data: recentProposals },
+    { data: recentProducts },
+    { data: revenueData }
   ] = await Promise.all([
     // ユーザー統計
     supabase.from('users').select(`
       created_at,
       account_status,
-      last_login_at
+      last_login_at,
+      subscription_plan,
+      credits_balance
     `),
     
-    // アイデア統計
-    supabase.from('ideas').select(`
+    // 企画書統計
+    supabase.from('proposals').select(`
       created_at,
       status,
-      category,
-      wants(count),
-      comments(count)
+      service_name
     `),
     
-    // 月別ユーザー登録数
-    supabase.rpc('get_monthly_user_stats'),
+    // プロダクト統計
+    supabase.from('products').select(`
+      created_at,
+      status,
+      category
+    `),
     
-    // 月別アイデア投稿数
-    supabase.rpc('get_monthly_idea_stats'),
-    
-    // カテゴリ別統計
-    supabase.from('ideas').select('category'),
-    
-    // 最近のアクティビティ
-    supabase.from('ideas')
+    // 最近の企画書
+    supabase.from('proposals')
+      .select(`
+        id,
+        service_name,
+        created_at,
+        user_id,
+        status
+      `)
+      .order('created_at', { ascending: false })
+      .limit(10),
+      
+    // 最近のプロダクト
+    supabase.from('products')
       .select(`
         id,
         title,
         created_at,
-        user_id
+        status
       `)
       .order('created_at', { ascending: false })
-      .limit(10)
+      .limit(10),
+      
+    // 収益データ
+    supabase.from('revenue_analytics').select(`
+      date,
+      revenue,
+      transaction_count
+    `)
   ])
 
-  // 最近のアクティビティのユーザー情報を取得
-  const recentActivitiesWithUsers = await Promise.all(
-    (recentActivities || []).map(async (activity: any) => {
+  // 最近の企画書のユーザー情報を取得
+  const recentProposalsWithUsers = await Promise.all(
+    (recentProposals || []).map(async (proposal: any) => {
       const { data: userData } = await supabase
         .from('users')
-        .select('username, email')
-        .eq('id', activity.user_id)
+        .select('email')
+        .eq('id', proposal.user_id)
         .single()
       
       return {
-        id: activity.id,
-        title: activity.title,
-        created_at: activity.created_at,
-        users: userData || { username: null, email: 'Unknown' }
+        id: proposal.id,
+        title: proposal.service_name,
+        created_at: proposal.created_at,
+        status: proposal.status,
+        user_email: userData?.email || 'Unknown'
       }
     })
   )
@@ -78,26 +96,26 @@ export default async function AnalyticsPage() {
         const now = new Date()
         return created.getMonth() === now.getMonth() && created.getFullYear() === now.getFullYear()
       }).length || 0,
-      activeThisMonth: userStats?.filter(u => {
-        if (!u.last_login_at) return false
-        const lastLogin = new Date(u.last_login_at)
-        const now = new Date()
-        return lastLogin.getMonth() === now.getMonth() && lastLogin.getFullYear() === now.getFullYear()
-      }).length || 0
+      premiumUsers: userStats?.filter(u => u.subscription_plan !== 'free').length || 0
     },
-    ideaStats: {
-      total: ideaStats?.length || 0,
-      open: ideaStats?.filter(i => i.status === 'open').length || 0,
-      inDevelopment: ideaStats?.filter(i => i.status === 'in_development').length || 0,
-      completed: ideaStats?.filter(i => i.status === 'completed').length || 0
+    proposalStats: {
+      total: proposalStats?.length || 0,
+      pending: proposalStats?.filter(p => p.status === '審査中').length || 0,
+      approved: proposalStats?.filter(p => p.status === '承認済み').length || 0,
+      rejected: proposalStats?.filter(p => p.status === '却下').length || 0
     },
-    categoryStats: categoryStats?.reduce((acc: any, idea: any) => {
-      acc[idea.category] = (acc[idea.category] || 0) + 1
-      return acc
-    }, {}) || {},
-    monthlyUsers: monthlyUsers || [],
-    monthlyIdeas: monthlyIdeas || [],
-    recentActivities: recentActivitiesWithUsers
+    productStats: {
+      total: productStats?.length || 0,
+      development: productStats?.filter(p => p.status === 'development').length || 0,
+      testing: productStats?.filter(p => p.status === 'testing').length || 0,
+      launched: productStats?.filter(p => p.status === 'launched').length || 0
+    },
+    revenueStats: {
+      totalRevenue: revenueData?.reduce((sum: number, r: any) => sum + (r.revenue || 0), 0) || 0,
+      totalTransactions: revenueData?.reduce((sum: number, r: any) => sum + (r.transaction_count || 0), 0) || 0
+    },
+    recentProposals: recentProposalsWithUsers,
+    recentProducts: recentProducts || []
   }
 
   return (
