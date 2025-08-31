@@ -15,7 +15,7 @@ export async function likeProduct(productId: string) {
 
   // Check if already liked
   const { data: existingLike, error: checkError } = await supabase
-    .from('embld_product_likes')
+    .from('product_likes')
     .select('id')
     .eq('product_id', productId)
     .eq('user_id', user.id)
@@ -28,7 +28,7 @@ export async function likeProduct(productId: string) {
     console.log('Attempting to unlike...');
     
     const { error: deleteError } = await supabase
-      .from('embld_product_likes')
+      .from('product_likes')
       .delete()
       .eq('product_id', productId)
       .eq('user_id', user.id);
@@ -45,7 +45,7 @@ export async function likeProduct(productId: string) {
       console.log('RPC decrement error:', rpcError);
       // Rollback by re-inserting the like
       await supabase
-        .from('embld_product_likes')
+        .from('product_likes')
         .insert({ product_id: productId, user_id: user.id });
       return { success: false, error: 'Failed to update like count' };
     }
@@ -58,7 +58,7 @@ export async function likeProduct(productId: string) {
     console.log('Attempting to like...');
     
     const { error: insertError } = await supabase
-      .from('embld_product_likes')
+      .from('product_likes')
       .insert({ product_id: productId, user_id: user.id });
 
     if (insertError) {
@@ -73,7 +73,7 @@ export async function likeProduct(productId: string) {
       console.log('RPC increment error:', rpcError);
       // Rollback by deleting the like
       await supabase
-        .from('embld_product_likes')
+        .from('product_likes')
         .delete()
         .eq('product_id', productId)
         .eq('user_id', user.id);
@@ -99,7 +99,7 @@ export async function addComment(productId: string, content: string) {
   }
 
   const { data, error } = await supabase
-    .from('embld_product_comments')
+    .from('product_comments')
     .insert({
       product_id: productId,
       user_id: user.id,
@@ -109,8 +109,7 @@ export async function addComment(productId: string, content: string) {
       id,
       content,
       created_at,
-      user_id,
-      users!inner(email)
+      user_id
     `)
     .single();
 
@@ -131,7 +130,7 @@ export async function deleteComment(commentId: string) {
   }
 
   const { error } = await supabase
-    .from('embld_product_comments')
+    .from('product_comments')
     .delete()
     .eq('id', commentId)
     .eq('user_id', user.id);
@@ -148,14 +147,13 @@ export async function getComments(productId: string) {
   const supabase = createClient();
 
   const { data, error } = await supabase
-    .from('embld_product_comments')
+    .from('product_comments')
     .select(`
       id,
       content,
       created_at,
       updated_at,
-      user_id,
-      users(email)
+      user_id
     `)
     .eq('product_id', productId)
     .order('created_at', { ascending: false });
@@ -176,7 +174,7 @@ export async function checkUserLike(productId: string) {
   }
 
   const { data } = await supabase
-    .from('embld_product_likes')
+    .from('product_likes')
     .select('id')
     .eq('product_id', productId)
     .eq('user_id', user.id)

@@ -50,9 +50,6 @@ interface Comment {
   created_at: string;
   updated_at: string;
   user_id: string;
-  users: {
-    email: string;
-  } | null;
 }
 
 export default function EmbldProductDetailPage() {
@@ -489,7 +486,7 @@ export default function EmbldProductDetailPage() {
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
                           <span className="text-sm font-medium text-[#e0e0e0]">
-                            {comment.users?.email?.split('@')[0] || '匿名ユーザー'}
+                            ユーザー
                           </span>
                           <span className="text-xs text-[#a0a0a0]">
                             {formatDistanceToNow(new Date(comment.created_at), {
