@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
+import { motion, AnimatePresence } from 'motion/react';
 import { TopBar } from '@/components/common/TopBar';
 import { Sidebar } from '@/components/common/Sidebar';
 import { Button } from '@/components/ui/button';
@@ -91,16 +92,22 @@ export default function ProposalsPage() {
 
   return (
     <div className="h-screen flex flex-col bg-[#1a1a1a] relative overflow-hidden">
-      {/* Sidebar Overlay */}
-      {shouldShowSidebar && (
-        <div
-          className="fixed left-0 top-0 z-50"
-          onMouseEnter={() => handleMenuHover(true)}
-          onMouseLeave={() => handleMenuHover(false)}
-        >
-          <Sidebar onLockToggle={handleMenuToggle} />
-        </div>
-      )}
+      {/* Sidebar Overlay with Animation */}
+      <AnimatePresence>
+        {shouldShowSidebar && (
+          <motion.div
+            initial={{ x: -264, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: -264, opacity: 0 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className="fixed left-0 top-0 z-50"
+            onMouseEnter={() => handleMenuHover(true)}
+            onMouseLeave={() => handleMenuHover(false)}
+          >
+            <Sidebar onLockToggle={handleMenuToggle} />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* TopBar */}
       <TopBar onMenuToggle={handleMenuToggle} onMenuHover={handleMenuHover} />
@@ -134,7 +141,7 @@ export default function ProposalsPage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {proposals.map((proposal, index) => (
+              {proposals.map((proposal) => (
                 <div key={proposal.id}>
                   <Card className="bg-[#2a2a2a] border-[#3a3a3a] hover:border-[#4a4a4a] transition-colors cursor-pointer group">
                     <Link href={`/proposals/${proposal.id}`}>
