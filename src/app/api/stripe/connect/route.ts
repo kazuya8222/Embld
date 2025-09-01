@@ -33,18 +33,19 @@ export async function POST(request: NextRequest) {
     // Create new Stripe Connect account if doesn't exist
     if (!accountId) {
       const account = await stripe.accounts.create({
-        type: 'express',
+        controller: {
+          stripe_dashboard: {
+            type: "express",
+          },
+          fees: {
+            payer: "application"
+          },
+          losses: {
+            payments: "application"
+          },
+        },
         country: 'JP',
         email: user.email,
-        capabilities: {
-          card_payments: { requested: true },
-          transfers: { requested: true }
-        },
-        business_type: 'individual',
-        business_profile: {
-          mcc: '5734', // Computer Software Stores
-          url: `${process.env.NEXT_PUBLIC_URL}/users/${user.id}`
-        },
         metadata: {
           user_id: user.id
         }

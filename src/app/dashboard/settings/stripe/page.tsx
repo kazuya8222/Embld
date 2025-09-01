@@ -74,6 +74,7 @@ export default function StripeConnectSettingsPage() {
   const handleConnect = async () => {
     setLoading(true)
     try {
+      // First, create or get the Stripe Connect account
       const response = await fetch('/api/stripe/connect', {
         method: 'POST'
       })
@@ -83,6 +84,9 @@ export default function StripeConnectSettingsPage() {
       if (data.url) {
         // Redirect to Stripe onboarding
         window.location.href = data.url
+      } else if (data.error) {
+        console.error('Stripe Connect error:', data.error)
+        alert('エラーが発生しました: ' + data.error)
       } else {
         alert('エラーが発生しました。もう一度お試しください。')
       }
@@ -211,9 +215,9 @@ export default function StripeConnectSettingsPage() {
       <main className="flex-1">
         <div className="max-w-4xl mx-auto p-6 space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-[#e0e0e0]">収益受け取り設定</h1>
+        <h1 className="text-3xl font-bold text-[#e0e0e0]">Stripe Connect Express</h1>
         <p className="text-[#a0a0a0] mt-2">
-          Stripe Connectを使用して、プロダクトの売上から収益を受け取るための銀行口座を設定します。
+          プロダクトの売上から収益を受け取るため、Stripe Connectで本人確認（KYC）・マイナンバー・銀行口座の登録を行います。
         </p>
       </div>
 
@@ -271,7 +275,7 @@ export default function StripeConnectSettingsPage() {
               {/* Actions for connected account */}
               {accountStatus.onboarding_completed ? (
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <p className="text-sm text-blue-300 mb-3">
+                  <p className="text-sm text-blue-900 mb-3">
                     すべての設定が完了しました。プロダクトの売上から自動的に収益が振り込まれます。
                   </p>
                   <div className="flex gap-3">
@@ -296,9 +300,9 @@ export default function StripeConnectSettingsPage() {
                   <div className="flex items-start gap-2 mb-3">
                     <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
                     <div>
-                      <p className="font-semibold text-amber-900">設定が未完了です</p>
+                      <p className="font-semibold text-amber-900">オンボーディングが未完了です</p>
                       <p className="text-sm text-amber-700 mt-1">
-                        銀行口座情報など、必要な情報の入力を完了してください。
+                        本人確認（KYC）・マイナンバー・銀行口座の登録を完了してください。
                       </p>
                     </div>
                   </div>
@@ -320,11 +324,11 @@ export default function StripeConnectSettingsPage() {
             <div className="text-center py-8">
               <CreditCard className="w-16 h-16 text-[#a0a0a0] mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-[#e0e0e0] mb-2">
-                Stripe Connectが未設定です
+                収益受け取りの準備を始めましょう
               </h3>
               <p className="text-[#a0a0a0] mb-6 max-w-md mx-auto">
-                収益を受け取るには、Stripe Connectで銀行口座を設定する必要があります。
-                設定は数分で完了します。
+                Stripeの安全なオンボーディング画面で、本人確認・マイナンバー・銀行口座の登録を行います。
+                すべての情報はStripeによって安全に管理されます。
               </p>
               <Button onClick={handleConnect} disabled={loading} size="lg" className="bg-[#0066cc] text-[#e0e0e0] hover:bg-[#0052a3]">
                 {loading ? (
@@ -335,7 +339,7 @@ export default function StripeConnectSettingsPage() {
                 ) : (
                   <>
                     <CreditCard className="w-4 h-4 mr-2" />
-                    Stripe Connectを設定する
+                    アカウントを作成して設定を開始
                   </>
                 )}
               </Button>
