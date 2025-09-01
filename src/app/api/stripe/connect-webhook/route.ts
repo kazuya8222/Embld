@@ -3,7 +3,7 @@ import Stripe from 'stripe'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-01-27'
+  apiVersion: '2023-10-16'
 })
 
 const endpointSecret = process.env.STRIPE_CONNECT_WEBHOOK_SECRET!
@@ -56,7 +56,8 @@ export async function POST(request: NextRequest) {
       }
 
       case 'account.application.deauthorized': {
-        const account = event.data.object as Stripe.Account
+        const application = event.data.object as any
+        const accountId = application.account
         
         // Clear Stripe account data when disconnected
         const { error: updateError } = await supabase
@@ -67,13 +68,13 @@ export async function POST(request: NextRequest) {
             stripe_account_created_at: null,
             stripe_account_updated_at: null
           })
-          .eq('stripe_account_id', account.id)
+          .eq('stripe_account_id', accountId)
 
         if (updateError) {
           console.error('Failed to clear user Stripe data:', updateError)
         }
 
-        console.log(`Account ${account.id} deauthorized`)
+        console.log(`Account ${accountId} deauthorized`)
         break
       }
 
