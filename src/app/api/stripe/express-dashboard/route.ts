@@ -33,8 +33,7 @@ export async function POST(request: NextRequest) {
       components: {
         account_onboarding: { enabled: true },
         payments: { enabled: true },
-        payouts: { enabled: true },
-        balances: { enabled: true }
+        payouts: { enabled: true }
       }
     })
 
