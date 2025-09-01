@@ -70,10 +70,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate onboarding link
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL
+    console.log('Base URL for redirect:', baseUrl)
+    
     const accountLink = await stripe.accountLinks.create({
       account: accountId,
-      refresh_url: `${process.env.NEXT_PUBLIC_URL}/dashboard/settings/stripe?refresh=true`,
-      return_url: `${process.env.NEXT_PUBLIC_URL}/dashboard/settings/stripe?success=true`,
+      refresh_url: `${baseUrl}/dashboard/settings/stripe?refresh=true`,
+      return_url: `${baseUrl}/dashboard/settings/stripe?success=true`,
       type: 'account_onboarding'
     })
 
@@ -83,8 +86,23 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     console.error('Stripe Connect error:', error)
+    
+    // More detailed error response for debugging
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    const errorDetails = error instanceof Error && 'type' in error ? (error as any).type : undefined
+    
+    console.error('Error details:', {
+      message: errorMessage,
+      type: errorDetails,
+      fullError: error
+    })
+    
     return NextResponse.json(
-      { error: 'Failed to create Stripe Connect account' },
+      { 
+        error: 'Failed to create Stripe Connect account',
+        details: errorMessage,
+        type: errorDetails
+      },
       { status: 500 }
     )
   }
