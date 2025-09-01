@@ -283,16 +283,19 @@ export default function StripeConnectSettingsPage() {
                       <RefreshCw className="w-4 h-4 mr-2" />
                       ステータスを更新
                     </Button>
-                    <a 
-                      href="https://dashboard.stripe.com/express/dashboard" 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                    >
-                      <Button size="sm" className="bg-[#0066cc] text-[#e0e0e0] hover:bg-[#0052a3]">
-                        <ExternalLink className="w-4 h-4 mr-2" />
-                        Stripeダッシュボード
-                      </Button>
-                    </a>
+                    <Button size="sm" onClick={handleConnect} disabled={loading} className="bg-[#0066cc] text-[#e0e0e0] hover:bg-[#0052a3]">
+                      {loading ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          処理中...
+                        </>
+                      ) : (
+                        <>
+                          <ExternalLink className="w-4 h-4 mr-2" />
+                          アカウント設定を更新
+                        </>
+                      )}
+                    </Button>
                   </div>
                 </div>
               ) : (
