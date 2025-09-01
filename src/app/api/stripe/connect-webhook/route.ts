@@ -36,12 +36,16 @@ export async function POST(request: NextRequest) {
         // Check if onboarding is complete
         const isComplete = account.charges_enabled && account.payouts_enabled
         
-        // Update user in database
+        // Update user in database with detailed information
         const { error: updateError } = await supabase
           .from('users')
           .update({
             stripe_onboarding_completed: isComplete,
-            stripe_account_updated_at: new Date().toISOString()
+            stripe_account_updated_at: new Date().toISOString(),
+            stripe_connect_details_submitted: account.details_submitted || false,
+            stripe_connect_payouts_enabled: account.payouts_enabled || false,
+            stripe_connect_capabilities: account.capabilities || {},
+            stripe_connect_requirements: account.requirements || {}
           })
           .eq('stripe_account_id', account.id)
 
@@ -53,7 +57,42 @@ export async function POST(request: NextRequest) {
           )
         }
 
-        console.log(`Account ${account.id} updated. Onboarding complete: ${isComplete}`)
+        console.log(`Account ${account.id} updated. Complete: ${isComplete}, Details: ${account.details_submitted}, Payouts: ${account.payouts_enabled}`)
+        break
+      }
+
+      case 'person.updated': {
+        const person = event.data.object as any
+        const accountId = person.account
+        
+        console.log(`Person updated for account ${accountId}`)
+        
+        // Get account details to check onboarding status
+        try {
+          const account = await stripe.accounts.retrieve(accountId)
+          const isComplete = account.charges_enabled && account.payouts_enabled
+          
+          // Update user in database with detailed information
+          const { error: updateError } = await supabase
+            .from('users')
+            .update({
+              stripe_onboarding_completed: isComplete,
+              stripe_account_updated_at: new Date().toISOString(),
+              stripe_connect_details_submitted: account.details_submitted || false,
+              stripe_connect_payouts_enabled: account.payouts_enabled || false,
+              stripe_connect_capabilities: account.capabilities || {},
+              stripe_connect_requirements: account.requirements || {}
+            })
+            .eq('stripe_account_id', accountId)
+
+          if (updateError) {
+            console.error('Failed to update user after person update:', updateError)
+          } else {
+            console.log(`User updated after person change. Account: ${accountId}, Complete: ${isComplete}, Details: ${account.details_submitted}, Payouts: ${account.payouts_enabled}`)
+          }
+        } catch (stripeError) {
+          console.error('Failed to retrieve account details:', stripeError)
+        }
         break
       }
 
