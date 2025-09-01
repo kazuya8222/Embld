@@ -19,6 +19,7 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { useAuth } from '@/components/auth/AuthProvider'
+import { toast } from 'sonner'
 
 interface Payout {
   id: string
@@ -54,6 +55,8 @@ export default function RevenuePage() {
   const [stripeBalance, setStripeBalance] = useState<StripeBalance | null>(null)
   const [stripeConnected, setStripeConnected] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [processingWithdrawal, setProcessingWithdrawal] = useState(false)
+  const [pendingRequest, setPendingRequest] = useState(false)
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [isSidebarLocked, setIsSidebarLocked] = useState(false)
   const [isSidebarHovered, setIsSidebarHovered] = useState(false)
@@ -63,6 +66,7 @@ export default function RevenuePage() {
       fetchPayouts()
       checkStripeConnection()
       fetchStripeBalance()
+      checkPendingRequest()
     }
   }, [user])
 
@@ -101,6 +105,55 @@ export default function RevenuePage() {
       }
     } catch (error) {
       console.error('Failed to fetch Stripe balance:', error)
+    }
+  }
+
+  const checkPendingRequest = async () => {
+    try {
+      const response = await fetch('/api/withdrawal-request')
+      const data = await response.json()
+      if (response.ok && data.requests) {
+        const hasPending = data.requests.some((req: any) => req.status === 'pending')
+        setPendingRequest(hasPending)
+      }
+    } catch (error) {
+      console.error('Failed to check pending requests:', error)
+    }
+  }
+
+  const handleWithdrawalRequest = async () => {
+    const availableAmount = stripeBalance?.available.find(b => b.currency === 'jpy')?.amount || 0
+    
+    if (availableAmount <= 0) {
+      toast.error('出金可能な残高がありません')
+      return
+    }
+
+    setProcessingWithdrawal(true)
+    try {
+      const response = await fetch('/api/withdrawal-request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount: availableAmount // Request full available balance
+        })
+      })
+
+      const data = await response.json()
+      
+      if (response.ok) {
+        toast.success('出金リクエストを送信しました。管理者の承認をお待ちください。')
+        setPendingRequest(true)
+        // Refresh balance
+        await fetchStripeBalance()
+      } else {
+        toast.error(data.error || '出金リクエストの送信に失敗しました')
+      }
+    } catch (error) {
+      console.error('Withdrawal request error:', error)
+      toast.error('出金リクエストの処理中にエラーが発生しました')
+    } finally {
+      setProcessingWithdrawal(false)
     }
   }
 
