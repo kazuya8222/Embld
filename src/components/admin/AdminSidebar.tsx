@@ -14,7 +14,8 @@ import {
   MessageSquare,
   BookOpen,
   Monitor,
-  Package
+  Package,
+  DollarSign
 } from 'lucide-react'
 import { clsx } from 'clsx'
 
@@ -24,6 +25,7 @@ const navigation = [
   { name: '企画書管理', href: '/admin/proposals', icon: FileText },
   { name: 'ブログ管理', href: '/admin/blogs', icon: BookOpen },
   { name: 'プロダクト管理', href: '/admin/products', icon: Monitor },
+  { name: '出金管理', href: '/admin/transfers', icon: DollarSign },
   { name: 'お問い合わせ管理', href: '/admin/contacts', icon: MessageSquare },
   { name: '統計・分析', href: '/admin/analytics', icon: BarChart3 },
   { name: '違反管理', href: '/admin/violations', icon: Shield },
@@ -32,6 +34,7 @@ const navigation = [
 export function AdminSidebar() {
   const pathname = usePathname()
   const [unreadContacts, setUnreadContacts] = useState<number>(0)
+  const [pendingWithdrawals, setPendingWithdrawals] = useState<number>(0)
 
   useEffect(() => {
     const fetchUnreadContacts = async () => {
@@ -44,11 +47,22 @@ export function AdminSidebar() {
       setUnreadContacts(count || 0)
     }
 
+    const fetchPendingWithdrawals = async () => {
+      const supabase = createClient()
+      const { count } = await supabase
+        .from('withdrawal_requests')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'pending')
+      
+      setPendingWithdrawals(count || 0)
+    }
+
     fetchUnreadContacts()
+    fetchPendingWithdrawals()
 
     // リアルタイム更新を設定
     const supabase = createClient()
-    const channel = supabase
+    const contactsChannel = supabase
       .channel('contacts-changes')
       .on(
         'postgres_changes',
@@ -63,8 +77,24 @@ export function AdminSidebar() {
       )
       .subscribe()
 
+    const withdrawalsChannel = supabase
+      .channel('withdrawals-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'withdrawal_requests'
+        },
+        () => {
+          fetchPendingWithdrawals()
+        }
+      )
+      .subscribe()
+
     return () => {
-      channel.unsubscribe()
+      contactsChannel.unsubscribe()
+      withdrawalsChannel.unsubscribe()
     }
   }, [])
 
@@ -80,6 +110,7 @@ export function AdminSidebar() {
           {navigation.map((item) => {
             const isActive = pathname === item.href
             const isContactsPage = item.href === '/admin/contacts'
+            const isTransfersPage = item.href === '/admin/transfers'
             return (
               <Link
                 key={item.name}
@@ -96,6 +127,11 @@ export function AdminSidebar() {
                 {isContactsPage && unreadContacts > 0 && (
                   <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-6 w-6 flex items-center justify-center font-bold">
                     {unreadContacts > 99 ? '99+' : unreadContacts}
+                  </span>
+                )}
+                {isTransfersPage && pendingWithdrawals > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-xs rounded-full h-6 w-6 flex items-center justify-center font-bold">
+                    {pendingWithdrawals > 99 ? '99+' : pendingWithdrawals}
                   </span>
                 )}
               </Link>

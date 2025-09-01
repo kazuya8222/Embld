@@ -213,96 +213,100 @@ export default function AdminTransfersPage() {
 
   if (user?.email !== 'pontas0523@gmail.com') {
     return (
-      <div className="min-h-screen bg-[#1a1a1a] flex items-center justify-center">
-        <Card className="bg-[#2a2a2a] border-[#3a3a3a]">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-3">
-              <AlertCircle className="w-6 h-6 text-red-500" />
-              <p className="text-[#e0e0e0]">管理者権限が必要です</p>
-            </div>
-          </CardContent>
-        </Card>
+      <div className="flex items-center justify-center min-h-96">
+        <div className="text-center">
+          <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">アクセス権限がありません</h2>
+          <p className="text-gray-600">この機能は管理者のみアクセス可能です</p>
+        </div>
       </div>
     )
   }
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#1a1a1a] flex items-center justify-center">
-        <p className="text-[#a0a0a0]">Loading...</p>
+      <div className="flex items-center justify-center min-h-96">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">読み込み中...</p>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-[#1a1a1a] p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold text-[#e0e0e0]">Admin - 送金管理</h1>
-          <p className="text-[#a0a0a0] mt-1">ユーザーへの収益分配と出金管理</p>
-        </div>
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900">出金管理</h1>
+        <p className="text-gray-600 mt-2">ユーザーへの収益分配と出金リクエスト管理</p>
+      </div>
 
-        <Tabs defaultValue="requests" className="space-y-4">
-          <TabsList className="bg-[#2a2a2a]">
-            <TabsTrigger value="requests" className="data-[state=active]:bg-[#3a3a3a]">
-              出金リクエスト
-              {withdrawalRequests.filter(r => r.status === 'pending').length > 0 && (
-                <Badge className="ml-2 bg-red-500 text-white">
-                  {withdrawalRequests.filter(r => r.status === 'pending').length}
-                </Badge>
-              )}
-            </TabsTrigger>
-            <TabsTrigger value="users" className="data-[state=active]:bg-[#3a3a3a]">
-              ユーザー管理
-            </TabsTrigger>
-          </TabsList>
+      <Tabs defaultValue="requests" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="requests" className="flex items-center gap-2">
+            出金リクエスト
+            {withdrawalRequests.filter(r => r.status === 'pending').length > 0 && (
+              <Badge variant="destructive">
+                {withdrawalRequests.filter(r => r.status === 'pending').length}
+              </Badge>
+            )}
+          </TabsTrigger>
+          <TabsTrigger value="users">
+            ユーザー管理
+          </TabsTrigger>
+        </TabsList>
 
-          <TabsContent value="requests">
-            <Card className="bg-[#2a2a2a] border-[#3a3a3a]">
-              <CardHeader>
-                <CardTitle className="text-[#e0e0e0]">出金リクエスト</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {withdrawalRequests.length === 0 ? (
-                  <p className="text-[#a0a0a0] text-center py-8">出金リクエストはありません</p>
-                ) : (
+        <TabsContent value="requests" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>出金リクエスト一覧</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {withdrawalRequests.length === 0 ? (
+                <div className="text-center py-12">
+                  <DollarSign className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">出金リクエストはありません</h3>
+                  <p className="text-gray-500">新しいリクエストが届くとここに表示されます</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="text-[#e0e0e0]">ユーザー</TableHead>
-                        <TableHead className="text-[#e0e0e0]">金額</TableHead>
-                        <TableHead className="text-[#e0e0e0]">リクエスト日時</TableHead>
-                        <TableHead className="text-[#e0e0e0]">ステータス</TableHead>
-                        <TableHead className="text-[#e0e0e0]">アクション</TableHead>
+                        <TableHead>ユーザー</TableHead>
+                        <TableHead>金額</TableHead>
+                        <TableHead>リクエスト日時</TableHead>
+                        <TableHead>ステータス</TableHead>
+                        <TableHead>アクション</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {withdrawalRequests.map((request) => (
                         <TableRow key={request.id}>
-                          <TableCell className="text-[#e0e0e0]">
+                          <TableCell className="font-medium">
                             {request.users.email}
                           </TableCell>
-                          <TableCell className="text-[#e0e0e0]">
+                          <TableCell>
                             {formatCurrency(request.amount)}
                           </TableCell>
-                          <TableCell className="text-[#e0e0e0]">
+                          <TableCell>
                             {new Date(request.requested_at).toLocaleString('ja-JP')}
                           </TableCell>
                           <TableCell>
                             {request.status === 'pending' && (
-                              <Badge className="bg-amber-100 text-amber-800">
+                              <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 border-yellow-200">
                                 <Clock className="w-3 h-3 mr-1" />
                                 承認待ち
                               </Badge>
                             )}
                             {request.status === 'completed' && (
-                              <Badge className="bg-green-100 text-green-800">
+                              <Badge variant="secondary" className="bg-green-100 text-green-800 border-green-200">
                                 <CheckCircle className="w-3 h-3 mr-1" />
                                 完了
                               </Badge>
                             )}
                             {request.status === 'rejected' && (
-                              <Badge className="bg-red-100 text-red-800">
+                              <Badge variant="secondary" className="bg-red-100 text-red-800 border-red-200">
                                 <XCircle className="w-3 h-3 mr-1" />
                                 却下
                               </Badge>
@@ -315,8 +319,9 @@ export default function AdminTransfersPage() {
                                   size="sm"
                                   onClick={() => handleWithdrawalAction(request.id, 'approve')}
                                   disabled={processing}
-                                  className="bg-green-600 text-white hover:bg-green-700"
+                                  className="bg-green-600 hover:bg-green-700"
                                 >
+                                  <CheckCircle className="w-4 h-4 mr-1" />
                                   承認
                                 </Button>
                                 <Dialog>
@@ -326,24 +331,27 @@ export default function AdminTransfersPage() {
                                       variant="destructive"
                                       disabled={processing}
                                     >
+                                      <XCircle className="w-4 h-4 mr-1" />
                                       却下
                                     </Button>
                                   </DialogTrigger>
-                                  <DialogContent className="bg-[#2a2a2a] border-[#3a3a3a]">
+                                  <DialogContent>
                                     <DialogHeader>
-                                      <DialogTitle className="text-[#e0e0e0]">リクエストを却下</DialogTitle>
-                                      <DialogDescription className="text-[#a0a0a0]">
+                                      <DialogTitle>リクエストを却下</DialogTitle>
+                                      <DialogDescription>
                                         却下理由を入力してください
                                       </DialogDescription>
                                     </DialogHeader>
-                                    <div>
-                                      <Label className="text-[#e0e0e0]">却下理由</Label>
-                                      <Input
-                                        value={rejectionReason}
-                                        onChange={(e) => setRejectionReason(e.target.value)}
-                                        placeholder="残高不足など"
-                                        className="bg-[#1a1a1a] border-[#3a3a3a] text-[#e0e0e0]"
-                                      />
+                                    <div className="grid gap-4 py-4">
+                                      <div className="grid gap-2">
+                                        <Label htmlFor="reason">却下理由</Label>
+                                        <Input
+                                          id="reason"
+                                          value={rejectionReason}
+                                          onChange={(e) => setRejectionReason(e.target.value)}
+                                          placeholder="残高不足など"
+                                        />
+                                      </div>
                                     </div>
                                     <DialogFooter>
                                       <Button
@@ -359,180 +367,179 @@ export default function AdminTransfersPage() {
                               </div>
                             )}
                             {request.status === 'rejected' && request.rejection_reason && (
-                              <span className="text-xs text-[#a0a0a0]">
+                              <div className="text-sm text-gray-500">
                                 理由: {request.rejection_reason}
-                              </span>
+                              </div>
                             )}
                           </TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
                   </Table>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-          <TabsContent value="users">
-            <Card className="bg-[#2a2a2a] border-[#3a3a3a]">
-              <CardHeader>
-                <CardTitle className="text-[#e0e0e0]">ユーザー一覧</CardTitle>
-              </CardHeader>
-              <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="text-[#e0e0e0]">メールアドレス</TableHead>
-                  <TableHead className="text-[#e0e0e0]">Stripe残高</TableHead>
-                  <TableHead className="text-[#e0e0e0]">累計支払額</TableHead>
-                  <TableHead className="text-[#e0e0e0]">ステータス</TableHead>
-                  <TableHead className="text-[#e0e0e0]">アクション</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {users.map((user) => (
-                  <TableRow key={user.id}>
-                    <TableCell className="text-[#e0e0e0]">{user.email}</TableCell>
-                    <TableCell className="text-[#e0e0e0]">
-                      {user.stripe_balance !== null ? formatCurrency(user.stripe_balance) : '-'}
-                    </TableCell>
-                    <TableCell className="text-[#e0e0e0]">
-                      {formatCurrency(user.total_paid)}
-                    </TableCell>
-                    <TableCell>
-                      {user.stripe_onboarding_completed ? (
-                        <Badge className="bg-green-100 text-green-800">
-                          <CheckCircle className="w-3 h-3 mr-1" />
-                          完了
-                        </Badge>
-                      ) : (
-                        <Badge variant="secondary">未完了</Badge>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <Button 
-                              size="sm" 
-                              onClick={() => setSelectedUser(user)}
-                              className="bg-[#0066cc] text-white hover:bg-[#0052a3]"
-                            >
-                              <Send className="w-4 h-4 mr-1" />
-                              送金
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent className="bg-[#2a2a2a] border-[#3a3a3a]">
-                            <DialogHeader>
-                              <DialogTitle className="text-[#e0e0e0]">収益送金</DialogTitle>
-                              <DialogDescription className="text-[#a0a0a0]">
-                                {selectedUser?.email}への送金（70%が送金されます）
-                              </DialogDescription>
-                            </DialogHeader>
-                            <div className="space-y-4">
-                              <div>
-                                <Label className="text-[#e0e0e0]">総収益額（円）</Label>
-                                <Input
-                                  type="number"
-                                  value={transferAmount}
-                                  onChange={(e) => setTransferAmount(e.target.value)}
-                                  placeholder="10000"
-                                  className="bg-[#1a1a1a] border-[#3a3a3a] text-[#e0e0e0]"
-                                />
-                                {transferAmount && (
-                                  <p className="text-sm text-[#a0a0a0] mt-1">
-                                    送金額: ¥{Math.floor(parseInt(transferAmount) * 0.7)}
-                                  </p>
-                                )}
-                              </div>
-                              <div>
-                                <Label className="text-[#e0e0e0]">説明（任意）</Label>
-                                <Input
-                                  value={description}
-                                  onChange={(e) => setDescription(e.target.value)}
-                                  placeholder="2024年1月売上分"
-                                  className="bg-[#1a1a1a] border-[#3a3a3a] text-[#e0e0e0]"
-                                />
-                              </div>
-                            </div>
-                            <DialogFooter>
-                              <Button
-                                onClick={handleTransfer}
-                                disabled={!transferAmount || processing}
-                                className="bg-[#0066cc] text-white hover:bg-[#0052a3]"
-                              >
-                                {processing ? '処理中...' : '送金実行'}
-                              </Button>
-                            </DialogFooter>
-                          </DialogContent>
-                        </Dialog>
-
-                        {user.stripe_balance && user.stripe_balance > 0 && (
-                          <Dialog>
-                            <DialogTrigger asChild>
-                              <Button 
-                                size="sm" 
-                                variant="outline"
-                                onClick={() => setSelectedUser(user)}
-                                className="border-[#3a3a3a] text-[#e0e0e0] hover:bg-[#3a3a3a]"
-                              >
-                                <DollarSign className="w-4 h-4 mr-1" />
-                                出金
-                              </Button>
-                            </DialogTrigger>
-                            <DialogContent className="bg-[#2a2a2a] border-[#3a3a3a]">
-                              <DialogHeader>
-                                <DialogTitle className="text-[#e0e0e0]">銀行口座への出金</DialogTitle>
-                                <DialogDescription className="text-[#a0a0a0]">
-                                  {selectedUser?.email}の残高を銀行口座へ出金
-                                  <br />
-                                  現在の残高: {formatCurrency(selectedUser?.stripe_balance || 0)}
-                                </DialogDescription>
-                              </DialogHeader>
-                              <div className="space-y-4">
-                                <div>
-                                  <Label className="text-[#e0e0e0]">出金額（円、空欄で全額）</Label>
-                                  <Input
-                                    type="number"
-                                    value={payoutAmount}
-                                    onChange={(e) => setPayoutAmount(e.target.value)}
-                                    placeholder="空欄で全額出金"
-                                    className="bg-[#1a1a1a] border-[#3a3a3a] text-[#e0e0e0]"
-                                  />
-                                </div>
-                                <div>
-                                  <Label className="text-[#e0e0e0]">説明（任意）</Label>
-                                  <Input
-                                    value={description}
-                                    onChange={(e) => setDescription(e.target.value)}
-                                    placeholder="定期出金"
-                                    className="bg-[#1a1a1a] border-[#3a3a3a] text-[#e0e0e0]"
-                                  />
-                                </div>
-                              </div>
-                              <DialogFooter>
-                                <Button
-                                  onClick={handlePayout}
-                                  disabled={processing}
-                                  className="bg-green-600 text-white hover:bg-green-700"
+        <TabsContent value="users" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>ユーザー一覧</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>メールアドレス</TableHead>
+                      <TableHead>Stripe残高</TableHead>
+                      <TableHead>累計支払額</TableHead>
+                      <TableHead>ステータス</TableHead>
+                      <TableHead>アクション</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {users.map((user) => (
+                      <TableRow key={user.id}>
+                        <TableCell className="font-medium">{user.email}</TableCell>
+                        <TableCell>
+                          {user.stripe_balance !== null ? formatCurrency(user.stripe_balance) : '-'}
+                        </TableCell>
+                        <TableCell>
+                          {formatCurrency(user.total_paid)}
+                        </TableCell>
+                        <TableCell>
+                          {user.stripe_onboarding_completed ? (
+                            <Badge variant="secondary" className="bg-green-100 text-green-800 border-green-200">
+                              <CheckCircle className="w-3 h-3 mr-1" />
+                              完了
+                            </Badge>
+                          ) : (
+                            <Badge variant="secondary">未完了</Badge>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex gap-2">
+                            <Dialog>
+                              <DialogTrigger asChild>
+                                <Button 
+                                  size="sm" 
+                                  onClick={() => setSelectedUser(user)}
                                 >
-                                  {processing ? '処理中...' : '出金実行'}
+                                  <Send className="w-4 h-4 mr-1" />
+                                  送金
                                 </Button>
-                              </DialogFooter>
-                            </DialogContent>
-                          </Dialog>
-                        )}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-      </div>
+                              </DialogTrigger>
+                              <DialogContent>
+                                <DialogHeader>
+                                  <DialogTitle>収益送金</DialogTitle>
+                                  <DialogDescription>
+                                    {selectedUser?.email}への送金（70%が送金されます）
+                                  </DialogDescription>
+                                </DialogHeader>
+                                <div className="grid gap-4 py-4">
+                                  <div className="grid gap-2">
+                                    <Label htmlFor="amount">総収益額（円）</Label>
+                                    <Input
+                                      id="amount"
+                                      type="number"
+                                      value={transferAmount}
+                                      onChange={(e) => setTransferAmount(e.target.value)}
+                                      placeholder="10000"
+                                    />
+                                    {transferAmount && (
+                                      <p className="text-sm text-gray-500">
+                                        送金額: ¥{Math.floor(parseInt(transferAmount) * 0.7)}
+                                      </p>
+                                    )}
+                                  </div>
+                                  <div className="grid gap-2">
+                                    <Label htmlFor="description">説明（任意）</Label>
+                                    <Input
+                                      id="description"
+                                      value={description}
+                                      onChange={(e) => setDescription(e.target.value)}
+                                      placeholder="2024年1月売上分"
+                                    />
+                                  </div>
+                                </div>
+                                <DialogFooter>
+                                  <Button
+                                    onClick={handleTransfer}
+                                    disabled={!transferAmount || processing}
+                                  >
+                                    {processing ? '処理中...' : '送金実行'}
+                                  </Button>
+                                </DialogFooter>
+                              </DialogContent>
+                            </Dialog>
+
+                            {user.stripe_balance && user.stripe_balance > 0 && (
+                              <Dialog>
+                                <DialogTrigger asChild>
+                                  <Button 
+                                    size="sm" 
+                                    variant="outline"
+                                    onClick={() => setSelectedUser(user)}
+                                  >
+                                    <DollarSign className="w-4 h-4 mr-1" />
+                                    出金
+                                  </Button>
+                                </DialogTrigger>
+                                <DialogContent>
+                                  <DialogHeader>
+                                    <DialogTitle>銀行口座への出金</DialogTitle>
+                                    <DialogDescription>
+                                      {selectedUser?.email}の残高を銀行口座へ出金
+                                      <br />
+                                      現在の残高: {formatCurrency(selectedUser?.stripe_balance || 0)}
+                                    </DialogDescription>
+                                  </DialogHeader>
+                                  <div className="grid gap-4 py-4">
+                                    <div className="grid gap-2">
+                                      <Label htmlFor="payout-amount">出金額（円、空欄で全額）</Label>
+                                      <Input
+                                        id="payout-amount"
+                                        type="number"
+                                        value={payoutAmount}
+                                        onChange={(e) => setPayoutAmount(e.target.value)}
+                                        placeholder="空欄で全額出金"
+                                      />
+                                    </div>
+                                    <div className="grid gap-2">
+                                      <Label htmlFor="payout-description">説明（任意）</Label>
+                                      <Input
+                                        id="payout-description"
+                                        value={description}
+                                        onChange={(e) => setDescription(e.target.value)}
+                                        placeholder="定期出金"
+                                      />
+                                    </div>
+                                  </div>
+                                  <DialogFooter>
+                                    <Button
+                                      onClick={handlePayout}
+                                      disabled={processing}
+                                      className="bg-green-600 hover:bg-green-700"
+                                    >
+                                      {processing ? '処理中...' : '出金実行'}
+                                    </Button>
+                                  </DialogFooter>
+                                </DialogContent>
+                              </Dialog>
+                            )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }
