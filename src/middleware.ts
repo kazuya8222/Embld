@@ -13,7 +13,9 @@ export async function middleware(request: NextRequest) {
     // Public routes that don't require authentication
     const publicRoutes = ['/', '/help', '/contact', '/auth/login', '/auth/register', '/auth/callback']
     const isPublicLegalRoute = request.nextUrl.pathname.startsWith('/legal/')
-    const isPublicRoute = publicRoutes.includes(request.nextUrl.pathname) || isPublicLegalRoute
+    const isWebhookRoute = request.nextUrl.pathname.startsWith('/api/stripe/webhook') || 
+                          request.nextUrl.pathname.startsWith('/api/stripe/connect-webhook')
+    const isPublicRoute = publicRoutes.includes(request.nextUrl.pathname) || isPublicLegalRoute || isWebhookRoute
 
     // If accessing protected route without auth, redirect to login
     if (!isPublicRoute && !user) {
