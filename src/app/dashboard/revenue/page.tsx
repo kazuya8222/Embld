@@ -328,14 +328,16 @@ export default function RevenuePage() {
                 <Button 
                   className="bg-white text-purple-600 hover:bg-gray-100"
                   size="sm"
-                  disabled={(stripeBalance.available.find(b => b.currency === 'jpy')?.amount || 0) <= 0}
-                  onClick={() => {
-                    // Admin will handle this manually
-                    alert('出金リクエストを受け付けました。管理者が処理を行います。')
-                  }}
+                  disabled={
+                    (stripeBalance.available.find(b => b.currency === 'jpy')?.amount || 0) <= 0 ||
+                    processingWithdrawal ||
+                    pendingRequest
+                  }
+                  onClick={handleWithdrawalRequest}
                 >
                   <DollarSign className="w-4 h-4 mr-1" />
-                  出金申請
+                  {processingWithdrawal ? '処理中...' : 
+                   pendingRequest ? '承認待ち' : '出金申請'}
                 </Button>
                 <Link href="/dashboard/settings/stripe">
                   <Button 

@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   Table,
   TableBody,
@@ -24,7 +25,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { useAuth } from '@/components/auth/AuthProvider'
-import { DollarSign, Send, AlertCircle, CheckCircle } from 'lucide-react'
+import { DollarSign, Send, AlertCircle, CheckCircle, Clock, XCircle } from 'lucide-react'
 import { toast } from 'sonner'
 
 interface User {
@@ -38,19 +39,37 @@ interface User {
   created_at: string
 }
 
+interface WithdrawalRequest {
+  id: string
+  user_id: string
+  amount: number
+  status: string
+  requested_at: string
+  processed_at: string | null
+  rejection_reason: string | null
+  users: {
+    id: string
+    email: string
+    stripe_account_id: string
+  }
+}
+
 export default function AdminTransfersPage() {
   const { user } = useAuth()
   const [users, setUsers] = useState<User[]>([])
+  const [withdrawalRequests, setWithdrawalRequests] = useState<WithdrawalRequest[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
   const [transferAmount, setTransferAmount] = useState('')
   const [payoutAmount, setPayoutAmount] = useState('')
   const [description, setDescription] = useState('')
   const [processing, setProcessing] = useState(false)
+  const [rejectionReason, setRejectionReason] = useState('')
 
   useEffect(() => {
     if (user?.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL || user?.email === 'pontas0523@gmail.com') {
       fetchUsers()
+      fetchWithdrawalRequests()
     }
   }, [user])
 
@@ -66,6 +85,19 @@ export default function AdminTransfersPage() {
       toast.error('ユーザー情報の取得に失敗しました')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchWithdrawalRequests = async () => {
+    try {
+      const response = await fetch('/api/admin/withdrawal-requests')
+      if (response.ok) {
+        const data = await response.json()
+        setWithdrawalRequests(data.requests)
+      }
+    } catch (error) {
+      console.error('Failed to fetch withdrawal requests:', error)
+      toast.error('出金リクエストの取得に失敗しました')
     }
   }
 
@@ -98,6 +130,41 @@ export default function AdminTransfersPage() {
     } catch (error) {
       console.error('Transfer error:', error)
       toast.error('送金処理中にエラーが発生しました')
+    } finally {
+      setProcessing(false)
+    }
+  }
+
+  const handleWithdrawalAction = async (requestId: string, action: 'approve' | 'reject') => {
+    setProcessing(true)
+    try {
+      const response = await fetch('/api/admin/withdrawal-requests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          requestId,
+          action,
+          rejectionReason: action === 'reject' ? rejectionReason : undefined
+        })
+      })
+
+      const data = await response.json()
+      
+      if (response.ok) {
+        toast.success(
+          action === 'approve' 
+            ? '出金リクエストを承認しました' 
+            : '出金リクエストを却下しました'
+        )
+        setRejectionReason('')
+        await fetchWithdrawalRequests()
+        await fetchUsers()
+      } else {
+        toast.error(data.error || '処理に失敗しました')
+      }
+    } catch (error) {
+      console.error('Withdrawal action error:', error)
+      toast.error('処理中にエラーが発生しました')
     } finally {
       setProcessing(false)
     }
@@ -175,11 +242,143 @@ export default function AdminTransfersPage() {
           <p className="text-[#a0a0a0] mt-1">ユーザーへの収益分配と出金管理</p>
         </div>
 
-        <Card className="bg-[#2a2a2a] border-[#3a3a3a]">
-          <CardHeader>
-            <CardTitle className="text-[#e0e0e0]">ユーザー一覧</CardTitle>
-          </CardHeader>
-          <CardContent>
+        <Tabs defaultValue="requests" className="space-y-4">
+          <TabsList className="bg-[#2a2a2a]">
+            <TabsTrigger value="requests" className="data-[state=active]:bg-[#3a3a3a]">
+              出金リクエスト
+              {withdrawalRequests.filter(r => r.status === 'pending').length > 0 && (
+                <Badge className="ml-2 bg-red-500 text-white">
+                  {withdrawalRequests.filter(r => r.status === 'pending').length}
+                </Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="users" className="data-[state=active]:bg-[#3a3a3a]">
+              ユーザー管理
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="requests">
+            <Card className="bg-[#2a2a2a] border-[#3a3a3a]">
+              <CardHeader>
+                <CardTitle className="text-[#e0e0e0]">出金リクエスト</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {withdrawalRequests.length === 0 ? (
+                  <p className="text-[#a0a0a0] text-center py-8">出金リクエストはありません</p>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="text-[#e0e0e0]">ユーザー</TableHead>
+                        <TableHead className="text-[#e0e0e0]">金額</TableHead>
+                        <TableHead className="text-[#e0e0e0]">リクエスト日時</TableHead>
+                        <TableHead className="text-[#e0e0e0]">ステータス</TableHead>
+                        <TableHead className="text-[#e0e0e0]">アクション</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {withdrawalRequests.map((request) => (
+                        <TableRow key={request.id}>
+                          <TableCell className="text-[#e0e0e0]">
+                            {request.users.email}
+                          </TableCell>
+                          <TableCell className="text-[#e0e0e0]">
+                            {formatCurrency(request.amount)}
+                          </TableCell>
+                          <TableCell className="text-[#e0e0e0]">
+                            {new Date(request.requested_at).toLocaleString('ja-JP')}
+                          </TableCell>
+                          <TableCell>
+                            {request.status === 'pending' && (
+                              <Badge className="bg-amber-100 text-amber-800">
+                                <Clock className="w-3 h-3 mr-1" />
+                                承認待ち
+                              </Badge>
+                            )}
+                            {request.status === 'completed' && (
+                              <Badge className="bg-green-100 text-green-800">
+                                <CheckCircle className="w-3 h-3 mr-1" />
+                                完了
+                              </Badge>
+                            )}
+                            {request.status === 'rejected' && (
+                              <Badge className="bg-red-100 text-red-800">
+                                <XCircle className="w-3 h-3 mr-1" />
+                                却下
+                              </Badge>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {request.status === 'pending' && (
+                              <div className="flex gap-2">
+                                <Button
+                                  size="sm"
+                                  onClick={() => handleWithdrawalAction(request.id, 'approve')}
+                                  disabled={processing}
+                                  className="bg-green-600 text-white hover:bg-green-700"
+                                >
+                                  承認
+                                </Button>
+                                <Dialog>
+                                  <DialogTrigger asChild>
+                                    <Button
+                                      size="sm"
+                                      variant="destructive"
+                                      disabled={processing}
+                                    >
+                                      却下
+                                    </Button>
+                                  </DialogTrigger>
+                                  <DialogContent className="bg-[#2a2a2a] border-[#3a3a3a]">
+                                    <DialogHeader>
+                                      <DialogTitle className="text-[#e0e0e0]">リクエストを却下</DialogTitle>
+                                      <DialogDescription className="text-[#a0a0a0]">
+                                        却下理由を入力してください
+                                      </DialogDescription>
+                                    </DialogHeader>
+                                    <div>
+                                      <Label className="text-[#e0e0e0]">却下理由</Label>
+                                      <Input
+                                        value={rejectionReason}
+                                        onChange={(e) => setRejectionReason(e.target.value)}
+                                        placeholder="残高不足など"
+                                        className="bg-[#1a1a1a] border-[#3a3a3a] text-[#e0e0e0]"
+                                      />
+                                    </div>
+                                    <DialogFooter>
+                                      <Button
+                                        onClick={() => handleWithdrawalAction(request.id, 'reject')}
+                                        disabled={processing || !rejectionReason}
+                                        variant="destructive"
+                                      >
+                                        却下する
+                                      </Button>
+                                    </DialogFooter>
+                                  </DialogContent>
+                                </Dialog>
+                              </div>
+                            )}
+                            {request.status === 'rejected' && request.rejection_reason && (
+                              <span className="text-xs text-[#a0a0a0]">
+                                理由: {request.rejection_reason}
+                              </span>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="users">
+            <Card className="bg-[#2a2a2a] border-[#3a3a3a]">
+              <CardHeader>
+                <CardTitle className="text-[#e0e0e0]">ユーザー一覧</CardTitle>
+              </CardHeader>
+              <CardContent>
             <Table>
               <TableHeader>
                 <TableRow>
@@ -330,7 +529,9 @@ export default function AdminTransfersPage() {
               </TableBody>
             </Table>
           </CardContent>
-        </Card>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   )
