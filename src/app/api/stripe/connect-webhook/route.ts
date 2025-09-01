@@ -118,6 +118,54 @@ export async function POST(request: NextRequest) {
         break
       }
 
+      case 'account.external_account.updated': {
+        const accountId = event.account as string // Connect アカウントのIDは event.account にある
+        
+        console.log(`🏦 External account (bank account) updated for account ${accountId}`)
+        
+        // Check if user exists with this account ID
+        const { data: existingUser, error: findError } = await supabase
+          .from('users')
+          .select('id, email, stripe_account_id')
+          .eq('stripe_account_id', accountId)
+          .single()
+
+        if (findError) {
+          console.error('❌ User not found for external account update. Account ID:', accountId, 'Error:', findError)
+          return NextResponse.json({ received: true })
+        }
+
+        console.log(`✅ Found user: ${existingUser.email} for external account update`)
+        
+        // Get full account details to check onboarding status
+        try {
+          const account = await stripe.accounts.retrieve(accountId)
+          const isComplete = account.charges_enabled && account.payouts_enabled
+          
+          // Update user in database
+          const { error: updateError } = await supabase
+            .from('users')
+            .update({
+              stripe_onboarding_completed: isComplete,
+              stripe_account_updated_at: new Date().toISOString(),
+              stripe_connect_details_submitted: account.details_submitted || false,
+              stripe_connect_payouts_enabled: account.payouts_enabled || false,
+              stripe_connect_capabilities: account.capabilities || {},
+              stripe_connect_requirements: account.requirements || {}
+            })
+            .eq('stripe_account_id', accountId)
+
+          if (updateError) {
+            console.error('❌ Failed to update user after external account update:', updateError)
+          } else {
+            console.log(`✅ External account update processed. Account: ${accountId}, Complete: ${isComplete}, Payouts: ${account.payouts_enabled}`)
+          }
+        } catch (stripeError) {
+          console.error('Failed to retrieve account details after external account update:', stripeError)
+        }
+        break
+      }
+
       case 'account.application.deauthorized': {
         const application = event.data.object as any
         const accountId = application.account
@@ -142,7 +190,7 @@ export async function POST(request: NextRequest) {
       }
 
       default:
-        console.log(`Unhandled event type: ${event.type}`)
+        console.log(`⚠️  Unhandled event type: ${event.type}`)
     }
 
     return NextResponse.json({ received: true })
