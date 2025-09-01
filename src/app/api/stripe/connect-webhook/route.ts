@@ -87,7 +87,27 @@ export async function POST(request: NextRequest) {
         const person = event.data.object as any
         const accountId = person.account
         
-        console.log(`Person updated for account ${accountId}`)
+        console.log(`🔄 Processing person.updated for account ID: ${accountId}`)
+        
+        // Check if user exists with this account ID
+        const { data: existingUser, error: findError } = await supabase
+          .from('users')
+          .select('id, email, stripe_account_id')
+          .eq('stripe_account_id', accountId)
+          .single()
+
+        if (findError) {
+          console.error('❌ User not found for account ID:', accountId, 'Error:', findError)
+          console.log('📋 Available users with stripe_account_id:')
+          const { data: allUsers } = await supabase
+            .from('users')
+            .select('id, email, stripe_account_id')
+            .not('stripe_account_id', 'is', null)
+          console.log(allUsers)
+          return NextResponse.json({ received: true })
+        }
+
+        console.log(`✅ Found user: ${existingUser.email} for account: ${accountId}`)
         
         // Get account details to check onboarding status
         try {
@@ -108,9 +128,9 @@ export async function POST(request: NextRequest) {
             .eq('stripe_account_id', accountId)
 
           if (updateError) {
-            console.error('Failed to update user after person update:', updateError)
+            console.error('❌ Failed to update user after person update:', updateError)
           } else {
-            console.log(`User updated after person change. Account: ${accountId}, Complete: ${isComplete}, Details: ${account.details_submitted}, Payouts: ${account.payouts_enabled}`)
+            console.log(`✅ User updated after person change. Account: ${accountId}, Complete: ${isComplete}, Details: ${account.details_submitted}, Payouts: ${account.payouts_enabled}`)
           }
         } catch (stripeError) {
           console.error('Failed to retrieve account details:', stripeError)
