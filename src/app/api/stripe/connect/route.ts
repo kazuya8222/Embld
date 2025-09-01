@@ -3,7 +3,7 @@ import Stripe from 'stripe'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2023-10-16'
+  apiVersion: '2025-01-27'
 })
 
 // Create Stripe Connect account and generate onboarding link
