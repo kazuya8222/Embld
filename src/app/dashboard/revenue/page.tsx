@@ -37,6 +37,11 @@ interface UserStats {
   productCount: number
 }
 
+interface StripeBalance {
+  available: Array<{ amount: number; currency: string }>
+  pending: Array<{ amount: number; currency: string }>
+}
+
 export default function RevenuePage() {
   const { user } = useAuth()
   const [payouts, setPayouts] = useState<Payout[]>([])
@@ -46,6 +51,7 @@ export default function RevenuePage() {
     completedPayouts: 0,
     productCount: 0
   })
+  const [stripeBalance, setStripeBalance] = useState<StripeBalance | null>(null)
   const [stripeConnected, setStripeConnected] = useState(false)
   const [loading, setLoading] = useState(true)
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
@@ -56,6 +62,7 @@ export default function RevenuePage() {
     if (user) {
       fetchPayouts()
       checkStripeConnection()
+      fetchStripeBalance()
     }
   }, [user])
 
@@ -85,11 +92,23 @@ export default function RevenuePage() {
     }
   }
 
-  const formatCurrency = (amount: number) => {
+  const fetchStripeBalance = async () => {
+    try {
+      const response = await fetch('/api/stripe/balance')
+      const data = await response.json()
+      if (response.ok && data.balance) {
+        setStripeBalance(data.balance)
+      }
+    } catch (error) {
+      console.error('Failed to fetch Stripe balance:', error)
+    }
+  }
+
+  const formatCurrency = (amount: number, divideBy100 = true) => {
     return new Intl.NumberFormat('ja-JP', {
       style: 'currency',
       currency: 'JPY'
-    }).format(amount / 100) // Convert from cents
+    }).format(divideBy100 ? amount / 100 : amount) // Convert from cents if needed
   }
 
   const getStatusBadge = (status: string) => {
@@ -210,6 +229,69 @@ export default function RevenuePage() {
                 <Link href="/dashboard/settings/stripe" className="mt-2 inline-block">
                   <Button size="sm" className="bg-[#0066cc] text-[#e0e0e0] hover:bg-[#0052a3]">
                     設定を完了する
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Stripe Balance Card - Only show if connected */}
+      {stripeConnected && stripeBalance && (
+        <Card className="bg-gradient-to-r from-purple-600 to-blue-600 border-0 mb-6">
+          <CardContent className="p-6">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <h3 className="text-white/90 text-sm font-medium mb-2">Stripe アカウント残高</h3>
+                <div className="text-3xl font-bold text-white mb-4">
+                  {formatCurrency(
+                    stripeBalance.available.find(b => b.currency === 'jpy')?.amount || 0, 
+                    false
+                  )}
+                </div>
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-white/70 text-sm">利用可能:</span>
+                    <span className="text-white font-semibold">
+                      {formatCurrency(
+                        stripeBalance.available.find(b => b.currency === 'jpy')?.amount || 0,
+                        false
+                      )}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-white/70 text-sm">保留中:</span>
+                    <span className="text-white font-semibold">
+                      {formatCurrency(
+                        stripeBalance.pending.find(b => b.currency === 'jpy')?.amount || 0,
+                        false
+                      )}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex flex-col gap-2">
+                <Button 
+                  className="bg-white text-purple-600 hover:bg-gray-100"
+                  size="sm"
+                  disabled={(stripeBalance.available.find(b => b.currency === 'jpy')?.amount || 0) <= 0}
+                  onClick={() => {
+                    // Admin will handle this manually
+                    alert('出金リクエストを受け付けました。管理者が処理を行います。')
+                  }}
+                >
+                  <DollarSign className="w-4 h-4 mr-1" />
+                  出金申請
+                </Button>
+                <Link href="/dashboard/settings/stripe">
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    className="text-white hover:bg-white/20 w-full"
+                  >
+                    <ExternalLink className="w-4 h-4 mr-1" />
+                    詳細
                   </Button>
                 </Link>
               </div>
